@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Recursion Trees</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .tree-visualizer {
+            width: 100%;
+            height: 350px;
+            background: #020617;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .tree-node-circle {
+            fill: var(--bg-tertiary);
+            stroke: var(--glass-border);
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
+        }
+        .tree-node-circle.active {
+            fill: rgba(59, 130, 246, 0.25);
+            stroke: var(--accent-blue);
+        }
+        .tree-node-circle.visited {
+            fill: rgba(16, 185, 129, 0.25);
+            stroke: var(--accent-emerald);
+        }
+        .tree-edge {
+            stroke: var(--glass-border);
+            stroke-width: 2;
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">7.2 Recursion Trees</h1>
+            <p class="page-subtitle">Visualize divide-and-conquer branching factors step-by-step using Fibonacci call tree.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                A <strong>Recursion Tree</strong> is a visual representation of recursive execution paths.
+                Each node in the tree represents the cost/values computed by a single call.
+                For functions with multiple recursive branches (like <code>fib(n) = fib(n-1) + fib(n-2)</code>), it demonstrates how the runtime expands exponentially.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Fibonacci N:</label>
+                    <input type="number" id="fib-n" value="4" min="1" max="5" style="width: 50px;">
+                </div>
+                <button class="btn btn-primary" onclick="setupAction()">Run Fibonacci</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetTree()">Reset</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="tree-visualizer">
+                    <svg id="tree-svg"></svg>
+                </div>
+                <div style="width: 90%; padding: 0 20px;">
+                    <div class="action-log" id="recursion-log">Click Run Fibonacci to visualize the call tree.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let nodesList = [];
+        let edgesList = [];
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        function buildTreeData(n, x, y, dx, idObj) {
+            const currentId = idObj.val++;
+            const node = { id: currentId, label: `fib(${n})`, val: n, x, y };
+            nodesList.push(node);
+
+            if (n > 1) {
+                const leftChildId = idObj.val;
+                edgesList.push({ u: currentId, v: leftChildId });
+                buildTreeData(n - 1, x - dx, y + 60, dx * 0.5, idObj);
+
+                const rightChildId = idObj.val;
+                edgesList.push({ u: currentId, v: rightChildId });
+                buildTreeData(n - 2, x + dx, y + 60, dx * 0.5, idObj);
+            }
+        }
+
+        function render(state) {
+            const svg = document.getElementById('tree-svg');
+            svg.innerHTML = '';
+
+            const activeNode = state ? state.activeNode : null;
+            const visitedNodes = state ? state.visitedNodes : [];
+
+            // Draw Edges
+            edgesList.forEach(e => {
+                const uNode = nodesList.find(n => n.id === e.u);
+                const vNode = nodesList.find(n => n.id === e.v);
+                if (uNode && vNode) {
+                    svg.innerHTML += `<line x1="${uNode.x}" y1="${uNode.y}" x2="${vNode.x}" y2="${vNode.y}" class="tree-edge" />`;
+                }
+            });
+
+            // Draw Nodes
+            nodesList.forEach(node => {
+                let nodeClass = 'tree-node-circle';
+                if (node.id === activeNode) nodeClass += ' active';
+                else if (visitedNodes.includes(node.id)) nodeClass += ' visited';
+
+                svg.innerHTML += `
+                    <g>
+                        <circle cx="${node.x}" cy="${node.y}" r="15" class="${nodeClass}" />
+                        <text x="${node.x}" y="${node.y + 4}" fill="var(--text-primary)" text-anchor="middle" font-family="Outfit" font-weight="600" font-size="9">${node.label}</text>
+                    </g>
+                `;
+            });
+
+            if (state) {
+                const logEl = document.getElementById('recursion-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function setupAction() {
+            pause();
+            nodesList = [];
+            edgesList = [];
+            history = [];
+
+            const n = parseInt(document.getElementById('fib-n').value);
+            if (isNaN(n)) return;
+
+            document.getElementById('recursion-log').innerHTML = '';
+
+            buildTreeData(n, 350, 40, 140, { val: 0 });
+
+            // Generate dry run history frames simulating recursive traversal
+            let visited = [];
+
+            function dfsTrace(nodeId) {
+                const node = nodesList.find(n => n.id === nodeId);
+                if (!node) return;
+
+                history.push({
+                    activeNode: nodeId,
+                    visitedNodes: [...visited],
+                    log: `Call: evaluating ${node.label}.`
+                });
+
+                if (node.val <= 1) {
+                    visited.push(nodeId);
+                    history.push({
+                        activeNode: nodeId,
+                        visitedNodes: [...visited],
+                        log: `Base case reached for ${node.label} -> returns ${node.val}.`
+                    });
+                    return;
+                }
+
+                // trace left child
+                const leftEdge = edgesList.find(e => e.u === nodeId);
+                if (leftEdge) {
+                    dfsTrace(leftEdge.v);
+                }
+
+                // trace right child
+                const rightEdges = edgesList.filter(e => e.u === nodeId);
+                if (rightEdges.length > 1) {
+                    dfsTrace(rightEdges[1].v);
+                }
+
+                visited.push(nodeId);
+                history.push({
+                    activeNode: nodeId,
+                    visitedNodes: [...visited],
+                    log: `Completed evaluation for ${node.label}.`
+                });
+            }
+
+            dfsTrace(0);
+
+            history.push({
+                activeNode: null,
+                visitedNodes: [...visited],
+                log: `Finished building and tracing recursion tree.`
+            });
+
+            currentStep = 0;
+            render(history[0]);
+
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 900);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetTree() {
+            pause();
+            nodesList = [];
+            edgesList = [];
+            history = [];
+            currentStep = 0;
+            document.getElementById('recursion-log').innerHTML = 'Reset complete.';
+            render();
+        }
+
+        window.onload = () => {
+            render();
+        };
+    </script>
+</body>
+</html>

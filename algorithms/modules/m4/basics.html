@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Graph Basics</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .graph-editor {
+            width: 100%;
+            height: 350px;
+            background: #020617;
+            border-radius: 12px;
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .node-circle {
+            fill: var(--bg-secondary);
+            stroke: var(--accent-blue);
+            stroke-width: 3;
+            cursor: pointer;
+            transition: fill 0.3s ease;
+        }
+        .node-circle:hover {
+            fill: rgba(59, 130, 246, 0.2);
+        }
+        .node-circle.selected {
+            stroke: var(--accent-amber);
+            fill: rgba(245, 158, 11, 0.1);
+        }
+        .edge-path {
+            stroke: var(--text-muted);
+            stroke-width: 2.5;
+            fill: none;
+            marker-end: url(#arrow);
+        }
+        .weight-text {
+            fill: var(--text-primary);
+            font-size: 11px;
+            font-family: 'Fira Code', monospace;
+            background: var(--bg-primary);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">4.1 Graph Basics</h1>
+            <p class="page-subtitle">Understand graphs, weighted/directed edges, cycles, and connectivity.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Interactive Graph Designer</h3>
+            <p class="card-description">
+                <strong>Instructions:</strong>
+                <br>1. <strong>Double-click</strong> on the empty black area below to create a new vertex/node.
+                <br>2. <strong>Click</strong> on a node to select it, then click another node to draw an edge.
+                <br>3. Toggle options to make the graph directed or assign edge weights.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Edge Weight:</label>
+                    <input type="number" id="edge-weight" value="5" style="width: 60px;">
+                </div>
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="is-directed" checked> Directed
+                    </label>
+                </div>
+                <button class="btn btn-secondary" onclick="clearGraph()">Clear Graph</button>
+            </div>
+
+            <div class="graph-editor" id="graph-editor-panel" ondblclick="addNode(event)">
+                <svg id="graph-svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" />
+                        </marker>
+                    </defs>
+                    <g id="edges-group"></g>
+                    <g id="nodes-group"></g>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let nodes = [];
+        let edges = [];
+        let selectedNode = null;
+        let nodeLabelCounter = 65;
+
+        function clearGraph() {
+            nodes = [];
+            edges = [];
+            selectedNode = null;
+            nodeLabelCounter = 65;
+            render();
+        }
+
+        function addNode(e) {
+            if (e.target.tagName !== 'svg' && e.target.id !== 'graph-svg') return;
+            
+            const rect = document.getElementById('graph-editor-panel').getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const label = String.fromCharCode(nodeLabelCounter++);
+            nodes.push({ id: label, x, y });
+            render();
+        }
+
+        function selectNode(id) {
+            if (selectedNode === null) {
+                selectedNode = id;
+            } else if (selectedNode === id) {
+                selectedNode = null;
+            } else {
+                const weight = parseInt(document.getElementById('edge-weight').value) || 1;
+                const isDirected = document.getElementById('is-directed').checked;
+                
+                const exists = edges.some(e => e.u === selectedNode && e.v === id);
+                if (!exists) {
+                    edges.push({ u: selectedNode, v: id, weight, directed: isDirected });
+                }
+                selectedNode = null;
+            }
+            render();
+        }
+
+        function render() {
+            const svgNodes = document.getElementById('nodes-group');
+            const svgEdges = document.getElementById('edges-group');
+            
+            svgNodes.innerHTML = '';
+            svgEdges.innerHTML = '';
+
+            edges.forEach(e => {
+                const uNode = nodes.find(n => n.id === e.u);
+                const vNode = nodes.find(n => n.id === e.v);
+                if (!uNode || !vNode) return;
+
+                const markerAttr = e.directed ? 'marker-end="url(#arrow)"' : '';
+                
+                svgEdges.innerHTML += `
+                    <line x1="${uNode.x}" y1="${uNode.y}" x2="${vNode.x}" y2="${vNode.y}" class="edge-path" ${markerAttr} />
+                `;
+
+                const midX = (uNode.x + vNode.x) / 2;
+                const midY = (uNode.y + vNode.y) / 2;
+                svgEdges.innerHTML += `
+                    <rect x="${midX - 10}" y="${midY - 10}" width="20" height="16" fill="#020617" rx="3"/>
+                    <text x="${midX}" y="${midY + 3}" class="weight-text" text-anchor="middle">${e.weight}</text>
+                `;
+            });
+
+            nodes.forEach(n => {
+                const isSel = selectedNode === n.id;
+                svgNodes.innerHTML += `
+                    <g onclick="event.stopPropagation(); selectNode('${n.id}')">
+                        <circle cx="${n.x}" cy="${n.y}" r="16" class="node-circle ${isSel ? 'selected' : ''}" />
+                        <text x="${n.x}" y="${n.y + 4}" fill="var(--text-primary)" text-anchor="middle" font-family="Outfit" font-weight="bold" font-size="12" style="user-select: none;">${n.id}</text>
+                    </g>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

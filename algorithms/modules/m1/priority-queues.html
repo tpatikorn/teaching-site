@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Priority Queues</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .heap-visualizer {
+            width: 100%;
+            height: 300px;
+            background: #020617;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .heap-node-circle {
+            fill: var(--bg-tertiary);
+            stroke: var(--glass-border);
+            stroke-width: 2.5;
+            transition: all 0.4s ease;
+        }
+        .heap-node-circle.reading {
+            fill: rgba(59, 130, 246, 0.2);
+            stroke: var(--accent-blue);
+        }
+        .heap-node-circle.comparing {
+            fill: rgba(245, 158, 11, 0.2);
+            stroke: var(--accent-amber);
+        }
+        .heap-node-circle.swapping {
+            fill: rgba(16, 185, 129, 0.2);
+            stroke: var(--accent-emerald);
+        }
+        .heap-edge {
+            stroke: var(--glass-border);
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">1.5 Priority Queues</h1>
+            <p class="page-subtitle">Min-Heap binary tree visualizer with bubble-up and trickle-down pointer animations.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                A <strong>Priority Queue</strong> processes items based on priority. It is most commonly implemented using a <strong>Binary Heap</strong>. A Min-Heap maintains the property that any parent node is less than or equal to its children.
+                Inserting or extracting elements runs in <strong>O(log N)</strong> time via element swaps.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Value:</label>
+                    <input type="number" id="heap-val" value="10" style="width: 70px;">
+                </div>
+                <button class="btn btn-primary" onclick="setupAction('insert')">Insert</button>
+                <button class="btn btn-primary" onclick="setupAction('extract')">Extract Min</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetHeap()">Reset</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="heap-visualizer">
+                    <svg id="heap-svg">
+                        <!-- Edges and nodes injected dynamically -->
+                    </svg>
+                </div>
+                <div style="width: 90%; padding: 0 20px;">
+                    <div class="action-log" id="heap-log">Min-Heap Visualizer Ready. Plan an action.</div>
+                </div>
+            </div>
+
+            <div class="visualizer-stats">
+                <div class="stat-item">Reads (Access): <span id="stat-reads">0</span></div>
+                <div class="stat-item">Writes (Swaps): <span id="stat-writes">0</span></div>
+                <div class="stat-item">Comparisons: <span id="stat-comps">0</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let heap = [12, 25, 30, 42, 50, 60];
+        
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        let reads = 0;
+        let writes = 0;
+        let comps = 0;
+
+        const nodeRadius = 18;
+
+        function getNodePositions() {
+            const svgWidth = document.getElementById('heap-svg').clientWidth || 700;
+            const positions = [];
+            
+            positions[0] = { x: svgWidth / 2, y: 40 };
+            positions[1] = { x: svgWidth / 4, y: 120 };
+            positions[2] = { x: svgWidth * 3 / 4, y: 120 };
+            positions[3] = { x: svgWidth / 8, y: 200 };
+            positions[4] = { x: svgWidth * 3 / 8, y: 200 };
+            positions[5] = { x: svgWidth * 5 / 8, y: 200 };
+            positions[6] = { x: svgWidth * 7 / 8, y: 200 };
+
+            return positions;
+        }
+
+        function render(state) {
+            const svg = document.getElementById('heap-svg');
+            const svgWidth = svg.clientWidth || 700;
+            svg.innerHTML = '';
+            
+            const arr = state ? state.heap : heap;
+            const highlightStates = state ? state.highlightStates : {};
+
+            const pos = getNodePositions();
+            const n = Math.min(arr.length, 7);
+
+            // Draw Edges
+            for (let i = 0; i < n; i++) {
+                const leftChild = 2 * i + 1;
+                const rightChild = 2 * i + 2;
+
+                if (leftChild < n) {
+                    svg.innerHTML += `<line x1="${pos[i].x}" y1="${pos[i].y}" x2="${pos[leftChild].x}" y2="${pos[leftChild].y}" class="heap-edge" />`;
+                }
+                if (rightChild < n) {
+                    svg.innerHTML += `<line x1="${pos[i].x}" y1="${pos[i].y}" x2="${pos[rightChild].x}" y2="${pos[rightChild].y}" class="heap-edge" />`;
+                }
+            }
+
+            // Draw Nodes
+            for (let i = 0; i < n; i++) {
+                const p = pos[i];
+                const highlight = highlightStates[i] || '';
+                let nodeClass = 'heap-node-circle';
+                if (highlight) nodeClass += ' ' + highlight;
+
+                svg.innerHTML += `
+                    <g>
+                        <circle cx="${p.x}" cy="${p.y}" r="${nodeRadius}" class="${nodeClass}" />
+                        <text x="${p.x}" y="${p.y + 5}" fill="var(--text-primary)" text-anchor="middle" font-family="Outfit" font-weight="600" font-size="12">${arr[i]}</text>
+                        <text x="${p.x}" y="${p.y - 24}" fill="var(--text-muted)" text-anchor="middle" font-size="8">idx:${i}</text>
+                    </g>
+                `;
+            }
+
+            if (state) {
+                document.getElementById('stat-reads').innerText = state.reads;
+                document.getElementById('stat-writes').innerText = state.writes;
+                document.getElementById('stat-comps').innerText = state.comps;
+                
+                const logEl = document.getElementById('heap-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function setupAction(type) {
+            pause();
+            history = [];
+
+            let r = reads;
+            let w = writes;
+            let c = comps;
+
+            const tempHeap = [...heap];
+            document.getElementById('heap-log').innerHTML = '';
+
+            if (type === 'insert') {
+                const val = parseInt(document.getElementById('heap-val').value);
+                if (isNaN(val)) return;
+                if (tempHeap.length >= 7) {
+                    alert("Demo capacity limit: max 7 nodes.");
+                    return;
+                }
+
+                history.push({
+                    heap: [...tempHeap],
+                    highlightStates: {},
+                    reads: r, writes: w, comps: c,
+                    log: `Planned insertion of ${val}.`
+                });
+
+                tempHeap.push(val);
+                w++;
+
+                let i = tempHeap.length - 1;
+                history.push({
+                    heap: [...tempHeap],
+                    highlightStates: { [i]: 'writing' },
+                    reads: r, writes: w, comps: c,
+                    log: `Appended ${val} at index ${i}.`
+                });
+
+                // bubble up
+                while (i > 0) {
+                    let parent = Math.floor((i - 1) / 2);
+                    r += 2;
+                    c++;
+                    history.push({
+                        heap: [...tempHeap],
+                        highlightStates: { [i]: 'comparing', [parent]: 'comparing' },
+                        reads: r, writes: w, comps: c,
+                        log: `Compare child Node ${i} (${tempHeap[i]}) with parent Node ${parent} (${tempHeap[parent]}).`
+                    });
+
+                    if (tempHeap[i] < tempHeap[parent]) {
+                        let temp = tempHeap[i];
+                        tempHeap[i] = tempHeap[parent];
+                        tempHeap[parent] = temp;
+                        w += 2;
+                        history.push({
+                            heap: [...tempHeap],
+                            highlightStates: { [i]: 'swapping', [parent]: 'swapping' },
+                            reads: r, writes: w, comps: c,
+                            log: `Swap child ${tempHeap[parent]} and parent ${tempHeap[i]} to restore Min-Heap property.`
+                        });
+                        i = parent;
+                    } else {
+                        break;
+                    }
+                }
+
+            } else {
+                // Extract Min
+                if (tempHeap.length === 0) {
+                    alert("Heap is empty!");
+                    return;
+                }
+
+                history.push({
+                    heap: [...tempHeap],
+                    highlightStates: { 0: 'comparing' },
+                    reads: r, writes: w, comps: c,
+                    log: `Planned extraction of root minimum value ${tempHeap[0]}.`
+                });
+
+                if (tempHeap.length === 1) {
+                    tempHeap.pop();
+                    w++;
+                    history.push({
+                        heap: [...tempHeap],
+                        highlightStates: {},
+                        reads: r, writes: w, comps: c,
+                        log: `Removed last single element in heap.`
+                    });
+                } else {
+                    const lastVal = tempHeap.pop();
+                    tempHeap[0] = lastVal;
+                    r++;
+                    w += 2;
+                    history.push({
+                        heap: [...tempHeap],
+                        highlightStates: { 0: 'writing' },
+                        reads: r, writes: w, comps: c,
+                        log: `Copied last element ${lastVal} to root index 0. Trickling down.`
+                    });
+
+                    let i = 0;
+                    const n = tempHeap.length;
+                    while (2 * i + 1 < n) {
+                        let left = 2 * i + 1;
+                        let right = 2 * i + 2;
+                        let smallest = left;
+
+                        r++;
+                        if (right < n) {
+                            r++;
+                            c++;
+                            if (tempHeap[right] < tempHeap[left]) {
+                                smallest = right;
+                            }
+                        }
+
+                        r += 2;
+                        c++;
+                        history.push({
+                            heap: [...tempHeap],
+                            highlightStates: { [i]: 'comparing', [smallest]: 'comparing' },
+                            reads: r, writes: w, comps: c,
+                            log: `Compare parent Node ${i} (${tempHeap[i]}) with smaller child Node ${smallest} (${tempHeap[smallest]}).`
+                        });
+
+                        if (tempHeap[smallest] < tempHeap[i]) {
+                            let temp = tempHeap[i];
+                            tempHeap[i] = tempHeap[smallest];
+                            tempHeap[smallest] = temp;
+                            w += 2;
+                            history.push({
+                                heap: [...tempHeap],
+                                highlightStates: { [i]: 'swapping', [smallest]: 'swapping' },
+                                reads: r, writes: w, comps: c,
+                                log: `Swap parent and child.`
+                            });
+                            i = smallest;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            heap = [...tempHeap];
+            reads = r;
+            writes = w;
+            comps = c;
+            currentStep = 0;
+            render(history[0]);
+
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 800);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetHeap() {
+            pause();
+            heap = [12, 25, 30, 42, 50, 60];
+            reads = 0;
+            writes = 0;
+            comps = 0;
+            history = [];
+            currentStep = 0;
+            document.getElementById('heap-log').innerHTML = 'Heap Reset.';
+            document.getElementById('stat-reads').innerText = '0';
+            document.getElementById('stat-writes').innerText = '0';
+            document.getElementById('stat-comps').innerText = '0';
+            render();
+        }
+
+        window.onload = () => {
+            render();
+        };
+    </script>
+</body>
+</html>

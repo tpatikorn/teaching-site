@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - A* Search</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .grid-visualizer {
+            display: grid;
+            grid-template-columns: repeat(12, 30px);
+            grid-template-rows: repeat(8, 30px);
+            gap: 2px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+        .grid-cell {
+            width: 30px;
+            height: 30px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .grid-cell.start {
+            background: var(--accent-blue);
+        }
+        .grid-cell.end {
+            background: var(--accent-rose);
+        }
+        .grid-cell.wall {
+            background: #4b5563;
+        }
+        .grid-cell.visited {
+            background: rgba(16, 185, 129, 0.35);
+            border-color: var(--accent-emerald);
+        }
+        .grid-cell.path {
+            background: var(--accent-amber);
+            border-color: #fff;
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">6.4 A* Search</h1>
+            <p class="page-subtitle">Shortest pathfinding using Manhattan Distance heuristics: f(n) = g(n) + h(n).</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                <strong>A* Search</strong> is an extension of Dijkstra's algorithm that uses heuristics to guide its search.
+                It computes the cost function:
+                <br><code>f(n) = g(n) + h(n)</code>
+                <br>where <code>g(n)</code> is the distance from start, and <code>h(n)</code> is the estimated Manhattan distance to the destination.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <button class="btn btn-primary" onclick="setupAction()">Find Path</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetGrid()">Reset Grid</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="grid-visualizer" id="grid-container">
+                    <!-- cells -->
+                </div>
+                <div style="width: 90%; padding: 0 20px;">
+                    <div class="action-log" id="astar-log">Click Find Path to start.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const cols = 12;
+        const rows = 8;
+        
+        let startCell = { r: 2, c: 2 };
+        let endCell = { r: 5, c: 9 };
+        let walls = [];
+
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        function initGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const isStart = r === startCell.r && c === startCell.c;
+                    const isEnd = r === endCell.r && c === endCell.c;
+                    
+                    let cellClass = 'grid-cell';
+                    if (isStart) cellClass += ' start';
+                    else if (isEnd) cellClass += ' end';
+
+                    container.innerHTML += `
+                        <div class="${cellClass}" id="cell-${r}-${c}" onclick="toggleWall(${r}, ${c})"></div>
+                    `;
+                }
+            }
+        }
+
+        function toggleWall(r, c) {
+            if ((r === startCell.r && c === startCell.c) || (r === endCell.r && c === endCell.c)) return;
+            const id = `${r}-${c}`;
+            const idx = walls.indexOf(id);
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            
+            if (idx === -1) {
+                walls.push(id);
+                cell.classList.add('wall');
+            } else {
+                walls.splice(idx, 1);
+                cell.classList.remove('wall');
+            }
+        }
+
+        function render(state) {
+            const cells = state ? state.cells : null;
+            if (!cells) return;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.getElementById(`cell-${r}-${c}`);
+                    cell.className = 'grid-cell';
+
+                    if (r === startCell.r && c === startCell.c) cell.classList.add('start');
+                    else if (r === endCell.r && c === endCell.c) cell.classList.add('end');
+                    else if (walls.includes(`${r}-${c}`)) cell.classList.add('wall');
+                    else if (cells[r][c] === 'path') cell.classList.add('path');
+                    else if (cells[r][c] === 'visited') cell.classList.add('visited');
+                }
+            }
+
+            if (state) {
+                const logEl = document.getElementById('astar-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function getHeuristic(r, c) {
+            return Math.abs(r - endCell.r) + Math.abs(c - endCell.c);
+        }
+
+        function setupAction() {
+            pause();
+            history = [];
+
+            const gridState = Array(rows).fill(null).map(() => Array(cols).fill(null));
+            document.getElementById('astar-log').innerHTML = '';
+
+            let queue = [{
+                r: startCell.r,
+                c: startCell.c,
+                g: 0,
+                f: getHeuristic(startCell.r, startCell.c),
+                path: []
+            }];
+            let visited = new Set();
+            let shortestPath = null;
+
+            history.push({
+                cells: JSON.parse(JSON.stringify(gridState)),
+                log: `Initialized A* search from Node (${startCell.r}, ${startCell.c}) with h(n)=${getHeuristic(startCell.r, startCell.c)}.`
+            });
+
+            while (queue.length > 0) {
+                // Sort by F score
+                queue.sort((a, b) => a.f - b.f);
+                let curr = queue.shift();
+
+                const key = `${curr.r}-${curr.c}`;
+                if (visited.has(key)) continue;
+                visited.add(key);
+
+                if (curr.r !== startCell.r || curr.c !== startCell.c) {
+                    if (curr.r !== endCell.r || curr.c !== endCell.c) {
+                        gridState[curr.r][curr.c] = 'visited';
+                    }
+                }
+
+                history.push({
+                    cells: JSON.parse(JSON.stringify(gridState)),
+                    log: `Visit Cell (${curr.r}, ${curr.c}) with f(n)=${curr.f} (g=${curr.g}, h=${curr.f - curr.g}).`
+                });
+
+                if (curr.r === endCell.r && curr.c === endCell.c) {
+                    shortestPath = curr.path;
+                    break;
+                }
+
+                const dirs = [
+                    { dr: -1, dc: 0 },
+                    { dr: 1, dc: 0 },
+                    { dr: 0, dc: -1 },
+                    { dr: 0, dc: 1 }
+                ];
+
+                for (let d of dirs) {
+                    let nr = curr.r + d.dr;
+                    let nc = curr.c + d.dc;
+
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        if (!walls.includes(`${nr}-${nc}`) && !visited.has(`${nr}-${nc}`)) {
+                            let gScore = curr.g + 1;
+                            let hScore = getHeuristic(nr, nc);
+                            queue.push({
+                                r: nr,
+                                c: nc,
+                                g: gScore,
+                                f: gScore + hScore,
+                                path: [...curr.path, { r: nr, c: nc }]
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (shortestPath) {
+                shortestPath.forEach(p => {
+                    if (p.r !== endCell.r || p.c !== endCell.c) {
+                        gridState[p.r][p.c] = 'path';
+                    }
+                });
+                history.push({
+                    cells: JSON.parse(JSON.stringify(gridState)),
+                    log: `Shortest path found via A* heuristic search! Length: ${shortestPath.length} steps.`
+                });
+            } else {
+                history.push({
+                    cells: JSON.parse(JSON.stringify(gridState)),
+                    log: `No path exists to destination.`
+                });
+            }
+
+            currentStep = 0;
+            render(history[0]);
+
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 300);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetGrid() {
+            pause();
+            walls = [];
+            history = [];
+            currentStep = 0;
+            document.getElementById('astar-log').innerHTML = 'Grid reset.';
+            initGrid();
+        }
+
+        window.onload = () => {
+            initGrid();
+        };
+    </script>
+</body>
+</html>

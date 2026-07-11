@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Graph Representations</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .split-layout {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .left-canvas {
+            flex: 1;
+            min-width: 320px;
+            background: #020617;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            height: 300px;
+            position: relative;
+            cursor: crosshair;
+        }
+        .right-repr {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .node-circle {
+            fill: var(--bg-secondary);
+            stroke: var(--accent-blue);
+            stroke-width: 3;
+            cursor: pointer;
+        }
+        .node-circle.selected {
+            stroke: var(--accent-amber);
+            fill: rgba(245, 158, 11, 0.1);
+        }
+        .edge-path {
+            stroke: var(--text-muted);
+            stroke-width: 2.5;
+            fill: none;
+            marker-end: url(#arrow);
+        }
+        table.matrix-table {
+            border-collapse: collapse;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        table.matrix-table th, table.matrix-table td {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+        table.matrix-table th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: bold;
+        }
+        .adj-list-row {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .adj-list-key {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">4.2 Graph Representations</h1>
+            <p class="page-subtitle">Draw a graph and watch the Adjacency Matrix and Adjacency List update in real time.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                1. <strong>Adjacency Matrix</strong>: A 2D array of size $V \times V$. Cell <code>[i][j]</code> holds 1 (or edge weight) if there is an edge, else 0. Great for fast lookup (O(1)), but uses O(V²) space.
+                <br>2. <strong>Adjacency List</strong>: An array of lists of size $V$. Each entry <code>i</code> lists all neighbors of vertex <code>i</code>. Space-efficient (O(V + E)).
+            </p>
+        </div>
+
+        <div class="split-layout">
+            <div class="left-canvas" id="graph-panel" ondblclick="addNode(event)">
+                <div style="position: absolute; top: 8px; left: 8px; font-size: 0.75rem; color: var(--text-muted); pointer-events: none;">
+                    Double click empty space to add Node. Click node to select/connect.
+                </div>
+                <svg id="graph-svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="21" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" />
+                        </marker>
+                    </defs>
+                    <g id="edges-group"></g>
+                    <g id="nodes-group"></g>
+                </svg>
+            </div>
+
+            <div class="right-repr">
+                <div class="card" style="padding: 16px;">
+                    <h3 class="card-title" style="font-size: 1rem; color: var(--accent-purple);">Adjacency Matrix</h3>
+                    <div id="matrix-container" style="margin-top: 10px; overflow-x: auto;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Add nodes to view matrix.</span>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 16px;">
+                    <h3 class="card-title" style="font-size: 1rem; color: var(--accent-emerald);">Adjacency List</h3>
+                    <div id="list-container" style="margin-top: 10px;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Add nodes to view list.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let nodes = [];
+        let edges = [];
+        let selectedNode = null;
+        let nodeLabelCounter = 65;
+
+        function addNode(e) {
+            if (e.target.tagName !== 'svg' && e.target.id !== 'graph-svg') return;
+            if (nodes.length >= 8) {
+                alert("Demo limit: Maximum 8 nodes.");
+                return;
+            }
+            
+            const rect = document.getElementById('graph-panel').getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const label = String.fromCharCode(nodeLabelCounter++);
+            nodes.push({ id: label, x, y });
+            render();
+        }
+
+        function selectNode(id) {
+            if (selectedNode === null) {
+                selectedNode = id;
+            } else if (selectedNode === id) {
+                selectedNode = null;
+            } else {
+                const exists = edges.some(e => e.u === selectedNode && e.v === id);
+                if (!exists) {
+                    edges.push({ u: selectedNode, v: id });
+                }
+                selectedNode = null;
+            }
+            render();
+        }
+
+        function render() {
+            renderGraph();
+            renderMatrix();
+            renderList();
+        }
+
+        function renderGraph() {
+            const svgNodes = document.getElementById('nodes-group');
+            const svgEdges = document.getElementById('edges-group');
+            
+            svgNodes.innerHTML = '';
+            svgEdges.innerHTML = '';
+
+            edges.forEach(e => {
+                const uNode = nodes.find(n => n.id === e.u);
+                const vNode = nodes.find(n => n.id === e.v);
+                if (!uNode || !vNode) return;
+
+                svgEdges.innerHTML += `
+                    <line x1="${uNode.x}" y1="${uNode.y}" x2="${vNode.x}" y2="${vNode.y}" class="edge-path" marker-end="url(#arrow)" />
+                `;
+            });
+
+            nodes.forEach(n => {
+                const isSel = selectedNode === n.id;
+                svgNodes.innerHTML += `
+                    <g onclick="event.stopPropagation(); selectNode('${n.id}')">
+                        <circle cx="${n.x}" cy="${n.y}" r="14" class="node-circle ${isSel ? 'selected' : ''}" />
+                        <text x="${n.x}" y="${n.y + 4}" fill="var(--text-primary)" text-anchor="middle" font-family="Outfit" font-weight="bold" font-size="11" style="user-select: none;">${n.id}</text>
+                    </g>
+                `;
+            });
+        }
+
+        function renderMatrix() {
+            const container = document.getElementById('matrix-container');
+            if (nodes.length === 0) {
+                container.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Add nodes to view matrix.</span>`;
+                return;
+            }
+
+            let html = '<table class="matrix-table"><thead><tr><th></th>';
+            nodes.forEach(n => {
+                html += `<th>${n.id}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            nodes.forEach(rowNode => {
+                html += `<tr><th>${rowNode.id}</th>`;
+                nodes.forEach(colNode => {
+                    const hasEdge = edges.some(e => e.u === rowNode.id && e.v === colNode.id);
+                    html += `<td>${hasEdge ? '1' : '0'}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderList() {
+            const container = document.getElementById('list-container');
+            if (nodes.length === 0) {
+                container.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-muted);">Add nodes to view list.</span>`;
+                return;
+            }
+
+            let html = '';
+            nodes.forEach(n => {
+                const neighbors = edges.filter(e => e.u === n.id).map(e => e.v);
+                let neighborChain = neighbors.join(' → ') || 'Null';
+                html += `
+                    <div class="adj-list-row">
+                        <span class="adj-list-key">${n.id}:</span> [ ${neighborChain} ]
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

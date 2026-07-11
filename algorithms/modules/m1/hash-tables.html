@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Hash Tables</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .hash-layout {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .hash-buckets {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bucket-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .bucket-idx {
+            width: 30px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+        .bucket-cell {
+            width: 120px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--glass-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .bucket-cell.checking {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: var(--accent-amber);
+            transform: scale(1.05);
+        }
+        .bucket-cell.success {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--accent-emerald);
+        }
+        .chain-node {
+            width: 50px;
+            height: 30px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-purple);
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-family: 'Fira Code', monospace;
+            margin-left: 8px;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+        .chain-node::before {
+            content: '→';
+            position: absolute;
+            left: -12px;
+            color: var(--accent-purple);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">1.5 Hash Tables & Hashing</h1>
+            <p class="page-subtitle">Interactive visual hash table comparing Chaining and Linear Probing step-by-step.</p>
+        </div>
+
+        <!-- LECTURE CONTENT -->
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Concept Overview</h3>
+                <p class="card-description">
+                    A <strong>Hash Table</strong> maps keys to indexes using a <strong>Hash Function</strong> (e.g. <code>h(x) = x % size</code>). Ideally offering <strong>O(1)</strong> lookup, collisions occur when two keys map to the same index. We resolve collisions via <strong>Chaining</strong> (linked lists) or <strong>Open Addressing</strong> (linear probing).
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Key Math</h3>
+                <p class="card-description">
+                    &bull; **Load Factor (&lambda;)** = Number of elements / Table size
+                    <br>&bull; If &lambda; exceeds 0.7 for open addressing, resizing (rehashing) is required.
+                </p>
+            </div>
+        </div>
+
+        <!-- VISUALIZER -->
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Collision Resolution:</label>
+                    <select id="resolve-mode" onchange="resetHash()">
+                        <option value="probing">Linear Probing</option>
+                        <option value="chaining">Separate Chaining</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Key (Integer):</label>
+                    <input type="number" id="hash-key" value="23" style="width: 70px;">
+                </div>
+                <button class="btn btn-primary" onclick="setupAction('insert')">Insert</button>
+                <button class="btn btn-primary" onclick="setupAction('search')">Search</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetHash()">Reset</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="hash-layout">
+                    <div class="hash-buckets" id="hash-buckets-container">
+                        <!-- Buckets injected here -->
+                    </div>
+                </div>
+                <div style="width: 90%; padding: 0 20px; margin-top: 16px;">
+                    <div class="action-log" id="hash-log">System Ready. Hash function: h(key) = key % 8</div>
+                </div>
+            </div>
+
+            <div class="visualizer-stats">
+                <div class="stat-item">Reads (Access): <span id="stat-reads">0</span></div>
+                <div class="stat-item">Writes: <span id="stat-writes">0</span></div>
+                <div class="stat-item">Comparisons (Collisions): <span id="stat-comps">0</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const tableSize = 8;
+        let table = Array(tableSize).fill(null);
+
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        let reads = 0;
+        let writes = 0;
+        let comps = 0;
+
+        function getMode() {
+            return document.getElementById('resolve-mode').value;
+        }
+
+        function render(state) {
+            const container = document.getElementById('hash-buckets-container');
+            container.innerHTML = '';
+            const mode = getMode();
+
+            const arr = state ? state.table : table;
+            const checkingIdx = state ? state.checkingIdx : -1;
+            const successIdx = state ? state.successIdx : -1;
+
+            for (let i = 0; i < tableSize; i++) {
+                let cellContent = '';
+                let chainsHtml = '';
+                
+                if (mode === 'probing') {
+                    cellContent = arr[i] !== null ? arr[i] : 'Empty';
+                } else {
+                    cellContent = 'Head';
+                    const list = arr[i] || [];
+                    list.forEach(val => {
+                        chainsHtml += `<div class="chain-node">${val}</div>`;
+                    });
+                }
+
+                let cellClass = 'bucket-cell';
+                if (i === checkingIdx) cellClass += ' checking';
+                if (i === successIdx) cellClass += ' success';
+
+                container.innerHTML += `
+                    <div class="bucket-row">
+                        <span class="bucket-idx">[${i}]</span>
+                        <div class="${cellClass}" id="cell-${i}">
+                            ${cellContent}
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            ${chainsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (state) {
+                document.getElementById('stat-reads').innerText = state.reads;
+                document.getElementById('stat-writes').innerText = state.writes;
+                document.getElementById('stat-comps').innerText = state.comps;
+                const logEl = document.getElementById('hash-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function setupAction(type) {
+            pause();
+            history = [];
+
+            const key = parseInt(document.getElementById('hash-key').value);
+            if (isNaN(key)) return;
+
+            const mode = getMode();
+            const startIdx = key % tableSize;
+            const tempTable = [...table]; 
+            if (mode === 'chaining') {
+                for (let i = 0; i < tableSize; i++) {
+                    tempTable[i] = tempTable[i] ? [...tempTable[i]] : [];
+                }
+            }
+
+            let r = reads;
+            let w = writes;
+            let c = comps;
+
+            document.getElementById('hash-log').innerHTML = '';
+
+            if (type === 'insert') {
+                history.push({
+                    table: JSON.parse(JSON.stringify(tempTable)),
+                    checkingIdx: -1,
+                    successIdx: -1,
+                    reads: r, writes: w, comps: c,
+                    log: `Planned Insert of ${key}. Hash = ${key} % 8 = ${startIdx}.`
+                });
+
+                if (mode === 'probing') {
+                    let i = 0;
+                    let inserted = false;
+                    while (i < tableSize) {
+                        let idx = (startIdx + i) % tableSize;
+                        r++;
+                        c++;
+                        
+                        history.push({
+                            table: JSON.parse(JSON.stringify(tempTable)),
+                            checkingIdx: idx,
+                            successIdx: -1,
+                            reads: r, writes: w, comps: c,
+                            log: `Check bucket [${idx}].`
+                        });
+
+                        if (tempTable[idx] === null) {
+                            tempTable[idx] = key;
+                            w++;
+                            history.push({
+                                table: JSON.parse(JSON.stringify(tempTable)),
+                                checkingIdx: -1,
+                                successIdx: idx,
+                                reads: r, writes: w, comps: c,
+                                log: `Success! Slot [${idx}] is empty. Inserted ${key}.`
+                            });
+                            inserted = true;
+                            break;
+                        }
+                        i++;
+                    }
+                    if (!inserted) {
+                        alert("Hash Table Full!");
+                        return;
+                    }
+                } else {
+                    // Chaining
+                    r++;
+                    w++;
+                    if (!tempTable[startIdx]) tempTable[startIdx] = [];
+                    tempTable[startIdx].push(key);
+                    
+                    history.push({
+                        table: JSON.parse(JSON.stringify(tempTable)),
+                        checkingIdx: -1,
+                        successIdx: startIdx,
+                        reads: r, writes: w, comps: c,
+                        log: `Appended ${key} to list at bucket [${startIdx}].`
+                    });
+                }
+
+            } else {
+                // Search
+                history.push({
+                    table: JSON.parse(JSON.stringify(tempTable)),
+                    checkingIdx: -1,
+                    successIdx: -1,
+                    reads: r, writes: w, comps: c,
+                    log: `Planned Search for ${key}. Hash = ${startIdx}.`
+                });
+
+                if (mode === 'probing') {
+                    let i = 0;
+                    let found = false;
+                    while (i < tableSize) {
+                        let idx = (startIdx + i) % tableSize;
+                        r++;
+                        c++;
+                        history.push({
+                            table: JSON.parse(JSON.stringify(tempTable)),
+                            checkingIdx: idx,
+                            successIdx: -1,
+                            reads: r, writes: w, comps: c,
+                            log: `Compare search key with bucket [${idx}].`
+                        });
+
+                        if (tempTable[idx] === key) {
+                            found = true;
+                            history.push({
+                                table: JSON.parse(JSON.stringify(tempTable)),
+                                checkingIdx: -1,
+                                successIdx: idx,
+                                reads: r, writes: w, comps: c,
+                                log: `Match! Key ${key} found at index ${idx}.`
+                            });
+                            break;
+                        }
+                        if (tempTable[idx] === null) {
+                            history.push({
+                                table: JSON.parse(JSON.stringify(tempTable)),
+                                checkingIdx: -1,
+                                successIdx: -1,
+                                reads: r, writes: w, comps: c,
+                                log: `Empty cell encountered. Key does not exist.`
+                            });
+                            break;
+                        }
+                        i++;
+                    }
+                } else {
+                    // Chaining
+                    r++;
+                    c++;
+                    const list = tempTable[startIdx] || [];
+                    history.push({
+                        table: JSON.parse(JSON.stringify(tempTable)),
+                        checkingIdx: startIdx,
+                        successIdx: -1,
+                        reads: r, writes: w, comps: c,
+                        log: `Scan list at bucket [${startIdx}].`
+                    });
+
+                    let found = false;
+                    for (let idx = 0; idx < list.length; idx++) {
+                        r++;
+                        c++;
+                        if (list[idx] === key) {
+                            found = true;
+                            history.push({
+                                table: JSON.parse(JSON.stringify(tempTable)),
+                                checkingIdx: -1,
+                                successIdx: startIdx,
+                                reads: r, writes: w, comps: c,
+                                log: `Found key ${key} inside list at index ${idx}!`
+                            });
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        history.push({
+                            table: JSON.parse(JSON.stringify(tempTable)),
+                            checkingIdx: -1,
+                            successIdx: -1,
+                            reads: r, writes: w, comps: c,
+                            log: `Finished scanning list. Key not found.`
+                        });
+                    }
+                }
+            }
+
+            table = JSON.parse(JSON.stringify(tempTable));
+            reads = r;
+            writes = w;
+            comps = c;
+            currentStep = 0;
+            render(history[0]);
+
+            // AUTOPLAY trigger
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 800);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetHash() {
+            pause();
+            const mode = getMode();
+            table = Array(tableSize).fill(null);
+            if (mode === 'chaining') {
+                for (let i = 0; i < tableSize; i++) table[i] = [];
+            }
+            reads = 0;
+            writes = 0;
+            comps = 0;
+            history = [];
+            currentStep = 0;
+            document.getElementById('hash-log').innerHTML = 'Table Reset. Ready.';
+            document.getElementById('stat-reads').innerText = '0';
+            document.getElementById('stat-writes').innerText = '0';
+            document.getElementById('stat-comps').innerText = '0';
+            render();
+        }
+
+        window.onload = () => {
+            resetHash();
+        };
+    </script>
+</body>
+</html>

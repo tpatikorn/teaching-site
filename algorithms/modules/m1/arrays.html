@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Arrays</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .array-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px;
+            min-height: 100px;
+        }
+        .array-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .array-cell.reading {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+        .array-cell.writing {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--accent-emerald);
+            transform: scale(1.1);
+        }
+        .array-cell.comparing {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: var(--accent-amber);
+            transform: scale(1.1);
+        }
+        .cell-index {
+            position: absolute;
+            bottom: 2px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">1.1 Arrays</h1>
+            <p class="page-subtitle">Contiguous memory collection. Explore shifts, accesses, and search operations step-by-step.</p>
+        </div>
+
+        <!-- LECTURE CONTENT -->
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Memory Contiguity</h3>
+                <p class="card-description">
+                    An <strong>Array</strong> stores elements in contiguous memory slots. Because memory addresses are consecutive, finding element <code>A[i]</code> takes <strong>O(1)</strong> time via simple formula: 
+                    <br><code>Address = BaseAddress + i * ElementSize</code>
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">Element Shifting</h3>
+                <p class="card-description">
+                    Inserting or deleting in the middle of an array requires shifting adjacent elements to prevent gaps or overlaps, making insertions and deletions average <strong>O(N)</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- VISUALIZER -->
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Value:</label>
+                    <input type="number" id="element-val" value="42" style="width: 60px;">
+                </div>
+                <div class="control-group">
+                    <label>Index:</label>
+                    <input type="number" id="element-idx" value="2" min="0" max="9" style="width: 50px;">
+                </div>
+                <button class="btn btn-primary" onclick="setupAction('insert')">Insert</button>
+                <button class="btn btn-primary" onclick="setupAction('delete')">Delete</button>
+                <button class="btn btn-primary" onclick="setupAction('search')">Search</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetArray()">Reset</button>
+                
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+            
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="array-container" id="array-visualizer">
+                    <!-- Cells -->
+                </div>
+                <div style="width: 90%; padding: 0 20px;">
+                    <div class="action-log" id="array-log">Ready. Plan an operation then click Play or Next Step.</div>
+                </div>
+            </div>
+
+            <div class="visualizer-stats">
+                <div class="stat-item">Reads: <span id="stat-reads">0</span></div>
+                <div class="stat-item">Writes: <span id="stat-writes">0</span></div>
+                <div class="stat-item">Comparisons: <span id="stat-comps">0</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let array = [12, 45, 78, 23, 56, 89];
+        const capacity = 10;
+        
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        function render(state) {
+            const container = document.getElementById('array-visualizer');
+            container.innerHTML = '';
+            
+            const arr = state ? state.array : array;
+            const highlightIdx = state ? state.highlightIdx : -1;
+            const highlightClass = state ? state.highlightClass : '';
+
+            for (let i = 0; i < capacity; i++) {
+                const val = i < arr.length ? arr[i] : '';
+                let cellClass = 'array-cell';
+                if (i === highlightIdx) cellClass += ' ' + highlightClass;
+
+                container.innerHTML += `
+                    <div class="array-cell ${i === highlightIdx ? highlightClass : ''}" id="cell-${i}">
+                        <span class="cell-val">${val}</span>
+                        <span class="cell-index">${i}</span>
+                    </div>
+                `;
+            }
+
+            if (state) {
+                document.getElementById('stat-reads').innerText = state.reads;
+                document.getElementById('stat-writes').innerText = state.writes;
+                document.getElementById('stat-comps').innerText = state.comps;
+                
+                const logEl = document.getElementById('array-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function setupAction(type) {
+            pause();
+            history = [];
+            
+            const val = parseInt(document.getElementById('element-val').value);
+            const idx = parseInt(document.getElementById('element-idx').value);
+            const tempArr = [...array];
+            
+            let reads = 0;
+            let writes = 0;
+            let comps = 0;
+
+            document.getElementById('array-log').innerHTML = '';
+
+            if (type === 'insert') {
+                if (tempArr.length >= capacity) {
+                    alert("Array capacity overflow!");
+                    return;
+                }
+                if (idx > tempArr.length) {
+                    alert("Index out of bounds!");
+                    return;
+                }
+
+                history.push({
+                    array: [...tempArr],
+                    highlightIdx: -1,
+                    highlightClass: '',
+                    reads, writes, comps,
+                    log: `Planned Insert of ${val} at index ${idx}.`
+                });
+
+                // Shift right
+                for (let i = tempArr.length; i > idx; i--) {
+                    reads++;
+                    writes++;
+                    tempArr[i] = tempArr[i-1];
+                    history.push({
+                        array: [...tempArr],
+                        highlightIdx: i - 1,
+                        highlightClass: 'reading',
+                        reads, writes, comps,
+                        log: `Read index ${i-1} (${tempArr[i-1]}) and copy to index ${i}.`
+                    });
+                }
+                
+                tempArr[idx] = val;
+                writes++;
+                history.push({
+                    array: [...tempArr],
+                    highlightIdx: idx,
+                    highlightClass: 'writing',
+                    reads, writes, comps,
+                    log: `Write value ${val} directly to target index ${idx}.`
+                });
+
+            } else if (type === 'delete') {
+                if (idx >= tempArr.length) {
+                    alert("Index out of range!");
+                    return;
+                }
+
+                history.push({
+                    array: [...tempArr],
+                    highlightIdx: idx,
+                    highlightClass: 'writing',
+                    reads, writes, comps,
+                    log: `Planned Delete at index ${idx}.`
+                });
+
+                // Shift left
+                for (let i = idx; i < tempArr.length - 1; i++) {
+                    reads++;
+                    writes++;
+                    tempArr[i] = tempArr[i+1];
+                    history.push({
+                        array: [...tempArr],
+                        highlightIdx: i + 1,
+                        highlightClass: 'reading',
+                        reads, writes, comps,
+                        log: `Read index ${i+1} (${tempArr[i+1]}) and shift left to index ${i}.`
+                    });
+                }
+                
+                tempArr.pop();
+                writes++;
+                history.push({
+                    array: [...tempArr],
+                    highlightIdx: -1,
+                    highlightClass: '',
+                    reads, writes, comps,
+                    log: `Remove last redundant slot. Deletion complete.`
+                });
+            } else {
+                // Search
+                history.push({
+                    array: [...tempArr],
+                    highlightIdx: -1,
+                    highlightClass: '',
+                    reads, writes, comps,
+                    log: `Planned Search for value ${val}.`
+                });
+
+                let found = false;
+                for (let i = 0; i < tempArr.length; i++) {
+                    reads++;
+                    comps++;
+                    if (tempArr[i] === val) {
+                        found = true;
+                        history.push({
+                            array: [...tempArr],
+                            highlightIdx: i,
+                            highlightClass: 'writing',
+                            reads, writes, comps,
+                            log: `Compare slot ${i} (${tempArr[i]}) with search target ${val} -> MATCH FOUND!`
+                        });
+                        break;
+                    } else {
+                        history.push({
+                            array: [...tempArr],
+                            highlightIdx: i,
+                            highlightClass: 'comparing',
+                            reads, writes, comps,
+                            log: `Compare slot ${i} (${tempArr[i]}) with search target ${val} -> No match.`
+                        });
+                    }
+                }
+                if (!found) {
+                    history.push({
+                        array: [...tempArr],
+                        highlightIdx: -1,
+                        highlightClass: '',
+                        reads, writes, comps,
+                        log: `Search target ${val} not found in array.`
+                    });
+                }
+            }
+
+            array = [...tempArr];
+            currentStep = 0;
+            render(history[0]);
+
+            // AUTOPLAY trigger
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 800);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetArray() {
+            pause();
+            array = [12, 45, 78, 23, 56, 89];
+            history = [];
+            currentStep = 0;
+            document.getElementById('array-log').innerHTML = 'System Reset. Ready.';
+            document.getElementById('stat-reads').innerText = '0';
+            document.getElementById('stat-writes').innerText = '0';
+            document.getElementById('stat-comps').innerText = '0';
+            render();
+        }
+
+        window.onload = () => {
+            render();
+        };
+    </script>
+</body>
+</html>

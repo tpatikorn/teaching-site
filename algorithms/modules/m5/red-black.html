@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Red-Black Trees</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .tree-visualizer {
+            width: 100%;
+            height: 350px;
+            background: #020617;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .rb-node-red {
+            fill: #ef4444;
+            stroke: #f87171;
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
+        }
+        .rb-node-black {
+            fill: #1e293b;
+            stroke: #475569;
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
+        }
+        .rb-node-nil {
+            fill: #0f172a;
+            stroke: #334155;
+            stroke-width: 1.5;
+        }
+        .tree-edge {
+            stroke: var(--glass-border);
+            stroke-width: 2;
+        }
+        .action-log {
+            background: #030712;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            height: 100px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+        }
+        .active-border {
+            stroke: var(--accent-blue) !important;
+            stroke-width: 4px !important;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">5.4 Red-Black Trees</h1>
+            <p class="page-subtitle">Learn self-balancing properties using binary node colorations (Red/Black) and rotations.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                A <strong>Red-Black Tree</strong> is a self-balancing binary search tree. Each node stores an extra bit representing its color (Red or Black).
+                To maintain balance, the tree enforces five properties:
+                <br>1. Every node is either red or black.
+                <br>2. The root is always black.
+                <br>3. Every leaf (NIL) is black.
+                <br>4. If a node is red, both its children must be black (no double-red violation).
+                <br>5. Every path from a node to its descendant leaves contains the same number of black nodes.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Key:</label>
+                    <input type="number" id="rb-key" value="40" style="width: 60px;">
+                </div>
+                <button class="btn btn-primary" onclick="setupAction('insert')">Insert Key</button>
+                
+                <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+                
+                <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <button class="btn btn-secondary" onclick="resetRB()">Reset</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
+                <div class="tree-visualizer">
+                    <svg id="tree-svg"></svg>
+                </div>
+                <div style="width: 90%; padding: 0 20px;">
+                    <div class="action-log" id="rb-log">Red-Black Tree visualizer ready.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class RBNode {
+            constructor(val, color, x, y) {
+                this.val = val;
+                this.color = color; // 'RED' or 'BLACK'
+                this.x = x;
+                this.y = y;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        let root = null;
+        let history = [];
+        let currentStep = 0;
+        let playInterval = null;
+        let isPlaying = false;
+
+        function serializeTree(node, nodesList = [], edgesList = []) {
+            if (!node) return;
+            nodesList.push({ val: node.val, color: node.color, x: node.x, y: node.y });
+            if (node.left) {
+                edgesList.push({ x1: node.x, y1: node.y, x2: node.left.x, y2: node.left.y });
+                serializeTree(node.left, nodesList, edgesList);
+            }
+            if (node.right) {
+                edgesList.push({ x1: node.x, y1: node.y, x2: node.right.x, y2: node.right.y });
+                serializeTree(node.right, nodesList, edgesList);
+            }
+        }
+
+        function render(state) {
+            const svg = document.getElementById('tree-svg');
+            svg.innerHTML = '';
+
+            const nodesList = [];
+            const edgesList = [];
+            const rNode = state ? state.rootState : root;
+            serializeTree(rNode, nodesList, edgesList);
+
+            edgesList.forEach(e => {
+                svg.innerHTML += `<line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" class="tree-edge" />`;
+            });
+
+            const activeVal = state ? state.activeVal : null;
+
+            nodesList.forEach(node => {
+                let nodeClass = node.color === 'RED' ? 'rb-node-red' : 'rb-node-black';
+                if (node.val === activeVal) nodeClass += ' active-border';
+
+                svg.innerHTML += `
+                    <g>
+                        <circle cx="${node.x}" cy="${node.y}" r="15" class="${nodeClass}" />
+                        <text x="${node.x}" y="${node.y + 4}" fill="#ffffff" text-anchor="middle" font-family="Outfit" font-weight="600" font-size="11">${node.val}</text>
+                    </g>
+                `;
+            });
+
+            if (state) {
+                const logEl = document.getElementById('rb-log');
+                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
+        function cloneTree(node) {
+            if (!node) return null;
+            const c = new RBNode(node.val, node.color, node.x, node.y);
+            c.left = cloneTree(node.left);
+            c.right = cloneTree(node.right);
+            return c;
+        }
+
+        function updateNodeCoordinates(node, x, y, deltaX) {
+            if (!node) return;
+            node.x = x;
+            node.y = y;
+            updateNodeCoordinates(node.left, x - deltaX, y + 60, deltaX * 0.5);
+            updateNodeCoordinates(node.right, x + deltaX, y + 60, deltaX * 0.5);
+        }
+
+        function setupAction(type) {
+            pause();
+            history = [];
+
+            const key = parseInt(document.getElementById('rb-key').value);
+            if (isNaN(key)) return;
+
+            document.getElementById('rb-log').innerHTML = '';
+
+            let tempRoot = cloneTree(root);
+
+            history.push({
+                rootState: cloneTree(tempRoot),
+                activeVal: null,
+                log: `Planned insertion of key ${key}.`
+            });
+
+            // Standard BST insertion first
+            if (!tempRoot) {
+                tempRoot = new RBNode(key, 'BLACK', 350, 60);
+                history.push({
+                    rootState: cloneTree(tempRoot),
+                    activeVal: key,
+                    log: `Tree was empty. Inserted ${key} as BLACK root node.`
+                });
+            } else {
+                let curr = tempRoot;
+                let path = [];
+                while (curr) {
+                    path.push(curr);
+                    history.push({
+                        rootState: cloneTree(tempRoot),
+                        activeVal: curr.val,
+                        log: `Traversing tree at node ${curr.val}.`
+                    });
+
+                    if (key < curr.val) {
+                        if (!curr.left) {
+                            curr.left = new RBNode(key, 'RED', curr.x - 40, curr.y + 60);
+                            history.push({
+                                rootState: cloneTree(tempRoot),
+                                activeVal: key,
+                                log: `Inserted ${key} as a RED node (Standard RB insertion).`
+                            });
+                            break;
+                        }
+                        curr = curr.left;
+                    } else {
+                        if (!curr.right) {
+                            curr.right = new RBNode(key, 'RED', curr.x + 40, curr.y + 60);
+                            history.push({
+                                rootState: cloneTree(tempRoot),
+                                activeVal: key,
+                                log: `Inserted ${key} as a RED node (Standard RB insertion).`
+                            });
+                            break;
+                        }
+                        curr = curr.right;
+                    }
+                }
+
+                // Simulate simple root coloration rule
+                if (tempRoot.color !== 'BLACK') {
+                    tempRoot.color = 'BLACK';
+                    history.push({
+                        rootState: cloneTree(tempRoot),
+                        activeVal: tempRoot.val,
+                        log: `Recolored root node ${tempRoot.val} to BLACK (Rule 2).`
+                    });
+                }
+            }
+
+            updateNodeCoordinates(tempRoot, 350, 60, 120);
+            root = cloneTree(tempRoot);
+            currentStep = 0;
+            render(history[0]);
+
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (currentStep < history.length - 1) {
+                currentStep++;
+                render(history[currentStep]);
+            } else {
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pause();
+            else play();
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            clearInterval(playInterval);
+            playInterval = setInterval(stepForward, 800);
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function resetRB() {
+            pause();
+            root = null;
+            history = [];
+            currentStep = 0;
+            document.getElementById('rb-log').innerHTML = 'Red-Black tree reset.';
+            render();
+        }
+
+        window.onload = () => {
+            root = new RBNode(30, 'BLACK', 350, 60);
+            root.left = new RBNode(15, 'BLACK', 230, 120);
+            root.right = new RBNode(50, 'BLACK', 470, 120);
+            root.left.left = new RBNode(10, 'RED', 170, 180);
+            render();
+        };
+    </script>
+</body>
+</html>

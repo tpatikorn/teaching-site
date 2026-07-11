@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Academy - Quadratic Sorting</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .bars-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 300px;
+            gap: 8px;
+            padding: 20px;
+            background: #020617;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .array-bar {
+            width: 32px;
+            background: var(--accent-blue);
+            transition: all 0.2s ease;
+            position: relative;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 6px;
+        }
+        .bar-val {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+        .array-bar.compare {
+            background: var(--accent-amber);
+            transform: scaleY(1.05);
+        }
+        .array-bar.swap {
+            background: var(--accent-rose);
+            transform: scaleY(1.05);
+        }
+        .array-bar.sorted {
+            background: var(--accent-emerald);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">3.1 Quadratic Sorting (O(N²))</h1>
+            <p class="page-subtitle">Bubble Sort, Insertion Sort, and Selection Sort with full Play, Pause, and Step-by-Step navigation.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Concept Overview</h3>
+            <p class="card-description">
+                Quadratic sorting algorithms are simple to implement but inefficient for large datasets, scaling in <strong>O(N²)</strong> average time complexity. They use nested loops to compare and arrange elements.
+            </p>
+        </div>
+
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Algorithm:</label>
+                    <select id="algo-select" onchange="resetSorter()">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                        <option value="selection">Selection Sort</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="btn-play" onclick="togglePlay()">Pause</button>
+                <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
+                <div class="control-group">
+                    <label>Speed:</label>
+                    <input type="range" id="speed-slider" min="100" max="1500" value="500" step="50" onchange="updateInterval()">
+                </div>
+                <button class="btn btn-secondary" onclick="resetSorter()">Shuffle</button>
+
+                <div class="control-group" style="margin-left: 10px;">
+                    <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
+                </div>
+            </div>
+
+            <div class="bars-container" id="visualizer-bars">
+                <!-- Bars injected here -->
+            </div>
+
+            <div class="visualizer-stats">
+                <div class="stat-item">Comparisons: <span id="stat-comps">0</span></div>
+                <div class="stat-item">Swaps / Writes: <span id="stat-writes">0</span></div>
+                <div class="stat-item" style="margin-left: auto;">Status: <span id="stat-status" style="color: var(--accent-amber);">Idle</span></div>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers">
+                <button class="tab-btn active" onclick="switchTab('code')">Algorithm Code</button>
+                <button class="tab-btn" onclick="switchTab('analysis')">Complexity Table</button>
+            </div>
+            <div id="tab-code" class="tab-content active">
+                <pre><code># Bubble Sort Implementation
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(0, n-i-1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+</code></pre>
+            </div>
+            <div id="tab-analysis" class="tab-content">
+                <div class="card" style="background: transparent; border: none; box-shadow: none;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 8px;">Algorithm</th>
+                                <th style="padding: 8px;">Best Case</th>
+                                <th style="padding: 8px;">Average Case</th>
+                                <th style="padding: 8px;">Worst Case</th>
+                                <th style="padding: 8px;">Space</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <td style="padding: 8px;">Bubble Sort</td>
+                                <td style="padding: 8px;">O(N) (optimized)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(1)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <td style="padding: 8px;">Insertion Sort</td>
+                                <td style="padding: 8px;">O(N)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(1)</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <td style="padding: 8px;">Selection Sort</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(N²)</td>
+                                <td style="padding: 8px;">O(1)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let array = [];
+        let stateGen = null;
+        let playInterval = null;
+        let isPlaying = false;
+
+        let comps = 0;
+        let writes = 0;
+
+        function updateStats() {
+            document.getElementById('stat-comps').innerText = comps;
+            document.getElementById('stat-writes').innerText = writes;
+        }
+
+        function shuffle() {
+            array = [];
+            for (let i = 0; i < 10; i++) {
+                array.push(Math.floor(Math.random() * 80) + 15);
+            }
+            comps = 0;
+            writes = 0;
+            updateStats();
+        }
+
+        function render(highlight = {}) {
+            const container = document.getElementById('visualizer-bars');
+            container.innerHTML = '';
+            for (let i = 0; i < array.length; i++) {
+                const height = array[i] * 2.5;
+                let extraClass = '';
+                if (highlight.compare && highlight.compare.includes(i)) extraClass = 'compare';
+                if (highlight.swap && highlight.swap.includes(i)) extraClass = 'swap';
+                if (highlight.sorted && highlight.sorted.includes(i)) extraClass = 'sorted';
+
+                container.innerHTML += `
+                    <div class="array-bar ${extraClass}" style="height: ${height}px;">
+                        <span class="bar-val">${array[i]}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function* bubbleSortGen() {
+            let n = array.length;
+            let sortedIndices = [];
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    yield { type: 'compare', indices: [j, j+1] };
+                    if (array[j] > array[j+1]) {
+                        let temp = array[j];
+                        array[j] = array[j+1];
+                        array[j+1] = temp;
+                        yield { type: 'swap', indices: [j, j+1] };
+                    }
+                }
+                sortedIndices.push(n - i - 1);
+                yield { type: 'checkpoint', sorted: [...sortedIndices] };
+            }
+            sortedIndices.push(0);
+            yield { type: 'done', sorted: [...sortedIndices] };
+        }
+
+        function* insertionSortGen() {
+            let n = array.length;
+            for (let i = 1; i < n; i++) {
+                let key = array[i];
+                let j = i - 1;
+                yield { type: 'compare', indices: [j, i] };
+                
+                while (j >= 0 && array[j] > key) {
+                    yield { type: 'compare', indices: [j, j+1] };
+                    array[j + 1] = array[j];
+                    yield { type: 'swap', indices: [j, j+1] };
+                    j = j - 1;
+                }
+                array[j + 1] = key;
+                yield { type: 'checkpoint', sorted: [] };
+            }
+            const allSorted = Array.from({length: n}, (_, i) => i);
+            yield { type: 'done', sorted: allSorted };
+        }
+
+        function* selectionSortGen() {
+            let n = array.length;
+            let sortedIndices = [];
+            for (let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                for (let j = i + 1; j < n; j++) {
+                    yield { type: 'compare', indices: [j, minIdx] };
+                    if (array[j] < array[minIdx]) {
+                        minIdx = j;
+                    }
+                }
+                if (minIdx !== i) {
+                    let temp = array[i];
+                    array[i] = array[minIdx];
+                    array[minIdx] = temp;
+                    yield { type: 'swap', indices: [i, minIdx] };
+                }
+                sortedIndices.push(i);
+                yield { type: 'checkpoint', sorted: [...sortedIndices] };
+            }
+            sortedIndices.push(n - 1);
+            yield { type: 'done', sorted: [...sortedIndices] };
+        }
+
+        function initSorter() {
+            const mode = document.getElementById('algo-select').value;
+            if (mode === 'bubble') {
+                stateGen = bubbleSortGen();
+            } else if (mode === 'insertion') {
+                stateGen = insertionSortGen();
+            } else {
+                stateGen = selectionSortGen();
+            }
+            document.getElementById('stat-status').innerText = 'Ready';
+            document.getElementById('stat-status').style.color = 'var(--accent-amber)';
+
+            // Trigger autoplay
+            if (document.getElementById('chk-autoplay').checked) {
+                play();
+            }
+        }
+
+        function stepForward() {
+            if (!stateGen) return;
+            const res = stateGen.next();
+            if (res.done) {
+                document.getElementById('stat-status').innerText = 'Finished';
+                document.getElementById('stat-status').style.color = 'var(--accent-emerald)';
+                pause();
+                return;
+            }
+            const step = res.value;
+            if (step.type === 'compare') {
+                comps++;
+                updateStats();
+                render({ compare: step.indices });
+            } else if (step.type === 'swap') {
+                writes++;
+                updateStats();
+                render({ swap: step.indices });
+            } else if (step.type === 'checkpoint') {
+                render({ sorted: step.sorted });
+            } else if (step.type === 'done') {
+                render({ sorted: step.sorted });
+                document.getElementById('stat-status').innerText = 'Finished';
+                document.getElementById('stat-status').style.color = 'var(--accent-emerald)';
+                pause();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pause();
+            } else {
+                play();
+            }
+        }
+
+        function play() {
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = 'Pause';
+            document.getElementById('stat-status').innerText = 'Sorting...';
+            document.getElementById('stat-status').style.color = 'var(--accent-blue)';
+            updateInterval();
+        }
+
+        function pause() {
+            isPlaying = false;
+            document.getElementById('btn-play').innerText = 'Play';
+            if (document.getElementById('stat-status').innerText !== 'Finished') {
+                document.getElementById('stat-status').innerText = 'Paused';
+                document.getElementById('stat-status').style.color = 'var(--accent-amber)';
+            }
+            clearInterval(playInterval);
+        }
+
+        function updateInterval() {
+            if (!isPlaying) return;
+            clearInterval(playInterval);
+            const speed = parseInt(document.getElementById('speed-slider').value);
+            playInterval = setInterval(() => {
+                stepForward();
+            }, speed);
+        }
+
+        function resetSorter() {
+            pause();
+            shuffle();
+            render();
+            initSorter();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            const eventTarget = window.event.target;
+            eventTarget.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        window.onload = () => {
+            shuffle();
+            render();
+            initSorter();
+        };
+    </script>
+</body>
+</html>
