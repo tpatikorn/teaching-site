@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Pointers</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .pointer-grid {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            padding: 24px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            min-height: 250px;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .pointer-cell {
+            padding: 16px;
+            border: 2px solid var(--glass-border);
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            width: 140px;
+            text-align: center;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+        .pointer-cell.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            transform: scale(1.05);
+        }
+        .pointer-cell.pointed {
+            border-color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .cell-title {
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .cell-address {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .cell-val-box {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">6.1 Pointers & Addresses</h1>
+            <p class="page-subtitle">Learn standard variables references, memory address values, and dereference mechanics.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Pointer Visualizer</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Address-Of (&) and Dereference (*)</h3>
+                <p class="card-description">A pointer is a variable that stores the memory address of another variable. By dereferencing (<code>*p</code>), we directly read or write the variable located at that address. Trigger pointer actions below.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Pointer Syntax & Size</h3>
+                <p class="card-description">
+                    • <strong>Declaration</strong>: Declared with an asterisk prefix (e.g. <code>int *p;</code> declares a pointer to an integer).
+                    <br>• <strong>Pointer Size</strong>: Pointers store addresses. On a 64-bit machine, <em>all</em> pointers occupy exactly <strong>8 bytes</strong>, regardless of whether they point to a <code>char</code> or a <code>double</code>.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Pointer Arithmetic</h3>
+                <p class="card-description">
+                    Adding/subtracting from a pointer shifts the address relative to the size of the pointed type:
+                    <br>• If <code>int *p</code> stores address <code>1000</code>, then <code>p + 1</code> yields address <code>1004</code> (since <code>sizeof(int)</code> is 4).
+                    <br>• If <code>double *d</code> stores <code>1000</code>, <code>d + 1</code> yields <code>1008</code>.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">3. Void Pointers (Generic)</h3>
+                <p class="card-description">
+                    A <code>void *</code> is a generic pointer that can point to any type without a cast.
+                    <br>• However, it <strong>cannot be dereferenced directly</strong> or used in pointer arithmetic without first casting it to a concrete type (e.g. <code>*(int *)vptr</code>).
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <span style="font-weight: bold;">C Instruction:</span>
+                        <button class="btn btn-primary" onclick="execPointerAction('p_addr_a')">p = &a;</button>
+                        <button class="btn btn-primary" onclick="execPointerAction('p_addr_b')">p = &b;</button>
+                        <button class="btn btn-primary" onclick="execPointerAction('deref_assign')">*p = 99;</button>
+                        <button class="btn btn-primary" onclick="execPointerAction('assign_deref')">a = *p;</button>
+                        <button class="btn btn-secondary" onclick="resetPointer()">Reset</button>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <div class="pointer-grid" id="pointer-canvas">
+                            
+                            <!-- Variable A -->
+                            <div class="pointer-cell" id="cell-var-a">
+                                <div class="cell-title">int a</div>
+                                <div class="cell-address">Address: 0x1004</div>
+                                <div class="cell-val-box" id="val-var-a">42</div>
+                            </div>
+
+                            <!-- Pointer p -->
+                            <div class="pointer-cell" id="cell-ptr-p">
+                                <div class="cell-title">int *p</div>
+                                <div class="cell-address">Address: 0x2000</div>
+                                <div class="cell-val-box" id="val-ptr-p" style="color: var(--accent-blue);">0x1004</div>
+                                <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 6px;" id="p-arrow-indicator">Points to: A</div>
+                            </div>
+
+                            <!-- Variable B -->
+                            <div class="pointer-cell" id="cell-var-b">
+                                <div class="cell-title">int b</div>
+                                <div class="cell-address">Address: 0x1008</div>
+                                <div class="cell-val-box" id="val-var-b">88</div>
+                            </div>
+
+                        </div>
+
+                        <div class="card" style="background: rgba(0,0,0,0.2);">
+                            <h4 style="margin-bottom: 8px;">Action Log</h4>
+                            <pre id="pointer-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Pointers initialized. Variable a at address 0x1004, b at 0x1008. Pointer p at 0x2000 points to a.</pre>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-stats">
+                        <div class="stat-item">Pointer target: <span id="stat-target" style="color: var(--accent-blue);">a (Address 0x1004)</span></div>
+                        <div class="stat-item">Dereferenced Value (*p): <span id="stat-deref" style="color: var(--accent-emerald);">42</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let varA = 42;
+        let varB = 88;
+        let ptrP = 0x1004; // Points to a
+
+        function renderPointers() {
+            document.getElementById('val-var-a').innerText = varA;
+            document.getElementById('val-var-b').innerText = varB;
+            
+            const hexAddr = '0x' + ptrP.toString(16);
+            document.getElementById('val-ptr-p').innerText = hexAddr;
+
+            // Highlight target
+            document.getElementById('cell-var-a').classList.remove('pointed');
+            document.getElementById('cell-var-b').classList.remove('pointed');
+            
+            const indicator = document.getElementById('p-arrow-indicator');
+            const targetSpan = document.getElementById('stat-target');
+            const derefSpan = document.getElementById('stat-deref');
+
+            if (ptrP === 0x1004) {
+                document.getElementById('cell-var-a').classList.add('pointed');
+                indicator.innerText = "Points to: a";
+                targetSpan.innerText = "a (Address 0x1004)";
+                derefSpan.innerText = varA;
+            } else if (ptrP === 0x1008) {
+                document.getElementById('cell-var-b').classList.add('pointed');
+                indicator.innerText = "Points to: b";
+                targetSpan.innerText = "b (Address 0x1008)";
+                derefSpan.innerText = varB;
+            } else {
+                indicator.innerText = "Points to: NULL";
+                targetSpan.innerText = "NULL";
+                derefSpan.innerText = "N/A";
+            }
+        }
+
+        function execPointerAction(action) {
+            const logEl = document.getElementById('pointer-log');
+            document.querySelectorAll('.pointer-cell').forEach(c => c.classList.remove('active'));
+
+            if (action === 'p_addr_a') {
+                ptrP = 0x1004;
+                document.getElementById('cell-ptr-p').classList.add('active');
+                logEl.innerHTML += `\n&gt; p = &a;\n  Pointer p now stores the address of a (0x1004). Dereferencing *p yields ${varA}.`;
+            } else if (action === 'p_addr_b') {
+                ptrP = 0x1008;
+                document.getElementById('cell-ptr-p').classList.add('active');
+                logEl.innerHTML += `\n&gt; p = &b;\n  Pointer p now stores the address of b (0x1008). Dereferencing *p yields ${varB}.`;
+            } else if (action === 'deref_assign') {
+                document.getElementById('cell-ptr-p').classList.add('active');
+                if (ptrP === 0x1004) {
+                    varA = 99;
+                    document.getElementById('cell-var-a').classList.add('active');
+                    logEl.innerHTML += `\n&gt; *p = 99;\n  Dereferenced p (points to variable a) and changed value of a to 99.`;
+                } else if (ptrP === 0x1008) {
+                    varB = 99;
+                    document.getElementById('cell-var-b').classList.add('active');
+                    logEl.innerHTML += `\n&gt; *p = 99;\n  Dereferenced p (points to variable b) and changed value of b to 99.`;
+                }
+            } else if (action === 'assign_deref') {
+                document.getElementById('cell-var-a').classList.add('active');
+                if (ptrP === 0x1004) {
+                    varA = varA; // No change
+                    logEl.innerHTML += `\n&gt; a = *p;\n  Assigned the value pointed to by p (${varA}) to variable a. No change.`;
+                } else if (ptrP === 0x1008) {
+                    varA = varB;
+                    logEl.innerHTML += `\n&gt; a = *p;\n  Assigned the value pointed to by p (b = ${varB}) to variable a. a becomes ${varB}.`;
+                }
+            }
+
+            logEl.scrollTop = logEl.scrollHeight;
+            renderPointers();
+        }
+
+        function resetPointer() {
+            varA = 42;
+            varB = 88;
+            ptrP = 0x1004;
+            document.getElementById('pointer-log').innerText = "Stack values reset.";
+            renderPointers();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            renderPointers();
+        };
+    </script>
+</body>
+</html>

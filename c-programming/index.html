@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Fundamentals in C by Thanaporn Patikorn</title>
+    <link rel="stylesheet" href="global.css">
+    <script src="nav.js"></script>
+    <style>
+        .hero {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            line-height: 1.6;
+        }
+
+        .module-card {
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .m1-border {
+            border-left-color: var(--accent-blue);
+        }
+
+        .m2-border {
+            border-left-color: var(--accent-purple);
+        }
+
+        .m3-border {
+            border-left-color: var(--accent-emerald);
+        }
+
+        .m4-border {
+            border-left-color: var(--accent-amber);
+        }
+
+        .m5-border {
+            border-left-color: var(--accent-rose);
+        }
+
+        .m6-border {
+            border-left-color: #06b6d4;
+        }
+
+        .m7-border {
+            border-left-color: #ec4899;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="hero">
+            <h1 class="hero-title">Interactive C Programming Fundamentals</h1>
+            <p class="hero-subtitle">An undergrad-level courseware complete with raw memory byte visualizers, expression precedence parsing trees, loop tracers, stack frames, heap allocators, and structured practice problems.</p>
+            <a href="modules/m1/structure.html" class="btn btn-primary">Start Exploring Module 1</a>
+        </div>
+
+        <div class="page-header">
+            <h2 class="page-title">Course Modules</h2>
+            <p class="page-subtitle">Select a topic below or use the sidebar navigation to jump into interactive visualizers and class practice lists.</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="card module-card m1-border">
+                <h3 class="card-title">Module 1: Intro & Memory</h3>
+                <p class="card-description">Learn basic compilation, program layout, variables, data types, format specifiers, and visualize variable memory addresses and byte alignment.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m1/structure.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 1</a>
+                </div>
+            </div>
+
+            <div class="card module-card m2-border">
+                <h3 class="card-title">Module 2: Operators & Expressions</h3>
+                <p class="card-description">Master C operators: arithmetic, relational, logical, ternary, bitwise. Analyze expression precedence using step-by-step visual evaluation trees.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m2/precedence.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 2</a>
+                </div>
+            </div>
+
+            <div class="card module-card m3-border">
+                <h3 class="card-title">Module 3: Control Flow</h3>
+                <p class="card-description">Understand branching and loop iterations. Execute loops step-by-step while tracing variables and control updates in real time.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m3/loops.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 3</a>
+                </div>
+            </div>
+
+            <div class="card module-card m4-border">
+                <h3 class="card-title">Module 4: Functions & Scope</h3>
+                <p class="card-description">Examine scopes, lifetimes, prototypes, and recursion parameters with an interactive function call stack frame debugger visualizer.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m4/stack.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 4</a>
+                </div>
+            </div>
+
+            <div class="card module-card m5-border">
+                <h3 class="card-title">Module 5: Arrays & Strings</h3>
+                <p class="card-description">Explore contiguous memory index arrays and null-terminated strings. Animate string library functions character-by-character.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m5/strings.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 5</a>
+                </div>
+            </div>
+
+            <div class="card module-card m6-border">
+                <h3 class="card-title">Module 6: Pointers & Heap</h3>
+                <p class="card-description">Visualize address references and pointer dereferencing. Perform heap dynamic memory allocations (malloc/free) and identify leaks.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m6/pointers.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 6</a>
+                </div>
+            </div>
+
+            <div class="card module-card m7-border">
+                <h3 class="card-title">Module 7: Structs & Files</h3>
+                <p class="card-description">Study user-defined structures, alignment, memory padding, unions, and file pointers buffers visually.</p>
+                <div style="margin-top: 16px;">
+                    <a href="modules/m7/structs.html" class="btn btn-secondary btn-sm"
+                        style="padding: 6px 12px; font-size: 0.8rem;">Go to Module 7</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

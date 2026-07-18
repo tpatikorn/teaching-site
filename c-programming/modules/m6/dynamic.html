@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Dynamic Memory</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .heap-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            padding: 24px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            min-height: 120px;
+        }
+        .heap-block {
+            flex: 1;
+            max-width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--glass-border);
+            border-radius: 10px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+        .heap-block.allocated-p1 {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: var(--accent-blue);
+        }
+        .heap-block.allocated-p2 {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--accent-purple);
+        }
+        .heap-block.leaked {
+            background: rgba(244, 63, 94, 0.25);
+            border-color: var(--accent-rose);
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.3);
+        }
+        .block-addr {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            position: absolute;
+            top: 4px;
+        }
+        .block-lbl {
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+        .block-owner {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            position: absolute;
+            bottom: 4px;
+        }
+        .legend-box {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">6.2 Dynamic Memory Allocation (Heap)</h1>
+            <p class="page-subtitle">Allocate structures dynamically using malloc and free, manage pointer links, and trace heap leaks.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Heap Visualizer</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Stack vs. Heap Memory</h3>
+                <p class="card-description">Heap memory is managed manually by the programmer. Functions like <code>malloc()</code> reserve blocks, returning raw address pointers. Memory must be explicitly released via <code>free()</code>, or it will leak in RAM until termination.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Allocators: malloc, calloc, realloc</h3>
+                <p class="card-description">
+                    • <code>malloc(size)</code>: Reserves <code>size</code> bytes. Leaves bytes uninitialized (garbage values).
+                    <br>• <code>calloc(num, size)</code>: Reserves <code>num * size</code> bytes and initializes every single byte to <strong>0</strong>.
+                    <br>• <code>realloc(ptr, new_size)</code>: Resizes a previously allocated block, copying contents to a new location if necessary.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Memory Leaks & Dangling Pointers</h3>
+                <p class="card-description">
+                    • <strong>Memory Leak</strong>: Occurs when heap memory is allocated but pointer reference is overwritten or goes out of scope without calling <code>free()</code>.
+                    <br>• <strong>Dangling Pointer</strong>: A pointer that still stores the address of a block that has already been <code>free()</code>d. Dereferencing it is undefined behavior.
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <span style="font-weight: bold;">C Code Execution:</span>
+                        <button class="btn btn-primary" onclick="allocHeap('p1', 2)">p1 = malloc(2*sz);</button>
+                        <button class="btn btn-primary" onclick="allocHeap('p2', 3)">p2 = malloc(3*sz);</button>
+                        <button class="btn btn-primary" onclick="freeHeap('p1')">free(p1);</button>
+                        <button class="btn btn-primary" onclick="freeHeap('p2')">free(p2);</button>
+                        <button class="btn btn-primary" onclick="causeLeak('p1')" style="background: var(--accent-rose); color: white;">p1 = NULL; (Leak)</button>
+                        <button class="btn btn-secondary" onclick="resetHeap()">Reset Heap</button>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <div class="legend-box">
+                            <span><span class="legend-dot" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);"></span>Free Heap Slot</span>
+                            <span><span class="legend-dot" style="background: var(--accent-blue);"></span>Allocated (p1)</span>
+                            <span><span class="legend-dot" style="background: var(--accent-purple);"></span>Allocated (p2)</span>
+                            <span><span class="legend-dot" style="background: var(--accent-rose);"></span>Memory Leak (Orphaned Block)</span>
+                        </div>
+
+                        <div class="heap-container" id="heap-display-container">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="card" style="background: rgba(0,0,0,0.2);">
+                            <h4 style="margin-bottom: 8px;">Heap Log</h4>
+                            <pre id="heap-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Heap memory initialized. 8 blocks of size 4-bytes (total 32 bytes) free at address 0x5000.</pre>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-stats">
+                        <div class="stat-item">Heap usage: <span id="stat-heap-use">0</span> / 8 blocks</div>
+                        <div class="stat-item">Active pointers: <span id="stat-active-ptrs">p1=NULL, p2=NULL</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const totalBlocks = 8;
+        let heap = Array(totalBlocks).fill(null);
+        let baseAddr = 0x5000;
+        let pointers = { p1: null, p2: null }; // Stores block index
+
+        function renderHeap() {
+            const container = document.getElementById('heap-display-container');
+            container.innerHTML = '';
+
+            let usedCount = 0;
+            for (let i = 0; i < totalBlocks; i++) {
+                const block = heap[i];
+                let blockClass = 'heap-block';
+                let label = 'Free';
+                let owner = '';
+
+                if (block) {
+                    usedCount++;
+                    if (block.leaked) {
+                        blockClass += ' leaked';
+                        label = 'LEAK';
+                        owner = 'unreachable';
+                    } else {
+                        blockClass += ` allocated-${block.owner}`;
+                        label = `${block.owner}[${block.offset}]`;
+                        owner = block.owner;
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="${blockClass}">
+                        <div class="block-addr">0x${(baseAddr + i * 4).toString(16)}</div>
+                        <div class="block-lbl">${label}</div>
+                        <div class="block-owner">${owner}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('stat-heap-use').innerText = usedCount;
+            
+            const p1Str = pointers.p1 !== null ? `0x${(baseAddr + pointers.p1 * 4).toString(16)}` : 'NULL';
+            const p2Str = pointers.p2 !== null ? `0x${(baseAddr + pointers.p2 * 4).toString(16)}` : 'NULL';
+            document.getElementById('stat-active-ptrs').innerText = `p1=${p1Str}, p2=${p2Str}`;
+        }
+
+        function allocHeap(ptr, size) {
+            const logEl = document.getElementById('heap-log');
+
+            if (pointers[ptr] !== null) {
+                logEl.innerHTML += `\n&gt; Warning: ${ptr} is already pointing to allocated memory. Free it first or reassigning it will cause a leak!`;
+                logEl.scrollTop = logEl.scrollHeight;
+                return;
+            }
+
+            // Find contiguous block
+            let startIdx = -1;
+            for (let i = 0; i <= totalBlocks - size; i++) {
+                let free = true;
+                for (let j = 0; j < size; j++) {
+                    if (heap[i + j] !== null) {
+                        free = false;
+                        break;
+                    }
+                }
+                if (free) {
+                    startIdx = i;
+                    break;
+                }
+            }
+
+            if (startIdx === -1) {
+                alert("Out of heap memory! No contiguous free block found of size " + size);
+                return;
+            }
+
+            // Allocate
+            for (let i = 0; i < size; i++) {
+                heap[startIdx + i] = {
+                    owner: ptr,
+                    offset: i,
+                    leaked: false
+                };
+            }
+
+            pointers[ptr] = startIdx;
+            const targetAddress = `0x${(baseAddr + startIdx * 4).toString(16)}`;
+            logEl.innerHTML += `\n&gt; ${ptr} = malloc(${size} * sizeof(int));\n  Allocated ${size} blocks at heap address ${targetAddress}.`;
+            logEl.scrollTop = logEl.scrollHeight;
+            renderHeap();
+        }
+
+        function freeHeap(ptr) {
+            const logEl = document.getElementById('heap-log');
+            const startIdx = pointers[ptr];
+
+            if (startIdx === null) {
+                logEl.innerHTML += `\n&gt; Warning: Attempt to call free(${ptr}) on a NULL pointer! No action taken.`;
+                logEl.scrollTop = logEl.scrollHeight;
+                return;
+            }
+
+            // Free all blocks allocated to this owner
+            for (let i = 0; i < totalBlocks; i++) {
+                if (heap[i] && heap[i].owner === ptr) {
+                    heap[i] = null;
+                }
+            }
+
+            pointers[ptr] = null;
+            logEl.innerHTML += `\n&gt; free(${ptr});\n  Deallocated blocks starting at heap index ${startIdx}. Pointer ${ptr} now contains a dangling address or should be set to NULL.`;
+            logEl.scrollTop = logEl.scrollHeight;
+            renderHeap();
+        }
+
+        function causeLeak(ptr) {
+            const logEl = document.getElementById('heap-log');
+            const startIdx = pointers[ptr];
+
+            if (startIdx === null) {
+                logEl.innerHTML += `\n&gt; Pointer ${ptr} is already NULL. No memory is leaked.`;
+                logEl.scrollTop = logEl.scrollHeight;
+                return;
+            }
+
+            // Mark owner blocks as leaked
+            for (let i = 0; i < totalBlocks; i++) {
+                if (heap[i] && heap[i].owner === ptr) {
+                    heap[i].leaked = true;
+                }
+            }
+
+            pointers[ptr] = null;
+            logEl.innerHTML += `\n&gt; ${ptr} = NULL;\n  ERROR: Pointer cleared without calling free(${ptr})!\n  The allocated blocks are now orphaned (memory leak). They cannot be referenced or freed.`;
+            logEl.scrollTop = logEl.scrollHeight;
+            renderHeap();
+        }
+
+        function resetHeap() {
+            heap = Array(totalBlocks).fill(null);
+            pointers = { p1: null, p2: null };
+            document.getElementById('heap-log').innerText = "Heap cleared.";
+            renderHeap();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            renderHeap();
+        };
+    </script>
+</body>
+</html>

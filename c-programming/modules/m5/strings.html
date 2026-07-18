@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Strings & Null Terminator</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .char-array-container {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 16px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+        .char-cell {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 1.15rem;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+        .char-cell.active-read {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: var(--accent-blue);
+            transform: scale(1.08);
+        }
+        .char-cell.active-write {
+            background: rgba(16, 185, 129, 0.25);
+            border-color: var(--accent-emerald);
+            transform: scale(1.08);
+        }
+        .char-cell.null-term {
+            border-color: var(--accent-rose);
+            color: var(--accent-rose);
+            background: rgba(244, 63, 94, 0.1);
+        }
+        .cell-idx {
+            position: absolute;
+            bottom: 2px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">5.1 Strings & Null Termination (\0)</h1>
+            <p class="page-subtitle">Understand how C represents text as character arrays terminated by a special zero byte.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">String Visualizer</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Null-Terminated Arrays</h3>
+                <p class="card-description">Unlike other languages, C strings don't store their length explicitly. Functions scan until they hit the null character <code>'\\0'</code> (ASCII 0). Type a string and simulate library actions below.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Contiguous Layout & 2D Arrays</h3>
+                <p class="card-description">
+                    Arrays allocate contiguous memory.
+                    <br>• <strong>Row-Major Order</strong>: In a 2D array, rows are stored sequentially in memory (e.g. Row 0 elements, then Row 1 elements). The address offset formula is: <code>&amp;A[i][j] = Base + i * C + j</code> (where C is total columns).
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Null Terminator '\0'</h3>
+                <p class="card-description">
+                    A C string is simply an array of characters ending with <code>'\0'</code>.
+                    <br>• ASCII value is <strong>0</strong>.
+                    <br>• Marks the boundary. Without <code>'\0'</code>, functions will read out-of-bounds until they hit a random 0 byte, causing garbage outputs or segfaults.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">3. String Library Helper Functions</h3>
+                <p class="card-description">
+                    • <code>strlen(s)</code>: Returns length of string (does <em>not</em> count <code>'\0'</code>).
+                    <br>• <code>strcpy(dest, src)</code>: Copies source to destination buffer (must have enough size).
+                    <br>• <code>strcmp(s1, s2)</code>: Compares strings alphabetically (returns 0 if equal).
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>String:</label>
+                            <input type="text" id="str-input" value="Hello" style="width: 100px;">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="startStringAction('strlen')">strlen()</button>
+                        <button class="btn btn-primary" onclick="startStringAction('strcpy')">strcpy()</button>
+                        <button class="btn btn-primary" onclick="terminateEarly()">Set str[2] = '\\0'</button>
+
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <button class="btn btn-secondary" onclick="stepStringAction()">Next Step</button>
+                        <button class="btn btn-secondary" onclick="resetString()">Reset</button>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <h4 style="color: var(--accent-blue);">Source String buffer:</h4>
+                        <div class="char-array-container" id="source-array-display">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <h4 style="color: var(--accent-emerald); margin-top: 20px;">Destination String buffer (for strcpy):</h4>
+                        <div class="char-array-container" id="dest-array-display">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="card" style="background: rgba(0,0,0,0.2); margin-top: 20px;">
+                            <h4 style="margin-bottom: 8px;">String Log</h4>
+                            <pre id="string-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready.</pre>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-stats">
+                        <div class="stat-item">Buffer Capacity: <span id="stat-capacity">8 bytes</span></div>
+                        <div class="stat-item">String Length: <span style="color: var(--accent-blue);" id="stat-len">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const capacity = 8;
+        let sourceStr = ['H','e','l','l','o','\0','',''];
+        let destStr = ['','','','','','','',''];
+
+        let history = [];
+        let historyIndex = 0;
+
+        function renderStringBuffers(sourceHighlight = -1, destHighlight = -1, highlightClass = '') {
+            const srcContainer = document.getElementById('source-array-display');
+            srcContainer.innerHTML = '';
+            for (let i = 0; i < capacity; i++) {
+                const val = sourceStr[i];
+                let cellClass = 'char-cell';
+                if (val === '\0') cellClass += ' null-term';
+                if (i === sourceHighlight) cellClass += ' ' + highlightClass;
+                
+                const dispVal = val === '\0' ? '\\0' : (val === '' ? ' ' : val);
+
+                srcContainer.innerHTML += `
+                    <div class="${cellClass}">
+                        <span>${dispVal}</span>
+                        <span class="cell-idx">${i}</span>
+                    </div>
+                `;
+            }
+
+            const destContainer = document.getElementById('dest-array-display');
+            destContainer.innerHTML = '';
+            for (let i = 0; i < capacity; i++) {
+                const val = destStr[i];
+                let cellClass = 'char-cell';
+                if (val === '\0') cellClass += ' null-term';
+                if (i === destHighlight) cellClass += ' ' + highlightClass;
+
+                const dispVal = val === '\0' ? '\\0' : (val === '' ? ' ' : val);
+
+                destContainer.innerHTML += `
+                    <div class="${cellClass}">
+                        <span>${dispVal}</span>
+                        <span class="cell-idx">${i}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function resetString() {
+            const inp = document.getElementById('str-input').value.substring(0, 7);
+            sourceStr = Array(capacity).fill('');
+            for (let i = 0; i < inp.length; i++) {
+                sourceStr[i] = inp[i];
+            }
+            sourceStr[inp.length] = '\0';
+
+            destStr = Array(capacity).fill('');
+            history = [];
+            historyIndex = 0;
+
+            document.getElementById('string-log').innerText = "Buffers initialized. Choose an operation.";
+            document.getElementById('stat-len').innerText = '0';
+            
+            renderStringBuffers();
+        }
+
+        function startStringAction(type) {
+            resetString();
+            history = [];
+            historyIndex = 0;
+
+            const logEl = document.getElementById('string-log');
+            logEl.innerHTML = '';
+
+            if (type === 'strlen') {
+                history.push({
+                    srcIdx: -1, destIdx: -1, class: '',
+                    len: 0,
+                    log: "Initialize counter len = 0. Scanning source buffer..."
+                });
+
+                let len = 0;
+                for (let i = 0; i < capacity; i++) {
+                    const char = sourceStr[i];
+                    if (char === '\0') {
+                        history.push({
+                            srcIdx: i, destIdx: -1, class: 'active-read',
+                            len,
+                            log: `Encountered Null Terminator '\\0' at index ${i}. Stop scanning.`
+                        });
+                        break;
+                    } else if (char === '') {
+                        history.push({
+                            srcIdx: i, destIdx: -1, class: 'active-read',
+                            len,
+                            log: `Encountered empty memory at index ${i} without hitting '\\0'! Invalid string format.`
+                        });
+                        break;
+                    } else {
+                        len++;
+                        history.push({
+                            srcIdx: i, destIdx: -1, class: 'active-read',
+                            len,
+                            log: `Read char '${char}' at index ${i}. Increment len to ${len}.`
+                        });
+                    }
+                }
+            } else if (type === 'strcpy') {
+                history.push({
+                    srcIdx: -1, destIdx: -1, class: '',
+                    len: 0,
+                    log: "Prepares to copy from source array to destination array."
+                });
+
+                for (let i = 0; i < capacity; i++) {
+                    const char = sourceStr[i];
+                    
+                    history.push({
+                        srcIdx: i, destIdx: i, class: 'active-write',
+                        len: 0,
+                        action: 'copy',
+                        char, idx: i,
+                        log: char === '\0' 
+                            ? "Copying Null Terminator '\\0' to destination to properly terminate the new string."
+                            : `Copy character '${char}' from source[${i}] to dest[${i}].`
+                    });
+
+                    if (char === '\0') break;
+                }
+            }
+
+            stepStringAction();
+        }
+
+        function stepStringAction() {
+            if (historyIndex >= history.length) {
+                alert("Operation complete!");
+                return;
+            }
+
+            const step = history[historyIndex];
+            
+            if (step.action === 'copy') {
+                destStr[step.idx] = step.char;
+            }
+
+            renderStringBuffers(step.srcIdx, step.destIdx, step.class);
+            
+            const logEl = document.getElementById('string-log');
+            logEl.innerHTML += `\n&gt; ${step.log}`;
+            logEl.scrollTop = logEl.scrollHeight;
+            
+            document.getElementById('stat-len').innerText = step.len;
+
+            historyIndex++;
+        }
+
+        function terminateEarly() {
+            sourceStr[2] = '\0';
+            document.getElementById('string-log').innerText = "Set sourceStr[2] = '\\0'. Run strlen() to see the changes!";
+            renderStringBuffers();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            resetString();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Loop Tracing</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .trace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .trace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .code-line {
+            padding: 4px 8px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: var(--transition-smooth);
+        }
+        .code-line.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left-color: var(--accent-blue);
+        }
+        .variables-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .variables-table th, .variables-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+        .variables-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .variables-table td {
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-weight: bold;
+        }
+        .variables-table td.changed {
+            color: var(--accent-amber);
+            animation: highlight-pulse 0.8s ease;
+        }
+        @keyframes highlight-pulse {
+            0% { background: rgba(245, 158, 11, 0.2); }
+            100% { background: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">3.1 Loop Tracing & Control Flow</h1>
+            <p class="page-subtitle">Trace loop control updates, evaluations, and modifications step-by-step.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Loop Tracer</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Loop Execution Trace</h3>
+                <p class="card-description">Tracing loops helps debug index issues and logical mistakes. Select a loop construct, then click "Next Step" to trace code pointers and variable changes.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Conditionals & Switch-Case</h3>
+                <p class="card-description">
+                    C structures branching via <code>if-else</code> and <code>switch-case</code>:
+                    <br>• <strong>Switch Constraints</strong>: The controlling expression of a switch must evaluate to an <strong>integer</strong> or <strong>character</strong> constant. Floating-point types or strings are strictly illegal.
+                    <br>• <strong>Fall-through</strong>: If a case block finishes and doesn't end with a <code>break</code>, execution automatically falls through to the next case's statements regardless of matches.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Loop Constructs</h3>
+                <p class="card-description">
+                    • <code>for</code>: Preferred when number of iterations is known.
+                    <br>• <code>while</code>: Evaluates condition *before* entry (0 or more runs).
+                    <br>• <code>do-while</code>: Evaluates condition *after* executing body (always guarantees <strong>at least one run</strong>).
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">3. Break vs. Continue</h3>
+                <p class="card-description">
+                    • <code>break</code>: Immediately terminates the loop or switch, jumping to the statement following the block.
+                    <br>• <code>continue</code>: Skips the remaining statements in the current iteration and jumps directly to the update/condition test stage of the loop.
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>Loop Code:</label>
+                            <select id="loop-select" onchange="loadLoop()">
+                                <option value="forLoop">Basic For Loop (summing numbers)</option>
+                                <option value="whileLoop">While Loop (dividing count)</option>
+                                <option value="nestedLoop">Nested Loops (row & cols)</option>
+                                <option value="breakLoop">Break & Continue logic</option>
+                            </select>
+                        </div>
+                        
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <button class="btn btn-primary" onclick="stepLoop()">Next Step</button>
+                        <button class="btn btn-secondary" onclick="loadLoop()">Reset</button>
+                    </div>
+
+                    <div class="trace-grid" style="padding: 24px;">
+                        <!-- Code Column -->
+                        <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
+                            <h4 style="margin-bottom: 12px; color: var(--accent-blue);">C Source Code</h4>
+                            <div id="code-container" style="border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.2); padding: 12px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Variable State Column -->
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
+                                <h4 style="margin-bottom: 12px; color: var(--accent-purple);">Variable States</h4>
+                                <table class="variables-table">
+                                    <thead>
+                                        <tr id="vars-header">
+                                            <!-- Headers -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr id="vars-values">
+                                            <!-- Values -->
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px; flex-grow: 1;">
+                                <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">Execution Output</h4>
+                                <pre id="terminal-out" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const loops = {
+            forLoop: {
+                lines: [
+                    "int sum = 0;",
+                    "for (int i = 0; i < 3; i++) {",
+                    "    sum += i;",
+                    "}",
+                    "printf(\"Done\");"
+                ],
+                variables: ["i", "sum", "i < 3"],
+                steps: [
+                    { line: 0, vars: { i: "undef", sum: "0", "i < 3": "-" }, log: "Initialize sum to 0." },
+                    { line: 1, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Loop initialization: i = 0. Condition 0 < 3 is True." },
+                    { line: 2, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Add i (0) to sum. sum remains 0." },
+                    { line: 1, vars: { i: "1", sum: "0", "i < 3": "True" }, log: "Increment i to 1. Condition 1 < 3 is True." },
+                    { line: 2, vars: { i: "1", sum: "1", "i < 3": "True" }, log: "Add i (1) to sum. sum is 1." },
+                    { line: 1, vars: { i: "2", sum: "1", "i < 3": "True" }, log: "Increment i to 2. Condition 2 < 3 is True." },
+                    { line: 2, vars: { i: "2", sum: "3", "i < 3": "True" }, log: "Add i (2) to sum. sum is 3." },
+                    { line: 1, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Increment i to 3. Condition 3 < 3 is False. Exiting loop." },
+                    { line: 4, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Print Done. Program ends." }
+                ]
+            },
+            whileLoop: {
+                lines: [
+                    "int x = 8;",
+                    "while (x > 1) {",
+                    "    x /= 2;",
+                    "}",
+                    "printf(\"Done\");"
+                ],
+                variables: ["x", "x > 1"],
+                steps: [
+                    { line: 0, vars: { x: "8", "x > 1": "-" }, log: "Initialize x to 8." },
+                    { line: 1, vars: { x: "8", "x > 1": "True" }, log: "Loop condition: 8 > 1 is True." },
+                    { line: 2, vars: { x: "4", "x > 1": "True" }, log: "Divide x by 2. x becomes 4." },
+                    { line: 1, vars: { x: "4", "x > 1": "True" }, log: "Loop condition: 4 > 1 is True." },
+                    { line: 2, vars: { x: "2", "x > 1": "True" }, log: "Divide x by 2. x becomes 2." },
+                    { line: 1, vars: { x: "2", "x > 1": "True" }, log: "Loop condition: 2 > 1 is True." },
+                    { line: 2, vars: { x: "1", "x > 1": "True" }, log: "Divide x by 2. x becomes 1." },
+                    { line: 1, vars: { x: "1", "x > 1": "False" }, log: "Loop condition: 1 > 1 is False. Exiting loop." },
+                    { line: 4, vars: { x: "1", "x > 1": "False" }, log: "Print Done. Program ends." }
+                ]
+            },
+            nestedLoop: {
+                lines: [
+                    "int count = 0;",
+                    "for (int r = 0; r < 2; r++) {",
+                    "    for (int c = 0; c < 2; c++) {",
+                    "        count++;",
+                    "    }",
+                    "}"
+                ],
+                variables: ["r", "c", "count"],
+                steps: [
+                    { line: 0, vars: { r: "undef", c: "undef", count: "0" }, log: "Initialize count to 0." },
+                    { line: 1, vars: { r: "0", c: "undef", count: "0" }, log: "Outer Loop: r = 0. Condition 0 < 2 is True." },
+                    { line: 2, vars: { r: "0", c: "0", count: "0" }, log: "Inner Loop: c = 0. Condition 0 < 2 is True." },
+                    { line: 3, vars: { r: "0", c: "0", count: "1" }, log: "Increment count. count is 1." },
+                    { line: 2, vars: { r: "0", c: "1", count: "1" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True." },
+                    { line: 3, vars: { r: "0", c: "1", count: "2" }, log: "Increment count. count is 2." },
+                    { line: 2, vars: { r: "0", c: "2", count: "2" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner." },
+                    { line: 1, vars: { r: "1", c: "2", count: "2" }, log: "Outer Loop update: r = 1. Condition 1 < 2 is True." },
+                    { line: 2, vars: { r: "1", c: "0", count: "2" }, log: "Re-enter Inner Loop: c = 0. Condition 0 < 2 is True." },
+                    { line: 3, vars: { r: "1", c: "0", count: "3" }, log: "Increment count. count is 3." },
+                    { line: 2, vars: { r: "1", c: "1", count: "3" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True." },
+                    { line: 3, vars: { r: "1", c: "1", count: "4" }, log: "Increment count. count is 4." },
+                    { line: 2, vars: { r: "1", c: "2", count: "4" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner." },
+                    { line: 1, vars: { r: "2", c: "2", count: "4" }, log: "Outer Loop update: r = 2. Condition 2 < 2 is False. Exit Outer. Complete." }
+                ]
+            },
+            breakLoop: {
+                lines: [
+                    "for (int i = 0; i < 4; i++) {",
+                    "    if (i == 1) continue;",
+                    "    if (i == 3) break;",
+                    "    printf(\"%d \", i);",
+                    "}"
+                ],
+                variables: ["i", "i == 1", "i == 3"],
+                steps: [
+                    { line: 0, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Loop init: i = 0. Condition 0 < 4 is True." },
+                    { line: 1, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 1 (False). Skip continue." },
+                    { line: 2, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 3 (False). Skip break." },
+                    { line: 3, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Print value i (0)." },
+                    { line: 0, vars: { i: "1", "i == 1": "True", "i == 3": "False" }, log: "Update: i = 1. Condition 1 < 4 is True." },
+                    { line: 1, vars: { i: "1", "i == 1": "True", "i == 3": "False" }, log: "i == 1 is True! Execute continue: jump to update." },
+                    { line: 0, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Update: i = 2. Condition 2 < 4 is True." },
+                    { line: 1, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 1 (False). Skip continue." },
+                    { line: 2, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 3 (False). Skip break." },
+                    { line: 3, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Print value i (2)." },
+                    { line: 0, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "Update: i = 3. Condition 3 < 4 is True." },
+                    { line: 1, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "Check if i == 1 (False)." },
+                    { line: 2, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "i == 3 is True! Execute break: immediately terminate loop." }
+                ]
+            }
+        };
+
+        let currentLoop = 'forLoop';
+        let stepIndex = 0;
+        let lastVars = {};
+
+        function loadLoop() {
+            currentLoop = document.getElementById('loop-select').value;
+            const loop = loops[currentLoop];
+            stepIndex = 0;
+            lastVars = {};
+
+            // Render code lines
+            const codeContainer = document.getElementById('code-container');
+            codeContainer.innerHTML = '';
+            loop.lines.forEach((line, index) => {
+                codeContainer.innerHTML += `
+                    <div class="code-line" id="line-${index}"><span style="color: var(--text-muted); font-size: 0.8rem; margin-right: 12px; font-family: monospace;">${index+1}</span>${escapeHTML(line)}</div>
+                `;
+            });
+
+            // Set headers
+            const headerRow = document.getElementById('vars-header');
+            headerRow.innerHTML = '';
+            loop.variables.forEach(v => {
+                headerRow.innerHTML += `<th>${v}</th>`;
+            });
+
+            // Set empty initial values
+            const valuesRow = document.getElementById('vars-values');
+            valuesRow.innerHTML = '';
+            loop.variables.forEach(() => {
+                valuesRow.innerHTML += `<td>-</td>`;
+            });
+
+            document.getElementById('terminal-out').innerText = "Tracer loaded. Click Next Step to execute code.";
+            
+            // Highlight line 1
+            highlightLine(0);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function highlightLine(lineNum) {
+            document.querySelectorAll('.code-line').forEach(line => line.classList.remove('active'));
+            const el = document.getElementById(`line-${lineNum}`);
+            if (el) el.classList.add('active');
+        }
+
+        function stepLoop() {
+            const loop = loops[currentLoop];
+            if (stepIndex >= loop.steps.length) {
+                alert("Loop execution finished!");
+                return;
+            }
+
+            const step = loop.steps[stepIndex];
+            
+            // Highlight code line
+            highlightLine(step.line);
+
+            // Update variables values
+            const valuesRow = document.getElementById('vars-values');
+            valuesRow.innerHTML = '';
+            loop.variables.forEach(v => {
+                const newVal = step.vars[v];
+                const oldVal = lastVars[v];
+                const isChanged = oldVal !== undefined && oldVal !== newVal;
+
+                valuesRow.innerHTML += `
+                    <td class="${isChanged ? 'changed' : ''}">${newVal}</td>
+                `;
+            });
+
+            lastVars = { ...step.vars };
+
+            // Update Terminal Log
+            const term = document.getElementById('terminal-out');
+            term.innerHTML += `\n&gt; ${step.log}`;
+            term.scrollTop = term.scrollHeight;
+
+            stepIndex++;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            loadLoop();
+        };
+    </script>
+</body>
+</html>

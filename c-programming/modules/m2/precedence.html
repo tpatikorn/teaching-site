@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Operator Precedence</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .ast-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            min-height: 320px;
+        }
+        .ast-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .ast-children {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 24px;
+            position: relative;
+        }
+        .ast-node {
+            padding: 12px 18px;
+            border: 2px solid var(--glass-border);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            min-width: 60px;
+            transition: var(--transition-smooth);
+            position: relative;
+            z-index: 2;
+        }
+        .ast-node.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.15);
+        }
+        .ast-node.evaluated {
+            border-color: var(--accent-emerald);
+            color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        /* Vertical line from parent to standard horizontal connector */
+        .ast-branch > .ast-children::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            width: 2px;
+            height: 12px;
+            background: var(--glass-border);
+            transform: translateX(-50%);
+        }
+        /* Horizontal line connecting children */
+        .ast-branch > .ast-children::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 25%;
+            right: 25%;
+            height: 2px;
+            background: var(--glass-border);
+        }
+        /* Vertical line going up from each child branch to meet horizontal connector */
+        .ast-children > .ast-branch::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            width: 2px;
+            height: 12px;
+            background: var(--glass-border);
+            transform: translateX(-50%);
+        }
+        
+        /* Operators Table Styling */
+        .operators-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+        .operators-table th, .operators-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .operators-table th {
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .operators-table tr:last-child td {
+            border-bottom: none;
+        }
+        .operators-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        body.light-mode .operators-table tr:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+        .operators-table code {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--glass-border);
+        }
+        body.light-mode .operators-table code {
+            background: rgba(0, 0, 0, 0.05);
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">2.1 Operator Precedence & Evaluation</h1>
+            <p class="page-subtitle">Understand how the compiler parses nested expressions, operator ranks, and associative rules.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">AST Evaluator & Lecture</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+                <!-- Operators Guide Table (Moved up as primary) -->
+                <div class="card" style="margin-bottom: 32px;">
+                    <h3 class="card-title">
+                        <span class="lang-en">Operators Guide & Reference</span>
+                        <span class="lang-th">ข้อมูลคู่มือตัวดำเนินการภาษา C</span>
+                    </h3>
+                    <p class="card-description">
+                        <span class="lang-en">Below is a detailed reference of the core C operators, descriptions, and evaluation results.</span>
+                        <span class="lang-th">ตารางสรุปตัวดำเนินการภาษา C คำอธิบายการทำงาน และผลลัพธ์การประเมินค่าจากการใช้งานจริง</span>
+                    </p>
+                    
+                    <table class="operators-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Symbol</th>
+                                <th style="width: 25%;">
+                                    <span class="lang-en">Name</span>
+                                    <span class="lang-th">ชื่อเรียก</span>
+                                </th>
+                                <th style="width: 40%;">
+                                    <span class="lang-en">Description</span>
+                                    <span class="lang-th">คำอธิบาย</span>
+                                </th>
+                                <th style="width: 20%;">
+                                    <span class="lang-en">Example Result</span>
+                                    <span class="lang-th">ตัวอย่างผลลัพธ์</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Arithmetic -->
+                            <tr>
+                                <td><code>+</code></td>
+                                <td>
+                                    <span class="lang-en">Addition</span>
+                                    <span class="lang-th">การบวก</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Adds two numeric values.</span>
+                                    <span class="lang-th">บวกค่าตัวเลขสองจำนวนเข้าด้วยกัน</span>
+                                </td>
+                                <td><code>5 + 3</code><br>Result: <code>8</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>-</code></td>
+                                <td>
+                                    <span class="lang-en">Subtraction</span>
+                                    <span class="lang-th">การลบ</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Subtracts the right operand from the left.</span>
+                                    <span class="lang-th">หักลบค่าตัวเลขฝั่งขวาออกจากฝั่งซ้าย</span>
+                                </td>
+                                <td><code>5 - 3</code><br>Result: <code>2</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>*</code></td>
+                                <td>
+                                    <span class="lang-en">Multiplication</span>
+                                    <span class="lang-th">การคูณ</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Multiplies two numeric values.</span>
+                                    <span class="lang-th">คูณค่าตัวเลขสองจำนวนเข้าด้วยกัน</span>
+                                </td>
+                                <td><code>5 * 3</code><br>Result: <code>15</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>/</code></td>
+                                <td>
+                                    <span class="lang-en">Division</span>
+                                    <span class="lang-th">การหาร</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Divides left operand by right. Integer division drops decimals.</span>
+                                    <span class="lang-th">หารตัวเลขตัวแรกด้วยตัวที่สอง (จำนวนเต็มจะตัดเศษทศนิยมทิ้ง)</span>
+                                </td>
+                                <td><code>5 / 2</code><br>Result: <code>2</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>%</code></td>
+                                <td>
+                                    <span class="lang-en">Modulo</span>
+                                    <span class="lang-th">เศษการหาร (Modulo)</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Finds the remainder of integer division.</span>
+                                    <span class="lang-th">หาเศษที่เหลือจากการหารของจำนวนเต็ม</span>
+                                </td>
+                                <td><code>5 % 2</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <!-- Increments -->
+                            <tr>
+                                <td><code>++</code> (pre)</td>
+                                <td>
+                                    <span class="lang-en">Pre-increment</span>
+                                    <span class="lang-th">เพิ่มค่าก่อนใช้งาน</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Increments the variable first, then evaluates in expression.</span>
+                                    <span class="lang-th">เพิ่มค่าตัวแปรก่อน แล้วจึงนำไปประมวลผลคำนวณ</span>
+                                </td>
+                                <td><code>y = ++i</code> (i=5)<br>Result: <code>i = 6, y = 6</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>++</code> (post)</td>
+                                <td>
+                                    <span class="lang-en">Post-increment</span>
+                                    <span class="lang-th">เพิ่มค่าทีหลัง</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Evaluates current value in expression, then increments variable.</span>
+                                    <span class="lang-th">ใช้ค่าปัจจุบันในนิพจน์ประมวลผลก่อน แล้วจึงเพิ่มค่าตัวแปรตามหลัง</span>
+                                </td>
+                                <td><code>y = i++</code> (i=5)<br>Result: <code>i = 6, y = 5</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>--</code> (pre)</td>
+                                <td>
+                                    <span class="lang-en">Pre-decrement</span>
+                                    <span class="lang-th">ลดค่าก่อนใช้งาน</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Decrements the variable first, then evaluates.</span>
+                                    <span class="lang-th">ลดค่าของตัวแปรก่อน แล้วจึงนำไปประมวลผลในนิพจน์</span>
+                                </td>
+                                <td><code>y = --i</code> (i=5)<br>Result: <code>i = 4, y = 4</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>--</code> (post)</td>
+                                <td>
+                                    <span class="lang-en">Post-decrement</span>
+                                    <span class="lang-th">ลดค่าทีหลัง</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Evaluates current value, then decrements variable.</span>
+                                    <span class="lang-th">ใช้ค่าปัจจุบันในนิพจน์ก่อน แล้วจึงลดค่าตัวแปรตามหลัง</span>
+                                </td>
+                                <td><code>y = i--</code> (i=5)<br>Result: <code>i = 4, y = 5</code></td>
+                            </tr>
+                            <!-- Relational -->
+                            <tr>
+                                <td><code>==</code></td>
+                                <td>
+                                    <span class="lang-en">Equality</span>
+                                    <span class="lang-th">ความเท่ากัน</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if values match. Returns 1 (true) or 0 (false).</span>
+                                    <span class="lang-th">ตรวจสอบว่าค่าเท่ากันหรือไม่ ส่งกลับ 1 (จริง) หรือ 0 (เท็จ)</span>
+                                </td>
+                                <td><code>5 == 5</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>!=</code></td>
+                                <td>
+                                    <span class="lang-en">Inequality</span>
+                                    <span class="lang-th">ความไม่เท่ากัน</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if values do not match.</span>
+                                    <span class="lang-th">ตรวจสอบว่าค่าไม่เท่ากันหรือไม่</span>
+                                </td>
+                                <td><code>5 != 3</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&lt;</code></td>
+                                <td>
+                                    <span class="lang-en">Less Than</span>
+                                    <span class="lang-th">น้อยกว่า</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if left is smaller than right.</span>
+                                    <span class="lang-th">ตรวจสอบว่าค่าทางซ้ายน้อยกว่าทางขวาหรือไม่</span>
+                                </td>
+                                <td><code>3 &lt; 5</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&gt;</code></td>
+                                <td>
+                                    <span class="lang-en">Greater Than</span>
+                                    <span class="lang-th">มากกว่า</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if left is larger than right.</span>
+                                    <span class="lang-th">ตรวจสอบว่าค่าทางซ้ายมากกว่าทางขวาหรือไม่</span>
+                                </td>
+                                <td><code>3 &gt; 5</code><br>Result: <code>0</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&lt;=</code></td>
+                                <td>
+                                    <span class="lang-en">Less Than or Equal</span>
+                                    <span class="lang-th">น้อยกว่าหรือเท่ากับ</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if left is smaller or equal.</span>
+                                    <span class="lang-th">ตรวจสอบว่าทางซ้ายน้อยกว่าหรือเท่ากับทางขวาหรือไม่</span>
+                                </td>
+                                <td><code>5 &lt;= 5</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&gt;=</code></td>
+                                <td>
+                                    <span class="lang-en">Greater Than or Equal</span>
+                                    <span class="lang-th">มากกว่าหรือเท่ากับ</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Checks if left is larger or equal.</span>
+                                    <span class="lang-th">ตรวจสอบว่าทางซ้ายมากกว่าหรือเท่ากับทางขวาหรือไม่</span>
+                                </td>
+                                <td><code>5 &gt;= 6</code><br>Result: <code>0</code></td>
+                            </tr>
+                            <!-- Logical -->
+                            <tr>
+                                <td><code>&&</code></td>
+                                <td>
+                                    <span class="lang-en">Logical AND</span>
+                                    <span class="lang-th">ตรรกศาสตร์ AND</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Returns 1 if both operands are true (non-zero). Short-circuits.</span>
+                                    <span class="lang-th">เป็นจริง (1) หากเงื่อนไขทั้งคู่เป็นจริง มีการลัดวงจรการทำงาน</span>
+                                </td>
+                                <td><code>5 && 0</code><br>Result: <code>0</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>||</code></td>
+                                <td>
+                                    <span class="lang-en">Logical OR</span>
+                                    <span class="lang-th">ตรรกศาสตร์ OR</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Returns 1 if at least one operand is true. Short-circuits.</span>
+                                    <span class="lang-th">เป็นจริง (1) หากมีอย่างน้อยหนึ่งเงื่อนไขเป็นจริง มีการลัดวงจรการทำงาน</span>
+                                </td>
+                                <td><code>5 || 0</code><br>Result: <code>1</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>!</code></td>
+                                <td>
+                                    <span class="lang-en">Logical NOT</span>
+                                    <span class="lang-th">ตรรกศาสตร์ NOT</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Negates logical state: turns 0 to 1, and non-zero to 0.</span>
+                                    <span class="lang-th">กลับค่าทางตรรกศาสตร์: จริงเปลี่ยนเป็นเท็จ และเท็จเป็นจริง</span>
+                                </td>
+                                <td><code>!5</code><br>Result: <code>0</code></td>
+                            </tr>
+                            <!-- Bitwise -->
+                            <tr>
+                                <td><code>&</code></td>
+                                <td>
+                                    <span class="lang-en">Bitwise AND</span>
+                                    <span class="lang-th">บิต AND</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Performs logical AND on bit pairs.</span>
+                                    <span class="lang-th">เปรียบเทียบ AND ทีละบิตของเลขสองจำนวน</span>
+                                </td>
+                                <td><code>5 & 3</code> (0101 &amp; 0011)<br>Result: <code>1</code> (0001)</td>
+                            </tr>
+                            <tr>
+                                <td><code>|</code></td>
+                                <td>
+                                    <span class="lang-en">Bitwise OR</span>
+                                    <span class="lang-th">บิต OR</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Performs logical OR on bit pairs.</span>
+                                    <span class="lang-th">เปรียบเทียบ OR ทีละบิตของเลขสองจำนวน</span>
+                                </td>
+                                <td><code>5 | 3</code> (0101 | 0011)<br>Result: <code>7</code> (0111)</td>
+                            </tr>
+                            <tr>
+                                <td><code>^</code></td>
+                                <td>
+                                    <span class="lang-en">Bitwise XOR</span>
+                                    <span class="lang-th">บิต XOR</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Performs logical XOR on bit pairs.</span>
+                                    <span class="lang-th">เปรียบเทียบ XOR (ต่างกันเป็น 1) ทีละบิต</span>
+                                </td>
+                                <td><code>5 ^ 3</code> (0101 ^ 0011)<br>Result: <code>6</code> (0110)</td>
+                            </tr>
+                            <tr>
+                                <td><code>~</code></td>
+                                <td>
+                                    <span class="lang-en">Bitwise NOT</span>
+                                    <span class="lang-th">บิต NOT</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Inverts all bits of the operand.</span>
+                                    <span class="lang-th">กลับค่าบิต 0 เป็น 1 และ 1 เป็น 0 ทั้งหมด</span>
+                                </td>
+                                <td><code>~0</code> (8-bit unsigned)<br>Result: <code>255</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&lt;&lt;</code></td>
+                                <td>
+                                    <span class="lang-en">Left Shift</span>
+                                    <span class="lang-th">เลื่อนบิตไปทางซ้าย</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Shifts bits left by N spots, inserting zeros.</span>
+                                    <span class="lang-th">เลื่อนตำแหน่งบิตไปทางซ้าย N ครั้ง (เทียบเท่ากับการคูณด้วย 2^N)</span>
+                                </td>
+                                <td><code>1 &lt;&lt; 3</code><br>Result: <code>8</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>&gt;&gt;</code></td>
+                                <td>
+                                    <span class="lang-en">Right Shift</span>
+                                    <span class="lang-th">เลื่อนบิตไปทางขวา</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Shifts bits right by N spots.</span>
+                                    <span class="lang-th">เลื่อนตำแหน่งบิตไปทางขวา N ครั้ง (เทียบเท่ากับการหารด้วย 2^N)</span>
+                                </td>
+                                <td><code>8 &gt;&gt; 2</code><br>Result: <code>2</code></td>
+                            </tr>
+                            <!-- Cast -->
+                            <tr>
+                                <td><code>(type)</code></td>
+                                <td>
+                                    <span class="lang-en">Explicit Cast</span>
+                                    <span class="lang-th">แปลงชนิดข้อมูลระบุรูปแบบ</span>
+                                </td>
+                                <td>
+                                    <span class="lang-en">Explicitly forces a value to convert to the target type.</span>
+                                    <span class="lang-th">บังคับเปลี่ยนประเภทประเภทข้อมูลเป็นชนิดที่ระบุอย่างเจาะจง</span>
+                                </td>
+                                <td><code>(float)5 / 2</code><br>Result: <code>2.5</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- AST Evaluator section -->
+                <div class="grid-container">
+                    <div class="card">
+                        <h3 class="card-title">Abstract Syntax Trees (AST)</h3>
+                        <p class="card-description">When C parses expressions, it structures operators and operands into a tree based on their precedence. Nodes lower in the tree evaluate first. Choose an expression below and step through its execution.</p>
+                    </div>
+                </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>Expression:</label>
+                            <select id="expr-select" onchange="loadExpression()">
+                                <option value="mulAdd">a + b * c   (Multiplication before Addition)</option>
+                                <option value="parenMul">(a + b) * c  (Parenthesis override)</option>
+                                <option value="logicAndOr">a || b && c  (Logical AND before OR)</option>
+                                <option value="assignAssoc">x = y = z = 5 (Right-to-Left Associativity)</option>
+                            </select>
+                        </div>
+                        
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <button class="btn btn-primary" onclick="stepExpr()">Next Step</button>
+                        <button class="btn btn-secondary" onclick="loadExpression()">Reset</button>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <div style="font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace; font-size: 1.5rem; text-align: center; margin-bottom: 20px;">
+                            <span id="expr-display-text">5 + 3 * 4</span>
+                        </div>
+
+                        <div class="ast-container" id="ast-visualizer">
+                            <!-- AST structure rendered here -->
+                        </div>
+
+                        <div class="card" style="background: rgba(0,0,0,0.2);">
+                            <h4 style="margin-bottom: 8px;">Trace Log</h4>
+                            <pre id="precedence-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready to evaluate.</pre>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-stats">
+                        <div class="stat-item">Variable Values: <span style="color: var(--accent-blue);" id="stat-variables">a=5, b=3, c=4, x=0, y=0, z=0</span></div>
+                    </div>
+                </div>
+            </div>          </div>
+        </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const expressions = {
+            mulAdd: {
+                display: "5 + 3 * 4",
+                vars: "a=5, b=3, c=4",
+                log: "Expression: 5 + 3 * 4\nPrecedence check: '*' has rank 13, '+' has rank 12.\nSo, 3 * 4 evaluates first.",
+                steps: [
+                    {
+                        activeNodes: ["mul"],
+                        log: "Step 1: Multiply 3 * 4 -> 12",
+                        evalNode: { id: "mul", newVal: "12" }
+                    },
+                    {
+                        activeNodes: ["add"],
+                        log: "Step 2: Add 5 + 12 -> 17. Evaluation complete.",
+                        evalNode: { id: "add", newVal: "17" }
+                    }
+                ],
+                treeHTML: `
+                    <div class="ast-branch">
+                        <div class="ast-node" id="node-add">+</div>
+                        <div class="ast-children">
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-a">5</div>
+                            </div>
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-mul">*</div>
+                                <div class="ast-children">
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-b">3</div>
+                                    </div>
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-c">4</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            parenMul: {
+                display: "(5 + 3) * 4",
+                vars: "a=5, b=3, c=4",
+                log: "Expression: (5 + 3) * 4\nPrecedence check: Parenthesis '()' has highest rank 15.\nSo, 5 + 3 inside evaluates first.",
+                steps: [
+                    {
+                        activeNodes: ["add"],
+                        log: "Step 1: Add 5 + 3 -> 8",
+                        evalNode: { id: "add", newVal: "8" }
+                    },
+                    {
+                        activeNodes: ["mul"],
+                        log: "Step 2: Multiply 8 * 4 -> 32. Evaluation complete.",
+                        evalNode: { id: "mul", newVal: "32" }
+                    }
+                ],
+                treeHTML: `
+                    <div class="ast-branch">
+                        <div class="ast-node" id="node-mul">*</div>
+                        <div class="ast-children">
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-add">+</div>
+                                <div class="ast-children">
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-a">5</div>
+                                    </div>
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-b">3</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-c">4</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            logicAndOr: {
+                display: "1 || 0 && 0",
+                vars: "a=1, b=0, c=0",
+                log: "Expression: 1 || 0 && 0\nPrecedence check: '&&' (Logical AND) has rank 11, '||' (Logical OR) has rank 10.\nSo, 0 && 0 evaluates first.",
+                steps: [
+                    {
+                        activeNodes: ["and"],
+                        log: "Step 1: Evaluate 0 && 0 -> 0",
+                        evalNode: { id: "and", newVal: "0" }
+                    },
+                    {
+                        activeNodes: ["or"],
+                        log: "Step 2: Evaluate 1 || 0 -> 1. Evaluation complete.",
+                        evalNode: { id: "or", newVal: "1" }
+                    }
+                ],
+                treeHTML: `
+                    <div class="ast-branch">
+                        <div class="ast-node" id="node-or">||</div>
+                        <div class="ast-children">
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-a">1</div>
+                            </div>
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-and">&&</div>
+                                <div class="ast-children">
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-b">0</div>
+                                    </div>
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-c">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            assignAssoc: {
+                display: "x = y = z = 5",
+                vars: "x=0, y=0, z=0",
+                log: "Expression: x = y = z = 5\nPrecedence check: Assignment operator '=' has rank 2, and evaluates Right-to-Left.",
+                steps: [
+                    {
+                        activeNodes: ["eq3"],
+                        log: "Step 1: Assign 5 to z -> z becomes 5",
+                        evalNode: { id: "eq3", newVal: "z = 5" }
+                    },
+                    {
+                        activeNodes: ["eq2"],
+                        log: "Step 2: Assign 5 (result of previous expression) to y -> y becomes 5",
+                        evalNode: { id: "eq2", newVal: "y = 5" }
+                    },
+                    {
+                        activeNodes: ["eq1"],
+                        log: "Step 3: Assign 5 to x -> x becomes 5. Evaluation complete.",
+                        evalNode: { id: "eq1", newVal: "x = 5" }
+                    }
+                ],
+                treeHTML: `
+                    <div class="ast-branch">
+                        <div class="ast-node" id="node-eq1">= (x)</div>
+                        <div class="ast-children">
+                            <div class="ast-branch">
+                                <div class="ast-node" style="border-style: dashed; opacity: 0.7;">x</div>
+                            </div>
+                            <div class="ast-branch">
+                                <div class="ast-node" id="node-eq2">= (y)</div>
+                                <div class="ast-children">
+                                    <div class="ast-branch">
+                                        <div class="ast-node" style="border-style: dashed; opacity: 0.7;">y</div>
+                                    </div>
+                                    <div class="ast-branch">
+                                        <div class="ast-node" id="node-eq3">= (z)</div>
+                                        <div class="ast-children">
+                                            <div class="ast-branch">
+                                                <div class="ast-node" style="border-style: dashed; opacity: 0.7;">z</div>
+                                            </div>
+                                            <div class="ast-branch">
+                                                <div class="ast-node" id="node-val">5</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        let currentExpr = 'mulAdd';
+        let stepIndex = 0;
+
+        function loadExpression() {
+            currentExpr = document.getElementById('expr-select').value;
+            const expr = expressions[currentExpr];
+            stepIndex = 0;
+
+            document.getElementById('expr-display-text').innerText = expr.display;
+            document.getElementById('stat-variables').innerText = expr.vars;
+            
+            const logEl = document.getElementById('precedence-log');
+            logEl.innerText = expr.log;
+            
+            const container = document.getElementById('ast-visualizer');
+            container.innerHTML = expr.treeHTML;
+            
+            drawConnections();
+        }
+
+        function drawConnections() {
+            // No longer needed: CSS pseudo-elements auto-render perfect connections!
+        }
+
+        function stepExpr() {
+            const expr = expressions[currentExpr];
+            if (stepIndex >= expr.steps.length) {
+                alert("Evaluation already complete!");
+                return;
+            }
+
+            const step = expr.steps[stepIndex];
+            
+            // Highlight nodes
+            document.querySelectorAll('.ast-node').forEach(n => n.classList.remove('active'));
+            step.activeNodes.forEach(id => {
+                const el = document.getElementById(`node-${id}`);
+                if (el) el.classList.add('active');
+            });
+
+            // Update log
+            const logEl = document.getElementById('precedence-log');
+            logEl.innerText += `\n${step.log}`;
+            logEl.scrollTop = logEl.scrollHeight;
+
+            // Update value of evaluated node
+            if (step.evalNode) {
+                const el = document.getElementById(`node-${step.evalNode.id}`);
+                if (el) {
+                    el.innerText = step.evalNode.newVal;
+                    el.classList.add('evaluated');
+                }
+            }
+
+            stepIndex++;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            loadExpression();
+        };
+    </script>
+</body>
+</html>

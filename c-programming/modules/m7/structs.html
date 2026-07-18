@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Struct Alignment</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .struct-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .struct-byte {
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid var(--glass-border);
+            border-radius: 8px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 0.95rem;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+        .struct-byte.char-member {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: var(--accent-blue);
+        }
+        .struct-byte.int-member {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--accent-purple);
+        }
+        .struct-byte.padding-byte {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: var(--accent-rose);
+            color: var(--accent-rose);
+            text-decoration: line-through;
+        }
+        .byte-num {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">7.1 Struct Alignment & Padding</h1>
+            <p class="page-subtitle">Understand how compilers arrange variables in structured memory, insert padding, and calculate sizes.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Struct Padding Visualizer</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Memory Padding and Sizeof</h3>
+                <p class="card-description">To optimize CPU memory reads, data types are aligned to address boundaries that match their sizes (e.g., 4-byte integers start at address multiples of 4). Compilers insert blank padding bytes to enforce this. The arrangement of members directly affects the struct size.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Struct Padding Rules</h3>
+                <p class="card-description">
+                    • Compilers align variables to multiples of their natural size.
+                    <br>• Suboptimal layouts (e.g. <code>char</code> followed by <code>int</code>) force the compiler to insert 3 padding bytes before the <code>int</code> so it starts on a multiple of 4.
+                    <br>• Ordering members from <strong>largest size to smallest size</strong> yields the most compact structure.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Unions</h3>
+                <p class="card-description">
+                    • Declared similarly to structs but <strong>all members share the same starting address</strong> in memory.
+                    <br>• Size of a union is equal to the size of its <strong>largest member</strong>. Only one member value can be stored at any given time.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">3. File streams (FILE * )</h3>
+                <p class="card-description">
+                    C handles files via standard stream buffers:
+                    <br>• <code>fopen("filename", "mode")</code>: Modes include <code>"r"</code> (read), <code>"w"</code> (write, overwrites), <code>"a"</code> (append, writes to end). Add <code>"b"</code> for binary operations (e.g. <code>"rb"</code>).
+                    <br>• Standard pre-opened streams: <code>stdin</code>, <code>stdout</code>, and <code>stderr</code>.
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>Struct Member Arrangement:</label>
+                            <select id="struct-select" onchange="loadStructLayout()">
+                                <option value="suboptimal">Suboptimal Layout (char, int, char)</option>
+                                <option value="optimized">Optimized Layout (int, char, char)</option>
+                            </select>
+                        </div>
+                        
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <span style="font-weight: bold; font-size: 0.95rem;">Structure Layout View (4-Byte Rows):</span>
+                    </div>
+
+                    <div style="padding: 24px; text-align: center;">
+                        <pre id="struct-code" style="text-align: left; max-width: 500px; margin: 0 auto 20px auto; font-size: 0.85rem;"></pre>
+
+                        <div class="struct-grid" id="struct-grid-display">
+                            <!-- Dynamically generated structure bytes -->
+                        </div>
+
+                        <div class="card" style="background: rgba(0,0,0,0.2); max-width: 600px; margin: 20px auto 0 auto; text-align: left;">
+                            <h4 style="margin-bottom: 8px;">Alignment Explanation</h4>
+                            <p id="alignment-explanation" class="card-description" style="font-size: 0.9rem; line-height: 1.5;"></p>
+                        </div>
+                    </div>
+
+                    <div class="visualizer-stats">
+                        <div class="stat-item">Total Struct Size: <span id="stat-struct-size" style="color: var(--accent-blue);">0 bytes</span></div>
+                        <div class="stat-item">Wasted Padding: <span id="stat-struct-padding" style="color: var(--accent-rose);">0 bytes</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const structLayouts = {
+            suboptimal: {
+                code: `struct Suboptimal {\n    char c;    // 1 byte\n    // 3 bytes padding inserted here\n    int i;     // 4 bytes\n    char d;    // 1 byte\n    // 3 bytes padding inserted at end\n};`,
+                size: 12,
+                padding: 6,
+                bytes: [
+                    { type: 'char-member', name: 'c' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'int-member', name: 'i[0]' },
+                    { type: 'int-member', name: 'i[1]' },
+                    { type: 'int-member', name: 'i[2]' },
+                    { type: 'int-member', name: 'i[3]' },
+                    { type: 'char-member', name: 'd' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'padding-byte', name: 'pad' }
+                ],
+                explanation: "Because `int i` requires a 4-byte aligned boundary, it cannot start at byte address 1. The compiler inserts 3 padding bytes after `char c`. Furthermore, the entire structure size must be a multiple of the largest member size (4 bytes), so 3 padding bytes are added at the end after `char d`, making the total size 12 bytes."
+            },
+            optimized: {
+                code: `struct Optimized {\n    int i;     // 4 bytes\n    char c;    // 1 byte\n    char d;    // 1 byte\n    // 2 bytes padding inserted at end\n};`,
+                size: 8,
+                padding: 2,
+                bytes: [
+                    { type: 'int-member', name: 'i[0]' },
+                    { type: 'int-member', name: 'i[1]' },
+                    { type: 'int-member', name: 'i[2]' },
+                    { type: 'int-member', name: 'i[3]' },
+                    { type: 'char-member', name: 'c' },
+                    { type: 'char-member', name: 'd' },
+                    { type: 'padding-byte', name: 'pad' },
+                    { type: 'padding-byte', name: 'pad' }
+                ],
+                explanation: "By declaring the largest member `int i` first, it aligns perfectly at boundary index 0. The characters `c` and `d` follow immediately. To align the total structure to a multiple of 4 bytes, only 2 padding bytes are required at the end, saving 4 bytes of RAM memory compared to the suboptimal layout!"
+            }
+        };
+
+        function loadStructLayout() {
+            const selectVal = document.getElementById('struct-select').value;
+            const layout = structLayouts[selectVal];
+
+            document.getElementById('struct-code').innerText = layout.code;
+            document.getElementById('stat-struct-size').innerText = `${layout.size} bytes`;
+            document.getElementById('stat-struct-padding').innerText = `${layout.padding} bytes`;
+            document.getElementById('alignment-explanation').innerText = layout.explanation;
+
+            const grid = document.getElementById('struct-grid-display');
+            grid.innerHTML = '';
+
+            layout.bytes.forEach((b, idx) => {
+                const label = b.type === 'padding-byte' ? 'PAD' : b.name;
+                grid.innerHTML += `
+                    <div class="struct-byte ${b.type}">
+                        <span class="byte-num">+${idx}</span>
+                        <span>${label}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            loadStructLayout();
+        };
+    </script>
+</body>
+</html>

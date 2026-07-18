@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Call Stack</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .stack-flex {
+            display: flex;
+            gap: 24px;
+            margin: 20px 0;
+            min-height: 380px;
+        }
+        @media (max-width: 768px) {
+            .stack-flex {
+                flex-direction: column;
+            }
+        }
+        .stack-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            background: rgba(0,0,0,0.15);
+            min-height: 300px;
+            gap: 12px;
+        }
+        .stack-frame {
+            border: 1px solid var(--accent-blue);
+            background: rgba(59, 130, 246, 0.12);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            animation: push-frame 0.3s ease-out;
+        }
+        @keyframes push-frame {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .stack-frame-title {
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+        }
+        .stack-frame-vars {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">4.1 Function Call Stack Visualizer</h1>
+            <p class="page-subtitle">Understand execution flow, stack frame pushing/popping, and recursive call footprints in memory.</p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Call Stack</button>
+                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+        <div class="grid-container">
+            <div class="card">
+                <h3 class="card-title">Activation Records</h3>
+                <p class="card-description">Each time a function is called, the system creates a stack frame (activation record) containing its parameters, local variables, and return address. When a function finishes, its frame is immediately popped off. Observe recursion or nested calls below.</p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">1. Prototypes vs. Definitions</h3>
+                <p class="card-description">
+                    • <strong>Declaration (Prototype)</strong>: Informs the compiler about the function's name, arguments list, and return type before it is called (e.g. <code>int add(int, int);</code>).
+                    <br>• <strong>Definition</strong>: Contains the actual execution code blocks (body) of the function.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">2. Call-by-Value vs. Reference</h3>
+                <p class="card-description">
+                    • <strong>Call-by-Value</strong>: C's default passing mechanism. Arguments are copied into parameter variables. Modifications inside the function do <em>not</em> affect the caller's variables.
+                    <br>• <strong>Call-by-Reference</strong>: Achieved in C by passing <strong>pointers</strong> (address variables), allowing the function to dereference and modify the caller's memory directly.
+                </p>
+            </div>
+            <div class="card">
+                <h3 class="card-title">3. Recursion & Stack Overflow</h3>
+                <p class="card-description">
+                    A function that calls itself is recursive. It must have a <strong>base case</strong> to terminate. Without it, successive recursive calls will allocate infinite stack frames, leading to a program crash known as <strong>Stack Overflow</strong>.
+                </p>
+            </div>
+        </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>Function Flow:</label>
+                            <select id="stack-select" onchange="loadStack()">
+                                <option value="recursion">Recursive Factorial: fact(3)</option>
+                                <option value="nested">Nested Calls: main() -> square() -> mult()</option>
+                            </select>
+                        </div>
+                        
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <button class="btn btn-primary" onclick="stepStack()">Next Step</button>
+                        <button class="btn btn-secondary" onclick="loadStack()">Reset</button>
+                    </div>
+
+                    <div class="stack-flex" style="padding: 24px;">
+                        <!-- Call Stack Visual Area -->
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <h4 style="margin-bottom: 12px; color: var(--accent-blue); text-align: center;">Memory Call Stack (Grows Upward)</h4>
+                            <div class="stack-container" id="stack-visualizer">
+                                <!-- Stack frames dynamically added -->
+                            </div>
+                        </div>
+
+                        <!-- Info & Logs Area -->
+                        <div style="flex: 1.2; display: flex; flex-direction: column; gap: 16px;">
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
+                                <h4 style="margin-bottom: 8px; color: var(--accent-purple);">Active Code Pointer</h4>
+                                <pre id="active-func-code" style="font-size: 0.8rem; height: 130px;"></pre>
+                            </div>
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px; flex-grow: 1;">
+                                <h4 style="margin-bottom: 8px; color: var(--accent-emerald);">Call Log Details</h4>
+                                <pre id="stack-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const flows = {
+            recursion: {
+                code: `int fact(int n) {\n    if (n <= 1) return 1;\n    return n * fact(n - 1);\n}`,
+                steps: [
+                    {
+                        frames: [{ name: "main()", vars: "argc = 1" }],
+                        log: "Program execution begins in main()."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1" },
+                            { name: "fact(n=3)", vars: "n = 3" }
+                        ],
+                        log: "main() calls fact(3). PUSH fact(3) frame onto stack."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1" },
+                            { name: "fact(n=3)", vars: "n = 3" },
+                            { name: "fact(n=2)", vars: "n = 2" }
+                        ],
+                        log: "Inside fact(3): 3 > 1, so it evaluates 3 * fact(2). PUSH fact(2) frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1" },
+                            { name: "fact(n=3)", vars: "n = 3" },
+                            { name: "fact(n=2)", vars: "n = 2" },
+                            { name: "fact(n=1)", vars: "n = 1" }
+                        ],
+                        log: "Inside fact(2): 2 > 1, so it evaluates 2 * fact(1). PUSH fact(1) frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1" },
+                            { name: "fact(n=3)", vars: "n = 3" },
+                            { name: "fact(n=2)", vars: "n = 2, ret = 2" },
+                            { name: "fact(n=1)", vars: "n = 1, retVal = 1" }
+                        ],
+                        log: "Inside fact(1): Base case hit (1 <= 1). Prepares to return 1. POP fact(1) frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1" },
+                            { name: "fact(n=3)", vars: "n = 3, ret = 6" },
+                            { name: "fact(n=2)", vars: "n = 2, retVal = 2 * 1 = 2" }
+                        ],
+                        log: "fact(2) receives 1, multiplies by 2, prepares to return 2. POP fact(2) frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "argc = 1, res = 6" },
+                            { name: "fact(n=3)", vars: "n = 3, retVal = 3 * 2 = 6" }
+                        ],
+                        log: "fact(3) receives 2, multiplies by 3, prepares to return 6. POP fact(3) frame."
+                    },
+                    {
+                        frames: [{ name: "main()", vars: "argc = 1, res = 6" }],
+                        log: "main() receives result 6. Print result to screen. Complete."
+                    }
+                ]
+            },
+            nested: {
+                code: `int mult(int a, int b) { return a * b; }\nint square(int x) { return mult(x, x); }\nint main() { int s = square(4); }`,
+                steps: [
+                    {
+                        frames: [{ name: "main()", vars: "s = undef" }],
+                        log: "Start main() function. s is allocated on the stack but uninitialized."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "s = undef" },
+                            { name: "square(x=4)", vars: "x = 4" }
+                        ],
+                        log: "main() calls square(4). PUSH square frame. Parameter x set to 4."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "s = undef" },
+                            { name: "square(x=4)", vars: "x = 4" },
+                            { name: "mult(a=4, b=4)", vars: "a = 4, b = 4" }
+                        ],
+                        log: "Inside square(4): calls mult(4, 4). PUSH mult frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "s = undef" },
+                            { name: "square(x=4)", vars: "x = 4, retVal = 16" },
+                            { name: "mult(a=4, b=4)", vars: "a = 4, b = 4, retVal = 16" }
+                        ],
+                        log: "mult(4, 4) calculates 16, prepares to return 16. POP mult frame."
+                    },
+                    {
+                        frames: [
+                            { name: "main()", vars: "s = 16" },
+                            { name: "square(x=4)", vars: "x = 4, retVal = 16" }
+                        ],
+                        log: "square receives 16 and returns it. POP square frame."
+                    },
+                    {
+                        frames: [{ name: "main()", vars: "s = 16" }],
+                        log: "main() stores 16 in variable 's'. Evaluation complete."
+                    }
+                ]
+            }
+        };
+
+        let currentFlow = 'recursion';
+        let stepIndex = 0;
+
+        function loadStack() {
+            currentFlow = document.getElementById('stack-select').value;
+            const flow = flows[currentFlow];
+            stepIndex = 0;
+
+            document.getElementById('active-func-code').innerText = flow.code;
+            document.getElementById('stack-log').innerText = "Tracer loaded. Click Next Step to execute code.";
+            
+            renderStack();
+        }
+
+        function renderStack() {
+            const flow = flows[currentFlow];
+            const container = document.getElementById('stack-visualizer');
+            container.innerHTML = '';
+
+            const step = flow.steps[stepIndex];
+            if (!step) return;
+
+            step.frames.forEach(frame => {
+                container.innerHTML += `
+                    <div class="stack-frame">
+                        <div class="stack-frame-title">${frame.name}</div>
+                        <div class="stack-frame-vars">
+                            <div><strong>Local variables:</strong></div>
+                            <div>${frame.vars}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function stepStack() {
+            const flow = flows[currentFlow];
+            if (stepIndex >= flow.steps.length - 1) {
+                alert("Execution flow complete!");
+                return;
+            }
+
+            stepIndex++;
+            renderStack();
+
+            const step = flow.steps[stepIndex];
+            const logEl = document.getElementById('stack-log');
+            logEl.innerHTML += `\n&gt; ${step.log}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            loadStack();
+        };
+    </script>
+</body>
+</html>

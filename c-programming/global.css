@@ -506,3 +506,16 @@ input[type="range"]::-webkit-slider-thumb:hover {
         padding: 20px;
     }
 }
+
+/* Bilingual Language controls */
+body.lang-th .lang-en {
+    display: none !important;
+}
+body.lang-en .lang-th {
+    display: none !important;
+}
+/* If no language class is set yet, default to English */
+body:not(.lang-th) .lang-th {
+    display: none !important;
+}
+
