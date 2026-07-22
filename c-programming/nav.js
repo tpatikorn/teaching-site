@@ -124,7 +124,23 @@ document.addEventListener('DOMContentLoaded', () => {
     "Structure Layout View (4-Byte Rows):": "จำลองมุมมองหน่วยความจำ (แถวละ 4 ไบต์):",
     "Alignment Explanation": "คำอธิบายการจัดตำแหน่งแอดเดรส",
     "Trace Log": "ประวัติการประมวลผลย้อนหลัง",
-    "Execution Output": "ผลแสดงการทำงานคอมโซลออกจอภาพ"
+    "Execution Output": "ผลแสดงการทำงานคอมโซลออกจอภาพ",
+    "Action Log": "บันทึกเหตุการณ์",
+    "Expression:": "นิพจน์:",
+    "Variable Values:": "ค่าของตัวแปร:",
+    "Function Flow:": "เส้นทางการทำงานฟังก์ชัน:",
+    "Interactive Pipeline:": "ไปป์ไลน์เชิงโต้ตอบ:",
+    "String:": "สตริง:",
+    "Buffer Capacity:": "ความจุบัฟเฟอร์:",
+    "String Length:": "ความยาวสตริง:",
+    "Destination String buffer (for strcpy):": "บัฟเฟอร์สตริงปลายทาง (สำหรับ strcpy):",
+    "Source String buffer:": "บัฟเฟอร์สตริงต้นทาง:",
+    "Recursive Factorial: fact(3)": "แฟกทอเรียลแบบเรียกซ้ำ: fact(3)",
+    "Nested Calls: main() -> square() -> mult()": "การเรียกฟังก์ชันซ้อนกัน: main() -> square() -> mult()",
+    "a + b * c   (Multiplication before Addition)": "a + b * c (คูณก่อนบวก)",
+    "(a + b) * c  (Parenthesis override)": "(a + b) * c (วงเล็บสำคัญที่สุด)",
+    "a || b && c  (Logical AND before OR)": "a || b && c (AND สำคัญกว่า OR)",
+    "x = y = z = 5 (Right-to-Left Associativity)": "x = y = z = 5 (ทิศทางขวาไปซ้าย)"
 };
 
     function applyTranslation() {
@@ -240,7 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 3: การควบคุมทิศทางของโปรแกรม",
             id: "m3",
             pages: [
-                { name: "3.1 Loops & Iteration", nameTh: "3.1 ลูปและการทำซ้ำ", path: "modules/m3/loops.html" }
+                { name: "3.1 Conditionals", nameTh: "3.1 โครงสร้างการตัดสินใจเงื่อนไข", path: "modules/m3/conditionals.html" },
+                { name: "3.2 Loop Constructs", nameTh: "3.2 โครงสร้างลูปและการทำซ้ำ", path: "modules/m3/loops.html" },
+                { name: "3.3 Jump Statements", nameTh: "3.3 คำสั่งข้ามและคำสั่งย้อนกลับ", path: "modules/m3/jumps.html" }
             ]
         },
         {

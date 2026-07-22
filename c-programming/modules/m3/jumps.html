@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Jump Statements Tracing</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../nav.js"></script>
+    <style>
+        .trace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .trace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .code-line {
+            padding: 4px 8px;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-size: 0.9rem;
+            border-left: 3px solid transparent;
+            transition: var(--transition-smooth);
+        }
+        .code-line.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-left-color: var(--accent-blue);
+        }
+        .variables-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(0,0,0,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .variables-table th, .variables-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+        .variables-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .variables-table td {
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            font-weight: bold;
+        }
+        .variables-table td.changed {
+            color: var(--accent-amber);
+            animation: highlight-pulse 0.8s ease;
+        }
+        @keyframes highlight-pulse {
+            0% { background: rgba(245, 158, 11, 0.2); }
+            100% { background: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="lang-en">3.3 Jump Statements (break/continue & return)</span>
+                <span class="lang-th">3.3 คำสั่งข้ามการทำงานและคำสั่งย้อนกลับ (break/continue & return)</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Trace jump statement redirections, loop breaks, continue updates, and function return flows step-by-step.</span>
+                <span class="lang-th">ตัวติดตามและจำลองโครงสร้างคำสั่ง break, continue และการทำงานร่วมกับ return ทีละขั้นตอน</span>
+            </p>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-headers" style="margin-bottom: 24px;">
+                <button class="tab-btn active" onclick="switchTab('visualizer')">
+                    <span class="lang-en">Jumps Tracer</span>
+                    <span class="lang-th">ตัวจำลองคำสั่งข้ามการทำงาน</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('practice')">
+                    <span class="lang-en">Practice Problems</span>
+                    <span class="lang-th">โจทย์ฝึกปฏิบัติ</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: VISUALIZER -->
+            <div id="visualizer" class="tab-content active">
+                <div class="grid-container">
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">Jump Statements Trace</span>
+                            <span class="lang-th">การติดตามคำสั่งข้ามการทำงาน</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">Jump statements alter the execution flow by unconditionally transferring control to another line of code.</span>
+                            <span class="lang-th">คำสั่งข้ามการทำงานจะแก้ไขลำดับประมวลผลโดยการโอนย้ายควบคุมไปยังส่วนอื่นโดยไม่มีเงื่อนไข</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">1. Break Statement</span>
+                            <span class="lang-th">1. คำสั่ง Break</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Immediately terminates the execution of the innermost <code>for</code>, <code>while</code>, <code>do-while</code>, or <code>switch</code> statement.
+                            <br>• Execution continues at the next line immediately following the loop/switch block.</span>
+                            <span class="lang-th">• ยุติลูปในสุด (for, while, do-while) หรือ switch ที่ทำงานครอบอยู่ทันที
+                            <br>• การประมวลผลจะทำงานต่อที่บรรทัดถัดไปทันทีหลังจบบล็อกลูป/switch นั้น</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">2. Continue Statement</span>
+                            <span class="lang-th">2. คำสั่ง Continue</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Skips the rest of the statements in the current iteration of the innermost loop.
+                            <br>• Jumps directly to the condition test (for <code>while</code>) or update expression (for <code>for</code>).</span>
+                            <span class="lang-th">• ข้ามขั้นตอนคำสั่งที่เหลือทั้งหมดในรอบการทำงานปัจจุบันของลูปชั้นในสุด
+                            <br>• กระโดดข้ามไปยังเงื่อนไขตรวจสอบ (สำหรับ <code>while</code>) หรือการปรับปรุงค่านิพจน์ควบคุม (สำหรับ <code>for</code>) ทันที</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">3. Return Statement interaction</span>
+                            <span class="lang-th">3. ผลของคำสั่ง Return ร่วมกับลูป</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Immediately terminates execution of the entire containing function.
+                            <br>• If executed inside a loop, it breaks out of the loop and exits the function instantly, skipping any trailing logic in or outside the loop.</span>
+                            <span class="lang-th">• ปิดการประมวลผลและยุติการเรียกทำงานทั้งหมดของฟังก์ชันนั้นทันที
+                            <br>• หากประมวลผลภายในลูป จะออกจากลูปและฟังก์ชันในเสี้ยววินาที ข้ามคำสั่งถัดไปทั้งหมดไม่ว่าจะอยู่ในหรือนอกลูป</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="visualizer-container">
+                    <div class="visualizer-controls">
+                        <div class="control-group">
+                            <label>
+                                <span class="lang-en">Jump Scenario:</span>
+                                <span class="lang-th">คำสั่งข้ามตัวอย่าง:</span>
+                            </label>
+                            <select id="jump-select" onchange="loadJump()">
+                                <option value="breakLogic">Break Statement (early exit)</option>
+                                <option value="continueLogic">Continue Statement (skip iteration)</option>
+                                <option value="returnInteract">Return in Loop (exiting function)</option>
+                            </select>
+                        </div>
+                        
+                        <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
+
+                        <button class="btn btn-primary" onclick="stepJump()">
+                            <span class="lang-en">Next Step</span>
+                            <span class="lang-th">ขั้นตอนถัดไป</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadJump()">
+                            <span class="lang-en">Reset</span>
+                            <span class="lang-th">รีเซ็ต</span>
+                        </button>
+                    </div>
+
+                    <div class="trace-grid" style="padding: 24px;">
+                        <!-- Code Column -->
+                        <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
+                            <h4 style="margin-bottom: 12px; color: var(--accent-blue);">
+                                <span class="lang-en">C Source Code</span>
+                                <span class="lang-th">รหัสต้นฉบับภาษา C</span>
+                            </h4>
+                            <div id="code-container" style="border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.2); padding: 12px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Variable State Column -->
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
+                                <h4 style="margin-bottom: 12px; color: var(--accent-purple);">
+                                    <span class="lang-en">Variable States</span>
+                                    <span class="lang-th">สถานะตัวแปร</span>
+                                </h4>
+                                <table class="variables-table">
+                                    <thead>
+                                        <tr id="vars-header">
+                                            <!-- Headers -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr id="vars-values">
+                                            <!-- Values -->
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px; flex-grow: 1;">
+                                <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">
+                                    <span class="lang-en">Execution Output</span>
+                                    <span class="lang-th">ผลแสดงจอภาพ</span>
+                                </h4>
+                                <pre id="terminal-out" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRACTICE PROBLEMS -->
+            <div id="practice" class="tab-content">
+                <div id="practice-section"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const jumps = {
+            breakLogic: {
+                lines: [
+                    "for (int i = 0; i < 4; i++) {",
+                    "    if (i == 2) {",
+                    "        break;",
+                    "    }",
+                    "    printf(\"%d \", i);",
+                    "}",
+                    "printf(\"Done\");"
+                ],
+                variables: ["i", "i == 2"],
+                steps: [
+                    { line: 0, vars: { i: "0", "i == 2": "False" }, log: "Initialize loop variable i = 0. Condition 0 < 4 is True. / ตั้งค่าเริ่มต้น i = 0 เงื่อนไข 0 < 4 เป็นจริง" },
+                    { line: 1, vars: { i: "0", "i == 2": "False" }, log: "Check if i == 2 (0 == 2) -> False. Skip block. / ตรวจสอบ i == 2 (เท็จ) ข้ามบล็อกเงื่อนไข" },
+                    { line: 4, vars: { i: "0", "i == 2": "False" }, log: "Execute statement: Print i (0). / ทำงานพิมพ์ผลลัพธ์: พิมพ์ 0" },
+                    { line: 0, vars: { i: "1", "i == 2": "False" }, log: "Increment i to 1. Condition 1 < 4 is True. / เพิ่มค่า i เป็น 1 เงื่อนไข 1 < 4 เป็นจริง" },
+                    { line: 1, vars: { i: "1", "i == 2": "False" }, log: "Check if i == 2 (1 == 2) -> False. Skip block. / ตรวจสอบ i == 2 (เท็จ) ข้ามบล็อกเงื่อนไข" },
+                    { line: 4, vars: { i: "1", "i == 2": "False" }, log: "Execute statement: Print i (1). / ทำงานพิมพ์ผลลัพธ์: พิมพ์ 1" },
+                    { line: 0, vars: { i: "2", "i == 2": "True" }, log: "Increment i to 2. Condition 2 < 4 is True. / เพิ่มค่า i เป็น 2 เงื่อนไข 2 < 4 เป็นจริง" },
+                    { line: 1, vars: { i: "2", "i == 2": "True" }, log: "Check if i == 2 (2 == 2) -> True. Enter if-block. / ตรวจสอบ i == 2 (จริง) เข้าบล็อกเงื่อนไข" },
+                    { line: 2, vars: { i: "2", "i == 2": "True" }, log: "Hit break statement! Immediately terminate loop and jump outside. / พบคำสั่ง break! สิ้นสุดการวนรอบลูปและกระโดดออกนอกลูปทันที" },
+                    { line: 6, vars: { i: "2", "i == 2": "-" }, log: "Execute code outside loop: Print \"Done\". Program ends. / ทำงานรหัสนอกลูป พิมพ์ \"Done\" จบการทำงาน" }
+                ]
+            },
+            continueLogic: {
+                lines: [
+                    "for (int i = 0; i < 3; i++) {",
+                    "    if (i == 1) {",
+                    "        continue;",
+                    "    }",
+                    "    printf(\"%d \", i);",
+                    "}",
+                    "printf(\"Done\");"
+                ],
+                variables: ["i", "i == 1"],
+                steps: [
+                    { line: 0, vars: { i: "0", "i == 1": "False" }, log: "Initialize loop variable i = 0. Condition 0 < 3 is True. / ตั้งค่าเริ่มต้น i = 0 เงื่อนไข 0 < 3 เป็นจริง" },
+                    { line: 1, vars: { i: "0", "i == 1": "False" }, log: "Check if i == 1 (0 == 1) -> False. Skip block. / ตรวจสอบ i == 1 (เท็จ) ข้ามบล็อกเงื่อนไข" },
+                    { line: 4, vars: { i: "0", "i == 1": "False" }, log: "Execute statement: Print i (0). / ทำงานพิมพ์ผลลัพธ์: พิมพ์ 0" },
+                    { line: 0, vars: { i: "1", "i == 1": "True" }, log: "Increment i to 1. Condition 1 < 3 is True. / เพิ่มค่า i เป็น 1 เงื่อนไข 1 < 3 เป็นจริง" },
+                    { line: 1, vars: { i: "1", "i == 1": "True" }, log: "Check if i == 1 (1 == 1) -> True. Enter if-block. / ตรวจสอบ i == 1 (จริง) เข้าบล็อกเงื่อนไข" },
+                    { line: 2, vars: { i: "1", "i == 1": "True" }, log: "Hit continue statement! Skip remaining body and jump to next loop update. / พบคำสั่ง continue! ข้ามคำสั่งที่เหลือและกระโดดไปยังรอบถัดไป" },
+                    { line: 0, vars: { i: "2", "i == 1": "False" }, log: "Increment i to 2. Condition 2 < 3 is True. / เพิ่มค่า i เป็น 2 เงื่อนไข 2 < 3 เป็นจริง" },
+                    { line: 1, vars: { i: "2", "i == 1": "False" }, log: "Check if i == 1 (2 == 1) -> False. Skip block. / ตรวจสอบ i == 1 (เท็จ) ข้ามบล็อกเงื่อนไข" },
+                    { line: 4, vars: { i: "2", "i == 1": "False" }, log: "Execute statement: Print i (2). / ทำงานพิมพ์ผลลัพธ์: พิมพ์ 2" },
+                    { line: 0, vars: { i: "3", "i == 1": "-" }, log: "Increment i to 3. Condition 3 < 3 is False. Exit loop. / เพิ่มค่า i เป็น 3 เงื่อนไข 3 < 3 เป็นเท็จ ออกนอกลูป" },
+                    { line: 6, vars: { i: "3", "i == 1": "-" }, log: "Execute statement outside: Print \"Done\". Program ends. / ทำงานรหัสนอกลูป พิมพ์ \"Done\" จบการทำงาน" }
+                ]
+            },
+            returnInteract: {
+                lines: [
+                    "void test() {",
+                    "    for (int i = 0; i < 3; i++) {",
+                    "        if (i == 1) {",
+                    "            return;",
+                    "        }",
+                    "        printf(\"%d \", i);",
+                    "    }",
+                    "    printf(\"Outside\");",
+                    "}"
+                ],
+                variables: ["i", "i == 1"],
+                steps: [
+                    { line: 1, vars: { i: "0", "i == 1": "False" }, log: "Initialize loop variable i = 0. Condition 0 < 3 is True. / ตั้งค่าเริ่มต้น i = 0 เงื่อนไข 0 < 3 เป็นจริง" },
+                    { line: 2, vars: { i: "0", "i == 1": "False" }, log: "Check if i == 1 (0 == 1) -> False. Skip block. / ตรวจสอบ i == 1 (เท็จ) ข้ามบล็อกเงื่อนไข" },
+                    { line: 5, vars: { i: "0", "i == 1": "False" }, log: "Execute statement: Print i (0). / ทำงานพิมพ์ผลลัพธ์: พิมพ์ 0" },
+                    { line: 1, vars: { i: "1", "i == 1": "True" }, log: "Increment i to 1. Condition 1 < 3 is True. / เพิ่มค่า i เป็น 1 เงื่อนไข 1 < 3 เป็นจริง" },
+                    { line: 2, vars: { i: "1", "i == 1": "True" }, log: "Check if i == 1 (1 == 1) -> True. Enter if-block. / ตรวจสอบ i == 1 (จริง) เข้าบล็อกเงื่อนไข" },
+                    { line: 3, vars: { i: "1", "i == 1": "True" }, log: "Hit return statement! Immediately terminates execution of the containing test() function. Loop and code below are unreachable! / พบคำสั่ง return! ยุติการทำงานของฟังก์ชัน test() ทันที ลูปและส่วนที่เหลือจะไม่ถูกเข้าถึงเลย" }
+                ]
+            }
+        };
+
+        let currentScenario = 'breakLogic';
+        let currentStep = 0;
+
+        function loadJump() {
+            currentScenario = document.getElementById('jump-select').value;
+            currentStep = 0;
+            
+            const sc = jumps[currentScenario];
+            
+            // Render Code Container
+            const codeContainer = document.getElementById('code-container');
+            codeContainer.innerHTML = sc.lines.map((line, idx) => {
+                return `<div class="code-line" id="line-${idx}">${escapeHTML(line)}</div>`;
+            }).join('');
+
+            // Render Variables Header
+            const headerRow = document.getElementById('vars-header');
+            headerRow.innerHTML = sc.variables.map(v => `<th>${escapeHTML(v)}</th>`).join('');
+
+            // Render Variables Initial Values
+            const valuesRow = document.getElementById('vars-values');
+            valuesRow.innerHTML = sc.variables.map(() => `<td>-</td>`).join('');
+
+            document.getElementById('terminal-out').innerText = "Tracer loaded. Click Next Step to trace Jumps.";
+            
+            highlightLine(sc.steps[0].line);
+            updateVars(sc.steps[0].vars, []);
+        }
+
+        function highlightLine(lineIdx) {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById(`line-${lineIdx}`);
+            if (el) el.classList.add('active');
+        }
+
+        function updateVars(varsObj, changedKeys) {
+            const sc = jumps[currentScenario];
+            const valuesRow = document.getElementById('vars-values');
+            
+            valuesRow.innerHTML = sc.variables.map(v => {
+                const val = varsObj[v] !== undefined ? varsObj[v] : "-";
+                const isChanged = changedKeys.includes(v);
+                return `<td class="${isChanged ? 'changed' : ''}">${escapeHTML(val)}</td>`;
+            }).join('');
+        }
+
+        function stepJump() {
+            const sc = jumps[currentScenario];
+            if (currentStep >= sc.steps.length - 1) {
+                alert("Execution completed. Resetting.");
+                loadJump();
+                return;
+            }
+
+            currentStep++;
+            const step = sc.steps[currentStep];
+            const prevStepObj = sc.steps[currentStep - 1];
+
+            highlightLine(step.line);
+
+            // Determine which variable values changed
+            let changedKeys = [];
+            sc.variables.forEach(v => {
+                if (prevStepObj.vars[v] !== step.vars[v]) {
+                    changedKeys.push(v);
+                }
+            });
+
+            updateVars(step.vars, changedKeys);
+
+            // Append console output logs
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const logParts = step.log.split(' / ');
+            const logText = isTh ? (logParts[1] || logParts[0]) : logParts[0];
+
+            const logEl = document.getElementById('terminal-out');
+            if (currentStep === 1) {
+                logEl.innerHTML = "";
+            }
+            logEl.innerHTML += `\n&gt; ${logText}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateLanguageUI() {
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const selectEl = document.getElementById('jump-select');
+            if (selectEl) {
+                const optBreak = selectEl.querySelector('option[value="breakLogic"]');
+                if (optBreak) optBreak.innerText = isTh ? "คำสั่ง Break (ออกจากบล็อกก่อนกำหนด)" : "Break Statement (early exit)";
+                const optCont = selectEl.querySelector('option[value="continueLogic"]');
+                if (optCont) optCont.innerText = isTh ? "คำสั่ง Continue (ข้ามรอบการประมวลผล)" : "Continue Statement (skip iteration)";
+                const optRet = selectEl.querySelector('option[value="returnInteract"]');
+                if (optRet) optRet.innerText = isTh ? "คำสั่ง Return ในลูป (ออกจากฟังก์ชัน)" : "Return in Loop (exiting function)";
+            }
+        }
+        window.addEventListener('languagechange', updateLanguageUI);
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        window.onload = () => {
+            loadJump();
+            updateLanguageUI();
+        };
+    </script>
+</body>
+</html>
