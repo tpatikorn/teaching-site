@@ -503,19 +503,28 @@
                 <div class="visualizer-container">
                     <div class="visualizer-controls">
                         <div class="control-group">
-                            <label>Expression:</label>
+                            <label>
+                                <span class="lang-en">Expression:</span>
+                                <span class="lang-th">นิพจน์:</span>
+                            </label>
                             <select id="expr-select" onchange="loadExpression()">
                                 <option value="mulAdd">a + b * c   (Multiplication before Addition)</option>
                                 <option value="parenMul">(a + b) * c  (Parenthesis override)</option>
-                                <option value="logicAndOr">a || b && c  (Logical AND before OR)</option>
+                                <option value="logicAndOr">1 || 0 && 0  (Logical AND before OR)</option>
                                 <option value="assignAssoc">x = y = z = 5 (Right-to-Left Associativity)</option>
                             </select>
                         </div>
                         
                         <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
 
-                        <button class="btn btn-primary" onclick="stepExpr()">Next Step</button>
-                        <button class="btn btn-secondary" onclick="loadExpression()">Reset</button>
+                        <button class="btn btn-primary" onclick="stepExpr()">
+                            <span class="lang-en">Next Step</span>
+                            <span class="lang-th">ขั้นตอนถัดไป</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadExpression()">
+                            <span class="lang-en">Reset</span>
+                            <span class="lang-th">รีเซ็ต</span>
+                        </button>
                     </div>
 
                     <div style="padding: 24px;">
@@ -528,13 +537,20 @@
                         </div>
 
                         <div class="card" style="background: rgba(0,0,0,0.2);">
-                            <h4 style="margin-bottom: 8px;">Trace Log</h4>
+                            <h4 style="margin-bottom: 8px;">
+                                <span class="lang-en">Trace Log</span>
+                                <span class="lang-th">ประวัติการประมวลผลย้อนหลัง</span>
+                            </h4>
                             <pre id="precedence-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready to evaluate.</pre>
                         </div>
                     </div>
 
                     <div class="visualizer-stats">
-                        <div class="stat-item">Variable Values: <span style="color: var(--accent-blue);" id="stat-variables">a=5, b=3, c=4, x=0, y=0, z=0</span></div>
+                        <div class="stat-item">
+                            <span class="lang-en">Variable Values: </span>
+                            <span class="lang-th">ค่าของตัวแปร: </span>
+                            <span style="color: var(--accent-blue);" id="stat-variables">a=5, b=3, c=4, x=0, y=0, z=0</span>
+                        </div>
                     </div>
                 </div>
             </div>          </div>
@@ -546,23 +562,25 @@
                 <div id="practice-section"></div>
             </div>
         </div>
-    </main>
-
-    <script>
+    </main>    <script>
         const expressions = {
             mulAdd: {
                 display: "5 + 3 * 4",
                 vars: "a=5, b=3, c=4",
-                log: "Expression: 5 + 3 * 4\nPrecedence check: '*' has rank 13, '+' has rank 12.\nSo, 3 * 4 evaluates first.",
+                log: "Expression: 5 + 3 * 4
+Precedence: '*' has rank 13, '+' has rank 12.
+So, 3 * 4 evaluates first. / นิพจน์: 5 + 3 * 4
+ลำดับสำคัญ: '*' มีความสำคัญระดับ 13, '+' มีความสำคัญระดับ 12
+ดังนั้น 3 * 4 จะประเมินผลก่อน",
                 steps: [
                     {
                         activeNodes: ["mul"],
-                        log: "Step 1: Multiply 3 * 4 -> 12",
+                        log: "Step 1: Multiply 3 * 4 -> 12 / ขั้นที่ 1: คูณ 3 * 4 -> 12",
                         evalNode: { id: "mul", newVal: "12" }
                     },
                     {
                         activeNodes: ["add"],
-                        log: "Step 2: Add 5 + 12 -> 17. Evaluation complete.",
+                        log: "Step 2: Add 5 + 12 -> 17. Evaluation complete. / ขั้นที่ 2: บวก 5 + 12 -> 17 ประเมินผลสำเร็จ",
                         evalNode: { id: "add", newVal: "17" }
                     }
                 ],
@@ -591,16 +609,20 @@
             parenMul: {
                 display: "(5 + 3) * 4",
                 vars: "a=5, b=3, c=4",
-                log: "Expression: (5 + 3) * 4\nPrecedence check: Parenthesis '()' has highest rank 15.\nSo, 5 + 3 inside evaluates first.",
+                log: "Expression: (5 + 3) * 4
+Precedence: Parenthesis '()' has highest rank 15.
+So, 5 + 3 inside evaluates first. / นิพจน์: (5 + 3) * 4
+ลำดับสำคัญ: วงเล็บ '()' มีความสำคัญสูงสุดระดับ 15
+ดังนั้น 5 + 3 ข้างในจะประเมินผลก่อน",
                 steps: [
                     {
                         activeNodes: ["add"],
-                        log: "Step 1: Add 5 + 3 -> 8",
+                        log: "Step 1: Add 5 + 3 -> 8 / ขั้นที่ 1: บวก 5 + 3 -> 8",
                         evalNode: { id: "add", newVal: "8" }
                     },
                     {
                         activeNodes: ["mul"],
-                        log: "Step 2: Multiply 8 * 4 -> 32. Evaluation complete.",
+                        log: "Step 2: Multiply 8 * 4 -> 32. Evaluation complete. / ขั้นที่ 2: คูณ 8 * 4 -> 32 ประเมินผลสำเร็จ",
                         evalNode: { id: "mul", newVal: "32" }
                     }
                 ],
@@ -629,16 +651,20 @@
             logicAndOr: {
                 display: "1 || 0 && 0",
                 vars: "a=1, b=0, c=0",
-                log: "Expression: 1 || 0 && 0\nPrecedence check: '&&' (Logical AND) has rank 11, '||' (Logical OR) has rank 10.\nSo, 0 && 0 evaluates first.",
+                log: "Expression: 1 || 0 && 0
+Precedence: '&&' (Logical AND) has rank 11, '||' (Logical OR) has rank 10.
+So, 0 && 0 evaluates first. / นิพจน์: 1 || 0 && 0
+ลำดับสำคัญ: '&&' (AND ทางตรรกศาสตร์) มีความสำคัญระดับ 11, '||' (OR ทางตรรกศาสตร์) มีความสำคัญระดับ 10
+ดังนั้น 0 && 0 จะประเมินผลก่อน",
                 steps: [
                     {
                         activeNodes: ["and"],
-                        log: "Step 1: Evaluate 0 && 0 -> 0",
+                        log: "Step 1: Evaluate 0 && 0 -> 0 / ขั้นที่ 1: ประเมินค่า 0 && 0 -> 0",
                         evalNode: { id: "and", newVal: "0" }
                     },
                     {
                         activeNodes: ["or"],
-                        log: "Step 2: Evaluate 1 || 0 -> 1. Evaluation complete.",
+                        log: "Step 2: Evaluate 1 || 0 -> 1. Evaluation complete. / ขั้นที่ 2: ประเมินค่า 1 || 0 -> 1 ประเมินผลสำเร็จ",
                         evalNode: { id: "or", newVal: "1" }
                     }
                 ],
@@ -667,21 +693,23 @@
             assignAssoc: {
                 display: "x = y = z = 5",
                 vars: "x=0, y=0, z=0",
-                log: "Expression: x = y = z = 5\nPrecedence check: Assignment operator '=' has rank 2, and evaluates Right-to-Left.",
+                log: "Expression: x = y = z = 5
+Precedence: Assignment '=' has rank 2, and evaluates Right-to-Left. / นิพจน์: x = y = z = 5
+ลำดับสำคัญ: ตัวกำหนดค่า '=' มีความสำคัญระดับ 2 และมีทิศทางประเมินค่าจากขวาไปซ้าย",
                 steps: [
                     {
                         activeNodes: ["eq3"],
-                        log: "Step 1: Assign 5 to z -> z becomes 5",
+                        log: "Step 1: Assign 5 to z -> z becomes 5 / ขั้นที่ 1: กำหนดค่า 5 ให้ z ค่า z กลายเป็น 5",
                         evalNode: { id: "eq3", newVal: "z = 5" }
                     },
                     {
                         activeNodes: ["eq2"],
-                        log: "Step 2: Assign 5 (result of previous expression) to y -> y becomes 5",
+                        log: "Step 2: Assign 5 (result of previous expression) to y -> y becomes 5 / ขั้นที่ 2: กำหนดค่า 5 (จากผลลัพธ์ก่อนหน้า) ให้ y ค่า y กลายเป็น 5",
                         evalNode: { id: "eq2", newVal: "y = 5" }
                     },
                     {
                         activeNodes: ["eq1"],
-                        log: "Step 3: Assign 5 to x -> x becomes 5. Evaluation complete.",
+                        log: "Step 3: Assign 5 to x -> x becomes 5. Evaluation complete. / ขั้นที่ 3: กำหนดค่า 5 ให้ x ค่า x กลายเป็น 5 ประเมินผลสำเร็จ",
                         evalNode: { id: "eq1", newVal: "x = 5" }
                     }
                 ],
@@ -728,23 +756,22 @@
             document.getElementById('expr-display-text').innerText = expr.display;
             document.getElementById('stat-variables').innerText = expr.vars;
             
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const logParts = expr.log.split(' / ');
+            const logText = isTh ? (logParts[1] || logParts[0]) : logParts[0];
+
             const logEl = document.getElementById('precedence-log');
-            logEl.innerText = expr.log;
+            logEl.innerText = logText;
             
             const container = document.getElementById('ast-visualizer');
             container.innerHTML = expr.treeHTML;
-            
-            drawConnections();
-        }
-
-        function drawConnections() {
-            // No longer needed: CSS pseudo-elements auto-render perfect connections!
         }
 
         function stepExpr() {
             const expr = expressions[currentExpr];
             if (stepIndex >= expr.steps.length) {
-                alert("Evaluation already complete!");
+                const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+                alert(isTh ? "ประเมินผลสำเร็จแล้ว!" : "Evaluation already complete!");
                 return;
             }
 
@@ -758,8 +785,13 @@
             });
 
             // Update log
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const logParts = step.log.split(' / ');
+            const logText = isTh ? (logParts[1] || logParts[0]) : logParts[0];
+
             const logEl = document.getElementById('precedence-log');
-            logEl.innerText += `\n${step.log}`;
+            logEl.innerText += `
+${logText}`;
             logEl.scrollTop = logEl.scrollHeight;
 
             // Update value of evaluated node
@@ -774,6 +806,23 @@
             stepIndex++;
         }
 
+        function updateLanguageUI() {
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const selectEl = document.getElementById('expr-select');
+            if (selectEl) {
+                const optMulAdd = selectEl.querySelector('option[value="mulAdd"]');
+                if (optMulAdd) optMulAdd.innerText = isTh ? "a + b * c (การคูณสำคัญกว่าการบวก)" : "a + b * c   (Multiplication before Addition)";
+                const optParen = selectEl.querySelector('option[value="parenMul"]');
+                if (optParen) optParen.innerText = isTh ? "(a + b) * c (วงเล็บสำคัญที่สุด)" : "(a + b) * c  (Parenthesis override)";
+                const optLogic = selectEl.querySelector('option[value="logicAndOr"]');
+                if (optLogic) optLogic.innerText = isTh ? "1 || 0 && 0 (AND สำคัญกว่า OR)" : "1 || 0 && 0  (Logical AND before OR)";
+                const optAssign = selectEl.querySelector('option[value="assignAssoc"]');
+                if (optAssign) optAssign.innerText = isTh ? "x = y = z = 5 (การทำงานขวาไปซ้าย)" : "x = y = z = 5 (Right-to-Left Associativity)";
+            }
+            loadExpression();
+        }
+        window.addEventListener('languagechange', updateLanguageUI);
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -783,7 +832,7 @@
         }
 
         window.onload = () => {
-            loadExpression();
+            updateLanguageUI();
         };
     </script>
 </body>

@@ -66,70 +66,113 @@
 <body>
     <main>
         <div class="page-header">
-            <h1 class="page-title">3.1 Loop Tracing & Control Flow</h1>
-            <p class="page-subtitle">Trace loop control updates, evaluations, and modifications step-by-step.</p>
+            <h1 class="page-title">
+                <span class="lang-en">3.2 Loop Constructs (for/while/do-while)</span>
+                <span class="lang-th">3.2 โครงสร้างลูปและการทำซ้ำ (for/while/do-while)</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Trace loop control updates, evaluations, and modifications step-by-step.</span>
+                <span class="lang-th">ตัวติดตามและจำลองความเปลี่ยนแปลงเงื่อนไขลูปและการประเมินผลทีละขั้นตอน</span>
+            </p>
         </div>
 
         <div class="tabs-container">
             <div class="tabs-headers" style="margin-bottom: 24px;">
-                <button class="tab-btn active" onclick="switchTab('visualizer')">Loop Tracer</button>
-                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
+                <button class="tab-btn active" onclick="switchTab('visualizer')">
+                    <span class="lang-en">Loop Tracer</span>
+                    <span class="lang-th">ตัวจำลองคำสั่งลูป</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('practice')">
+                    <span class="lang-en">Practice Problems</span>
+                    <span class="lang-th">โจทย์ฝึกปฏิบัติ</span>
+                </button>
             </div>
 
             <!-- TAB 1: VISUALIZER -->
             <div id="visualizer" class="tab-content active">
-        <div class="grid-container">
-            <div class="card">
-                <h3 class="card-title">Loop Execution Trace</h3>
-                <p class="card-description">Tracing loops helps debug index issues and logical mistakes. Select a loop construct, then click "Next Step" to trace code pointers and variable changes.</p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">1. Conditionals & Switch-Case</h3>
-                <p class="card-description">
-                    C structures branching via <code>if-else</code> and <code>switch-case</code>:
-                    <br>• <strong>Switch Constraints</strong>: The controlling expression of a switch must evaluate to an <strong>integer</strong> or <strong>character</strong> constant. Floating-point types or strings are strictly illegal.
-                    <br>• <strong>Fall-through</strong>: If a case block finishes and doesn't end with a <code>break</code>, execution automatically falls through to the next case's statements regardless of matches.
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">2. Loop Constructs</h3>
-                <p class="card-description">
-                    • <code>for</code>: Preferred when number of iterations is known.
-                    <br>• <code>while</code>: Evaluates condition *before* entry (0 or more runs).
-                    <br>• <code>do-while</code>: Evaluates condition *after* executing body (always guarantees <strong>at least one run</strong>).
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">3. Break vs. Continue</h3>
-                <p class="card-description">
-                    • <code>break</code>: Immediately terminates the loop or switch, jumping to the statement following the block.
-                    <br>• <code>continue</code>: Skips the remaining statements in the current iteration and jumps directly to the update/condition test stage of the loop.
-                </p>
-            </div>
-        </div>
+                <div class="grid-container">
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">Loop Execution Trace</span>
+                            <span class="lang-th">การติดตามขั้นตอนลูปทำงาน</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">Tracing loops helps debug index issues and logical mistakes. Select a loop construct, then click "Next Step" to trace code pointers and variable changes.</span>
+                            <span class="lang-th">การติดตามขั้นตอนลูปช่วยให้วิเคราะห์ปัญหาค่าดัชนีและข้อผิดพลาดตรรกะ เลือกประเภทลูปแล้วกด "ขั้นตอนถัดไป" เพื่อจำลองการเลื่อนตัวชี้คำสั่งและตัวแปร</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">1. For Loops</span>
+                            <span class="lang-th">1. โครงสร้างลูป For</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Preferred when the number of iterations is known beforehand.
+                            <br>• Execution steps: initialization, condition check, body execution, variable update, check again.</span>
+                            <span class="lang-th">• นิยมใช้เมื่อทราบจำนวนรอบการทำซ้ำล่วงหน้าแน่นอน
+                            <br>• ขั้นตอนการทำงาน: กำหนดค่าเริ่มต้น, ตรวจสอบเงื่อนไข, ทำงานคำสั่งในลูป, ปรับค่าตัวแปรควบคุม, ตรวจสอบใหม่</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">2. While Loops</span>
+                            <span class="lang-th">2. โครงสร้างลูป While</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Evaluates the condition <strong>before</strong> entering the loop body.
+                            <br>• If the condition is false initially, the body does not execute at all (0 or more iterations).</span>
+                            <span class="lang-th">• ตรวจสอบเงื่อนไข <strong>ก่อน</strong> เข้าไปทำคำสั่งในบล็อกลูป
+                            <br>• หากเงื่อนไขเป็นเท็จตั้งแต่แรก บล็อกลูปจะไม่ทำเลยแม้แต่รอบเดียว (วนซ้ำตั้งแต่ 0 รอบขึ้นไป)</span>
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">
+                            <span class="lang-en">3. Do-While Loops</span>
+                            <span class="lang-th">3. โครงสร้างลูป Do-While</span>
+                        </h3>
+                        <p class="card-description">
+                            <span class="lang-en">• Evaluates the condition <strong>after</strong> executing the loop body.
+                            <br>• This guarantees that the loop body is executed <strong>at least once</strong>.</span>
+                            <span class="lang-th">• ตรวจสอบเงื่อนไข <strong>หลัง</strong> ทำงานคำสั่งในบล็อกลูปเสร็จในแต่ละรอบ
+                            <br>• สิ่งนี้รับประกันว่าบล็อกลูปจะทำงานอย่างน้อย <strong>หนึ่งรอบเสมอ</strong></span>
+                        </p>
+                    </div>
+                </div>
 
                 <div class="visualizer-container">
                     <div class="visualizer-controls">
                         <div class="control-group">
-                            <label>Loop Code:</label>
+                            <label>
+                                <span class="lang-en">Loop Code:</span>
+                                <span class="lang-th">รหัสคำสั่งลูป:</span>
+                            </label>
                             <select id="loop-select" onchange="loadLoop()">
-                                <option value="forLoop">Basic For Loop (summing numbers)</option>
-                                <option value="whileLoop">While Loop (dividing count)</option>
-                                <option value="nestedLoop">Nested Loops (row & cols)</option>
-                                <option value="breakLoop">Break & Continue logic</option>
+                                <option value="forLoop">Basic For Loop (summing numbers) / ลูป For พื้นฐาน</option>
+                                <option value="whileLoop">While Loop (dividing count) / ลูป While ลดค่า</option>
+                                <option value="nestedLoop">Nested Loops (row & cols) / ลูปซ้อนลูป</option>
+                                <option value="doWhileLoop">Do-While Loop (at least one run) / ลูป Do-While อย่างน้อยหนึ่งรอบ</option>
                             </select>
                         </div>
                         
                         <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
 
-                        <button class="btn btn-primary" onclick="stepLoop()">Next Step</button>
-                        <button class="btn btn-secondary" onclick="loadLoop()">Reset</button>
+                        <button class="btn btn-primary" onclick="stepLoop()">
+                            <span class="lang-en">Next Step</span>
+                            <span class="lang-th">ขั้นตอนถัดไป</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadLoop()">
+                            <span class="lang-en">Reset</span>
+                            <span class="lang-th">รีเซ็ต</span>
+                        </button>
                     </div>
 
                     <div class="trace-grid" style="padding: 24px;">
                         <!-- Code Column -->
                         <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
-                            <h4 style="margin-bottom: 12px; color: var(--accent-blue);">C Source Code</h4>
+                            <h4 style="margin-bottom: 12px; color: var(--accent-blue);">
+                                <span class="lang-en">C Source Code</span>
+                                <span class="lang-th">รหัสต้นฉบับภาษา C</span>
+                            </h4>
                             <div id="code-container" style="border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.2); padding: 12px;">
                                 <!-- Populated dynamically -->
                             </div>
@@ -138,7 +181,10 @@
                         <!-- Variable State Column -->
                         <div style="display: flex; flex-direction: column; gap: 20px;">
                             <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px;">
-                                <h4 style="margin-bottom: 12px; color: var(--accent-purple);">Variable States</h4>
+                                <h4 style="margin-bottom: 12px; color: var(--accent-purple);">
+                                    <span class="lang-en">Variable States</span>
+                                    <span class="lang-th">สถานะตัวแปร</span>
+                                </h4>
                                 <table class="variables-table">
                                     <thead>
                                         <tr id="vars-header">
@@ -154,7 +200,10 @@
                             </div>
 
                             <div class="card" style="background: rgba(0,0,0,0.15); padding: 16px; flex-grow: 1;">
-                                <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">Execution Output</h4>
+                                <h4 style="margin-bottom: 12px; color: var(--accent-emerald);">
+                                    <span class="lang-en">Execution Output</span>
+                                    <span class="lang-th">ผลลัพธ์ของโปรแกรม</span>
+                                </h4>
                                 <pre id="terminal-out" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Ready.</pre>
                             </div>
                         </div>
@@ -181,15 +230,15 @@
                 ],
                 variables: ["i", "sum", "i < 3"],
                 steps: [
-                    { line: 0, vars: { i: "undef", sum: "0", "i < 3": "-" }, log: "Initialize sum to 0." },
-                    { line: 1, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Loop initialization: i = 0. Condition 0 < 3 is True." },
-                    { line: 2, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Add i (0) to sum. sum remains 0." },
-                    { line: 1, vars: { i: "1", sum: "0", "i < 3": "True" }, log: "Increment i to 1. Condition 1 < 3 is True." },
-                    { line: 2, vars: { i: "1", sum: "1", "i < 3": "True" }, log: "Add i (1) to sum. sum is 1." },
-                    { line: 1, vars: { i: "2", sum: "1", "i < 3": "True" }, log: "Increment i to 2. Condition 2 < 3 is True." },
-                    { line: 2, vars: { i: "2", sum: "3", "i < 3": "True" }, log: "Add i (2) to sum. sum is 3." },
-                    { line: 1, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Increment i to 3. Condition 3 < 3 is False. Exiting loop." },
-                    { line: 4, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Print Done. Program ends." }
+                    { line: 0, vars: { i: "undef", sum: "0", "i < 3": "-" }, log: "Initialize sum to 0. / กำหนดค่า sum เริ่มต้นเป็น 0" },
+                    { line: 1, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Loop initialization: i = 0. Condition 0 < 3 is True. / เริ่มต้นลูป: i = 0 เงื่อนไข 0 < 3 เป็นจริง" },
+                    { line: 2, vars: { i: "0", sum: "0", "i < 3": "True" }, log: "Add i (0) to sum. sum remains 0. / บวกค่า i (0) เข้ากับ sum ค่า sum ยังเป็น 0" },
+                    { line: 1, vars: { i: "1", sum: "0", "i < 3": "True" }, log: "Increment i to 1. Condition 1 < 3 is True. / เพิ่มค่า i เป็น 1 เงื่อนไข 1 < 3 เป็นจริง" },
+                    { line: 2, vars: { i: "1", sum: "1", "i < 3": "True" }, log: "Add i (1) to sum. sum is 1. / บวกค่า i (1) เข้ากับ sum ค่า sum เป็น 1" },
+                    { line: 1, vars: { i: "2", sum: "1", "i < 3": "True" }, log: "Increment i to 2. Condition 2 < 3 is True. / เพิ่มค่า i เป็น 2 เงื่อนไข 2 < 3 เป็นจริง" },
+                    { line: 2, vars: { i: "2", sum: "3", "i < 3": "True" }, log: "Add i (2) to sum. sum is 3. / บวกค่า i (2) เข้ากับ sum ค่า sum เป็น 3" },
+                    { line: 1, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Increment i to 3. Condition 3 < 3 is False. Exiting loop. / เพิ่มค่า i เป็น 3 เงื่อนไข 3 < 3 เป็นเท็จ ออกนอกลูป" },
+                    { line: 4, vars: { i: "3", sum: "3", "i < 3": "False" }, log: "Print Done. Program ends. / พิมพ์คำว่า Done จบโปรแกรม" }
                 ]
             },
             whileLoop: {
@@ -202,15 +251,15 @@
                 ],
                 variables: ["x", "x > 1"],
                 steps: [
-                    { line: 0, vars: { x: "8", "x > 1": "-" }, log: "Initialize x to 8." },
-                    { line: 1, vars: { x: "8", "x > 1": "True" }, log: "Loop condition: 8 > 1 is True." },
-                    { line: 2, vars: { x: "4", "x > 1": "True" }, log: "Divide x by 2. x becomes 4." },
-                    { line: 1, vars: { x: "4", "x > 1": "True" }, log: "Loop condition: 4 > 1 is True." },
-                    { line: 2, vars: { x: "2", "x > 1": "True" }, log: "Divide x by 2. x becomes 2." },
-                    { line: 1, vars: { x: "2", "x > 1": "True" }, log: "Loop condition: 2 > 1 is True." },
-                    { line: 2, vars: { x: "1", "x > 1": "True" }, log: "Divide x by 2. x becomes 1." },
-                    { line: 1, vars: { x: "1", "x > 1": "False" }, log: "Loop condition: 1 > 1 is False. Exiting loop." },
-                    { line: 4, vars: { x: "1", "x > 1": "False" }, log: "Print Done. Program ends." }
+                    { line: 0, vars: { x: "8", "x > 1": "-" }, log: "Initialize x to 8. / กำหนดค่า x เริ่มต้นเป็น 8" },
+                    { line: 1, vars: { x: "8", "x > 1": "True" }, log: "Loop condition: 8 > 1 is True. / เงื่อนไขตรวจสอบลูป: 8 > 1 เป็นจริง" },
+                    { line: 2, vars: { x: "4", "x > 1": "True" }, log: "Divide x by 2. x becomes 4. / หารค่า x ด้วย 2 ค่า x กลายเป็น 4" },
+                    { line: 1, vars: { x: "4", "x > 1": "True" }, log: "Loop condition: 4 > 1 is True. / เงื่อนไขตรวจสอบลูป: 4 > 1 เป็นจริง" },
+                    { line: 2, vars: { x: "2", "x > 1": "True" }, log: "Divide x by 2. x becomes 2. / หารค่า x ด้วย 2 ค่า x กลายเป็น 2" },
+                    { line: 1, vars: { x: "2", "x > 1": "True" }, log: "Loop condition: 2 > 1 is True. / เงื่อนไขตรวจสอบลูป: 2 > 1 เป็นจริง" },
+                    { line: 2, vars: { x: "1", "x > 1": "True" }, log: "Divide x by 2. x becomes 1. / หารค่า x ด้วย 2 ค่า x กลายเป็น 1" },
+                    { line: 1, vars: { x: "1", "x > 1": "False" }, log: "Loop condition: 1 > 1 is False. Exiting loop. / เงื่อนไขตรวจสอบลูป: 1 > 1 เป็นเท็จ ออกนอกลูป" },
+                    { line: 4, vars: { x: "1", "x > 1": "False" }, log: "Print Done. Program ends. / พิมพ์คำว่า Done จบโปรแกรม" }
                 ]
             },
             nestedLoop: {
@@ -224,45 +273,37 @@
                 ],
                 variables: ["r", "c", "count"],
                 steps: [
-                    { line: 0, vars: { r: "undef", c: "undef", count: "0" }, log: "Initialize count to 0." },
-                    { line: 1, vars: { r: "0", c: "undef", count: "0" }, log: "Outer Loop: r = 0. Condition 0 < 2 is True." },
-                    { line: 2, vars: { r: "0", c: "0", count: "0" }, log: "Inner Loop: c = 0. Condition 0 < 2 is True." },
-                    { line: 3, vars: { r: "0", c: "0", count: "1" }, log: "Increment count. count is 1." },
-                    { line: 2, vars: { r: "0", c: "1", count: "1" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True." },
-                    { line: 3, vars: { r: "0", c: "1", count: "2" }, log: "Increment count. count is 2." },
-                    { line: 2, vars: { r: "0", c: "2", count: "2" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner." },
-                    { line: 1, vars: { r: "1", c: "2", count: "2" }, log: "Outer Loop update: r = 1. Condition 1 < 2 is True." },
-                    { line: 2, vars: { r: "1", c: "0", count: "2" }, log: "Re-enter Inner Loop: c = 0. Condition 0 < 2 is True." },
-                    { line: 3, vars: { r: "1", c: "0", count: "3" }, log: "Increment count. count is 3." },
-                    { line: 2, vars: { r: "1", c: "1", count: "3" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True." },
-                    { line: 3, vars: { r: "1", c: "1", count: "4" }, log: "Increment count. count is 4." },
-                    { line: 2, vars: { r: "1", c: "2", count: "4" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner." },
-                    { line: 1, vars: { r: "2", c: "2", count: "4" }, log: "Outer Loop update: r = 2. Condition 2 < 2 is False. Exit Outer. Complete." }
+                    { line: 0, vars: { r: "undef", c: "undef", count: "0" }, log: "Initialize count to 0. / กำหนดค่าเริ่มต้น count เป็น 0" },
+                    { line: 1, vars: { r: "0", c: "undef", count: "0" }, log: "Outer Loop: r = 0. Condition 0 < 2 is True. / ลูปนอก: r = 0 เงื่อนไข 0 < 2 เป็นจริง" },
+                    { line: 2, vars: { r: "0", c: "0", count: "0" }, log: "Inner Loop: c = 0. Condition 0 < 2 is True. / ลูปใน: c = 0 เงื่อนไข 0 < 2 เป็นจริง" },
+                    { line: 3, vars: { r: "0", c: "0", count: "1" }, log: "Increment count. count is 1. / เพิ่มค่า count เป็น 1" },
+                    { line: 2, vars: { r: "0", c: "1", count: "1" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True. / อัปเดตลูปใน: c = 1 เงื่อนไข 1 < 2 เป็นจริง" },
+                    { line: 3, vars: { r: "0", c: "1", count: "2" }, log: "Increment count. count is 2. / เพิ่มค่า count เป็น 2" },
+                    { line: 2, vars: { r: "0", c: "2", count: "2" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner. / อัปเดตลูปใน: c = 2 เงื่อนไข 2 < 2 เป็นเท็จ ออกจากลูปใน" },
+                    { line: 1, vars: { r: "1", c: "2", count: "2" }, log: "Outer Loop update: r = 1. Condition 1 < 2 is True. / อัปเดตลูปนอก: r = 1 เงื่อนไข 1 < 2 เป็นจริง" },
+                    { line: 2, vars: { r: "1", c: "0", count: "2" }, log: "Re-enter Inner Loop: c = 0. Condition 0 < 2 is True. / เข้าลูปในรอบใหม่: c = 0 เงื่อนไข 0 < 2 เป็นจริง" },
+                    { line: 3, vars: { r: "1", c: "0", count: "3" }, log: "Increment count. count is 3. / เพิ่มค่า count เป็น 3" },
+                    { line: 2, vars: { r: "1", c: "1", count: "3" }, log: "Inner Loop update: c = 1. Condition 1 < 2 is True. / อัปเดตลูปใน: c = 1 เงื่อนไข 1 < 2 เป็นจริง" },
+                    { line: 3, vars: { r: "1", c: "1", count: "4" }, log: "Increment count. count is 4. / เพิ่มค่า count เป็น 4" },
+                    { line: 2, vars: { r: "1", c: "2", count: "4" }, log: "Inner Loop update: c = 2. Condition 2 < 2 is False. Exit Inner. / อัปเดตลูปใน: c = 2 เงื่อนไข 2 < 2 เป็นเท็จ ออกจากลูปใน" },
+                    { line: 1, vars: { r: "2", c: "2", count: "4" }, log: "Outer Loop update: r = 2. Condition 2 < 2 is False. Exit Outer. Complete. / อัปเดตลูปนอก: r = 2 เงื่อนไข 2 < 2 เป็นเท็จ ออกนอกลูป สมบูรณ์" }
                 ]
             },
-            breakLoop: {
+            doWhileLoop: {
                 lines: [
-                    "for (int i = 0; i < 4; i++) {",
-                    "    if (i == 1) continue;",
-                    "    if (i == 3) break;",
-                    "    printf(\"%d \", i);",
-                    "}"
+                    "int i = 5;",
+                    "do {",
+                    "    i--;",
+                    "} while (i > 3);"
                 ],
-                variables: ["i", "i == 1", "i == 3"],
+                variables: ["i", "i > 3"],
                 steps: [
-                    { line: 0, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Loop init: i = 0. Condition 0 < 4 is True." },
-                    { line: 1, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 1 (False). Skip continue." },
-                    { line: 2, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 3 (False). Skip break." },
-                    { line: 3, vars: { i: "0", "i == 1": "False", "i == 3": "False" }, log: "Print value i (0)." },
-                    { line: 0, vars: { i: "1", "i == 1": "True", "i == 3": "False" }, log: "Update: i = 1. Condition 1 < 4 is True." },
-                    { line: 1, vars: { i: "1", "i == 1": "True", "i == 3": "False" }, log: "i == 1 is True! Execute continue: jump to update." },
-                    { line: 0, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Update: i = 2. Condition 2 < 4 is True." },
-                    { line: 1, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 1 (False). Skip continue." },
-                    { line: 2, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Check if i == 3 (False). Skip break." },
-                    { line: 3, vars: { i: "2", "i == 1": "False", "i == 3": "False" }, log: "Print value i (2)." },
-                    { line: 0, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "Update: i = 3. Condition 3 < 4 is True." },
-                    { line: 1, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "Check if i == 1 (False)." },
-                    { line: 2, vars: { i: "3", "i == 1": "False", "i == 3": "True" }, log: "i == 3 is True! Execute break: immediately terminate loop." }
+                    { line: 0, vars: { i: "5", "i > 3": "-" }, log: "Initialize variable i to 5. / กำหนดค่าเริ่มต้นตัวแปร i เป็น 5" },
+                    { line: 1, vars: { i: "5", "i > 3": "-" }, log: "Enter do-while body block without initial check. / เข้าทำงานในบล็อกลูป do-while โดยไม่มีการเช็คเงื่อนไขก่อน" },
+                    { line: 2, vars: { i: "4", "i > 3": "-" }, log: "Execute statement: decrement i. i is now 4. / ทำงานคำสั่ง: ลดค่า i ค่า i เป็น 4" },
+                    { line: 3, vars: { i: "4", "i > 3": "True" }, log: "Evaluate loop condition: (4 > 3) is True. Loop back to body. / ตรวจสอบเงื่อนไขลูป: (4 > 3) เป็นจริง วนลูปกลับไปที่เดิม" },
+                    { line: 2, vars: { i: "3", "i > 3": "True" }, log: "Execute statement: decrement i. i is now 3. / ทำงานคำสั่ง: ลดค่า i ค่า i เป็น 3" },
+                    { line: 3, vars: { i: "3", "i > 3": "False" }, log: "Evaluate loop condition: (3 > 3) is False. Exit loop. / ตรวจสอบเงื่อนไขลูป: (3 > 3) เป็นเท็จ ออกนอกลูป" }
                 ]
             }
         };
@@ -346,12 +387,32 @@
             lastVars = { ...step.vars };
 
             // Update Terminal Log
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const logParts = step.log.split(' / ');
+            const logText = isTh ? (logParts[1] || logParts[0]) : logParts[0];
+
             const term = document.getElementById('terminal-out');
-            term.innerHTML += `\n&gt; ${step.log}`;
+            term.innerHTML += `\n&gt; ${logText}`;
             term.scrollTop = term.scrollHeight;
 
             stepIndex++;
         }
+
+        function updateLanguageUI() {
+            const isTh = (localStorage.getItem('c-lang') || 'EN') === 'TH';
+            const selectEl = document.getElementById('loop-select');
+            if (selectEl) {
+                const optFor = selectEl.querySelector('option[value="forLoop"]');
+                if (optFor) optFor.innerText = isTh ? "ลูป For พื้นฐาน (หาผลรวมตัวเลข)" : "Basic For Loop (summing numbers)";
+                const optWhile = selectEl.querySelector('option[value="whileLoop"]');
+                if (optWhile) optWhile.innerText = isTh ? "ลูป While (การหารลดค่าตัวแปร)" : "While Loop (dividing count)";
+                const optNested = selectEl.querySelector('option[value="nestedLoop"]');
+                if (optNested) optNested.innerText = isTh ? "ลูปซ้อนลูป (แถวและคอลัมน์)" : "Nested Loops (row & cols)";
+                const optDoWhile = selectEl.querySelector('option[value="doWhileLoop"]');
+                if (optDoWhile) optDoWhile.innerText = isTh ? "ลูป Do-While (ทำงานอย่างน้อยหนึ่งรอบ)" : "Do-While Loop (at least one run)";
+            }
+        }
+        window.addEventListener('languagechange', updateLanguageUI);
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -363,6 +424,7 @@
 
         window.onload = () => {
             loadLoop();
+            updateLanguageUI();
         };
     </script>
 </body>
