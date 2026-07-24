@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C Fundamentals - Conditionals Tracing</title>
     <link rel="stylesheet" href="../../global.css">
+    <script src="../../c-simulator.js"></script>
     <script src="../../problems.js?v=1.0.2"></script>
     <script src="../../nav.js"></script>
     <style>
@@ -141,6 +142,15 @@
                             <br>• หากไม่มีคำสั่ง <code>break</code> การประมวลผลจะไหลต่อเนื่องไปยัง Case ลำดับถัดไปโดยไม่ตรวจสอบการจับคู่เงื่อนไข</span>
                         </p>
                     </div>
+                </div>
+
+                <!-- Interactive Lesson Demo Simulator Box -->
+                <div style="margin: 24px 0;">
+                    <h3 style="margin-bottom: 12px; color: var(--accent-blue); font-size: 1.2rem;">
+                        <span class="lang-en">Interactive C Code Runner Demo</span>
+                        <span class="lang-th">ตัวลองเขียนรหัสโปรแกรม C เชิงโต้ตอบ</span>
+                    </h3>
+                    <div id="lesson-demo-simulator"></div>
                 </div>
 
                 <div class="visualizer-container">
@@ -407,6 +417,11 @@
         window.onload = () => {
             loadCondition();
             updateLanguageUI();
+            if (window.CSimulatorUI) {
+                CSimulatorUI.render('lesson-demo-simulator', {
+                    initialCode: `int score = 85;\nif (score >= 80) {\n    printf("Grade A\\n");\n} else if (score >= 70) {\n    printf("Grade B\\n");\n} else {\n    printf("Grade F\\n");\n}`
+                });
+            }
         };
     </script>
 </body>

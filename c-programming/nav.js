@@ -215,7 +215,13 @@ document.addEventListener('DOMContentLoaded', () => {
         rootPrefix = '../../';
     }
 
-    // Load problems database dynamically by adding script tag if not loaded
+    // Load problems database & C simulator engine dynamically
+    if (!window.CSimulatorUI) {
+        const simScript = document.createElement('script');
+        simScript.src = rootPrefix + 'c-simulator.js';
+        document.head.appendChild(simScript);
+    }
+
     if (!window.cProblems) {
         const script = document.createElement('script');
         script.src = rootPrefix + 'problems.js';
@@ -524,14 +530,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <!-- MODAL FOR RANDOM PICKER -->
             <div id="random-picker-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); z-index: 1000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
-                <div class="card" style="width: 90%; max-width: 700px; background: var(--bg-secondary); border: 2px solid var(--accent-blue); padding: 40px; border-radius: 24px; position: relative; box-shadow: 0 0 50px rgba(59, 130, 246, 0.4); text-align: center; transform: scale(0.9); transition: transform 0.3s ease;">
+                <div class="card" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; background: var(--bg-secondary); border: 2px solid var(--accent-blue); padding: 32px; border-radius: 24px; position: relative; box-shadow: 0 0 50px rgba(59, 130, 246, 0.4); text-align: left; transform: scale(0.9); transition: transform 0.3s ease;">
                     <div style="font-size: 0.9rem; font-weight: bold; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;" id="modal-problem-id">PROBLEM</div>
-                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; line-height: 1.4;" id="modal-problem-text"></div>
-                    <pre style="text-align: left; margin-bottom: 24px; display: none;" id="modal-problem-code"><code></code></pre>
+                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; line-height: 1.4;" id="modal-problem-text"></div>
+                    <pre style="text-align: left; margin-bottom: 16px; display: none;" id="modal-problem-code"><code></code></pre>
+
+                    <!-- Embedded Interactive C Simulator Container -->
+                    <div id="modal-sim-box" style="margin-top: 16px;"></div>
                     
-                    <div style="display: flex; gap: 16px; justify-content: center; margin-top: 32px;">
-                        <button class="btn btn-primary" id="modal-btn-redraw" style="padding: 12px 24px; border-radius: 8px;">${lang.drawAnother}</button>
-                        <button class="btn btn-secondary" id="modal-btn-close" style="padding: 12px 24px; border-radius: 8px;">${lang.close}</button>
+                    <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+                        <button class="btn btn-primary" id="modal-btn-redraw" style="padding: 10px 20px; border-radius: 8px;">${lang.drawAnother}</button>
+                        <button class="btn btn-secondary" id="modal-btn-close" style="padding: 10px 20px; border-radius: 8px;">${lang.close}</button>
                     </div>
                 </div>
             </div>
@@ -568,24 +577,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemDiv = document.createElement('div');
                 itemDiv.style.padding = '16px';
                 itemDiv.style.borderBottom = '1px solid var(--glass-border)';
-                itemDiv.style.cursor = 'pointer';
-                itemDiv.style.transition = 'background 0.2s';
                 itemDiv.style.borderRadius = '8px';
                 itemDiv.className = 'practice-problem-item';
                 
                 const qText = currentLang === 'TH' ? (p.questionTh || p.question) : p.question;
+                const simId = 'card_sim_' + p.id.replace(/[^a-zA-Z0-9]/g, '_');
+
                 itemDiv.innerHTML = `
-                    <div style="display: flex; gap: 12px;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
                         <span style="font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace; color: var(--accent-blue); font-weight: 600; min-width: 90px; flex-shrink: 0;">[${p.id.toUpperCase()}]</span>
                         <div style="flex-grow: 1;">
                             <div style="color: var(--text-primary); font-weight: 500; font-size: 0.95rem; line-height: 1.4;">${escapeHTML(qText)}</div>
-                             ${p.code ? `<pre style="margin-top: 10px; padding: 10px; font-size: 0.8rem; background: #010409; white-space: pre-wrap;"><code>${escapeHTML(p.code.replace(/\\n/g, '\n'))}</code></pre>` : ''}
+                             ${p.code ? `<pre style="margin-top: 10px; padding: 10px; font-size: 0.85rem; background: #010409; border-left: 3px solid var(--accent-blue); white-space: pre-wrap; font-family: 'Fira Code', monospace;"><code>${escapeHTML(p.code.replace(/\\n/g, '\n'))}</code></pre>` : ''}
+                            
+                            <div style="margin-top: 12px; display: flex; gap: 10px;">
+                                <button class="btn btn-secondary toggle-sim-btn" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 6px;">
+                                    💻 Code / Test Answer Directly
+                                </button>
+                            </div>
+                            <div id="${simId}" style="display: none; margin-top: 12px;"></div>
                         </div>
                     </div>
                 `;
 
-                itemDiv.addEventListener('click', () => {
-                    showProblemModal(p);
+                const toggleBtn = itemDiv.querySelector('.toggle-sim-btn');
+                const simBoxElem = itemDiv.querySelector(`#${simId}`);
+                let isSimLoaded = false;
+
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (simBoxElem.style.display === 'none') {
+                        simBoxElem.style.display = 'block';
+                        toggleBtn.innerText = '▲ Hide Coding Box';
+                        if (!isSimLoaded && window.CSimulatorUI) {
+                            CSimulatorUI.render(simBoxElem, {
+                                initialCode: p.code ? p.code.replace(/\\n/g, '\n') : `// Solution for ${p.id}\n`
+                            });
+                            isSimLoaded = true;
+                        }
+                    } else {
+                        simBoxElem.style.display = 'none';
+                        toggleBtn.innerText = '💻 Code / Test Answer Directly';
+                    }
                 });
 
                 listContainer.appendChild(itemDiv);
@@ -615,6 +648,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalCodeTag.innerText = problem.code.replace(/\\n/g, '\n');
             } else {
                 modalCode.style.display = 'none';
+            }
+
+            const modalSimBox = document.getElementById('modal-sim-box');
+            if (modalSimBox && window.CSimulatorUI) {
+                CSimulatorUI.render(modalSimBox, {
+                    initialCode: problem.code ? problem.code.replace(/\\n/g, '\n') : `// Write code for ${problem.id} here...\n`
+                });
             }
 
             modal.style.display = 'flex';
