@@ -9,8 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
         "Select a topic below or use the sidebar navigation to jump into interactive visualizers and class practice lists.": "เลือกหัวข้อการเรียนรู้ด้านล่างหรือใช้เมนูนำทางด้านข้างเพื่อศึกษาเครื่องจำลองและโจทย์ฝึกหัด",
         "Practice Problems": "โจทย์ฝึกปฏิบัติ",
         "Interactive Visualizer": "เครื่องมือจำลองเชิงโต้ตอบ",
-        "Interactive Pipeline & Lecture": "เครื่องมือจำลองไปป์ไลน์และเนื้อหาบทเรียน",
-        "Memory Visualizer & Lecture": "เครื่องมือจำลองหน่วยความจำและเนื้อหาบทเรียน",
         "Module 1: Intro & Memory": "บทที่ 1: บทนำและหน่วยความจำ",
         "Module 2: Operators & Expressions": "บทที่ 2: ตัวดำเนินการและนิพจน์",
         "Module 3: Control Flow": "บทที่ 3: การควบคุมทิศทางของโปรแกรม",
@@ -31,27 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
         "Go to Module 4": "ศึกษาบทที่ 4",
         "Go to Module 5": "ศึกษาบทที่ 5",
         "Go to Module 6": "ศึกษาบทที่ 6",
-        "Go to Module 7": "ศึกษาบทที่ 7",
-        "1.1 Structure of a C Program": "1.1 โครงสร้างของโปรแกรมภาษา C",
-        "1.2 Variables & Data Types": "1.2 ตัวแปรและชนิดข้อมูล",
-        "2.1 Operator Precedence & Evaluation": "2.1 ลำดับความสำคัญและการประเมินผลตัวดำเนินการ",
-        "3.1 Loop Tracing & Control Flow": "3.1 ตัวติดตามและตรวจสอบลูป",
-        "4.1 Function Call Stack Visualizer": "4.1 ตัวจำลองคอลสแต็กฟังก์ชัน",
-        "5.1 Strings & Null Termination (\\0)": "5.1 สตริงและอักขระศูนย์สำหรับสิ้นสุดสตริง (\\0)",
-        "6.1 Pointers & Addresses": "6.1 พอยเตอร์และแอดเดรสหน่วยความจำ",
-        "6.2 Dynamic Memory Allocation (Heap)": "6.2 การจัดสรรหน่วยความจำแบบไดนามิก (Heap)",
-        "7.1 Struct Alignment & Padding": "7.1 โครงสร้างข้อมูลแพดดิ้งและการจัดเรียงหน่วยความจำ",
-        "1. Preprocessor Directives (#include & #define)": "1. คำสั่งพรีโปรเซสเซอร์ (#include & #define)",
-        "2. Entry Point & Function Anatomy": "2. จุดเริ่มต้นการทำงานและโครงสร้างฟังก์ชัน main()",
-        "3. Standard Stream Buffers": "3. สตรีมข้อมูลมาตรฐาน (stdin, stdout, stderr)",
-        "4. Multi-Stage Compilation Pipeline": "4. ขั้นตอนกระบวนการคอมไพล์โปรแกรมภาษา C",
-        "1. Fundamental Data Types & Byte Sizes": "1. ชนิดข้อมูลพื้นฐานและขนาดไบต์ในหน่วยความจำ",
-        "2. Format Specifiers & I/O Modifiers": "2. ตัวกำหนดรูปแบบการแสดงผล (Format Specifiers)",
-        "3. Scopes, Lifetimes & Storage Classes": "3. ขอบเขตตัวแปร อายุการใช้งาน และ Storage Classes",
-        "4. Memory Endianness (Little-Endian vs Big-Endian)": "4. ระบบจัดเก็บไบต์ในหน่วยความจำ (Little-Endian & Big-Endian)"
+        "Go to Module 7": "ศึกษาบทที่ 7"
     };
 
     function applyTranslation() {
+        if (currentLang === 'TH') {
+            document.body.classList.remove('lang-en');
+            document.body.classList.add('lang-th');
+        } else {
+            document.body.classList.remove('lang-th');
+            document.body.classList.add('lang-en');
+        }
+
         function walk(node) {
             if (node.nodeType === Node.TEXT_NODE) {
                 let val = node.nodeValue.trim();
@@ -138,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initializePracticeTab();
     }
 
-    // 2. Navigation items definition
+    // 2. Granular Navigation items definition with 0.0 Practice Problem pages
     const navStructure = [
         {
             title: "Home",
@@ -150,8 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 1: บทนำและหน่วยความจำ",
             id: "m1",
             pages: [
+                { name: "1.0 Practice Problems", nameTh: "1.0 โจทย์ฝึกปฏิบัติ", path: "modules/m1/problems.html" },
                 { name: "1.1 Program Structure", nameTh: "1.1 โครงสร้างโปรแกรม", path: "modules/m1/structure.html" },
-                { name: "1.2 Variables & Memory", nameTh: "1.2 ตัวแปรและหน่วยความจำ", path: "modules/m1/variables.html" }
+                { name: "1.2 Compilation Pipeline", nameTh: "1.2 ขั้นตอนการคอมไพล์", path: "modules/m1/compilation.html" },
+                { name: "1.3 Variables & Data Types", nameTh: "1.3 ตัวแปรและชนิดข้อมูล", path: "modules/m1/variables.html" },
+                { name: "1.4 Memory & Endianness", nameTh: "1.4 หน่วยความจำและเอ็นเดียน", path: "modules/m1/memory-endianness.html" }
             ]
         },
         {
@@ -159,7 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 2: ตัวดำเนินการและนิพจน์",
             id: "m2",
             pages: [
-                { name: "2.1 Operator Precedence", nameTh: "2.1 ลำดับความสำคัญของตัวดำเนินการ", path: "modules/m2/precedence.html" }
+                { name: "2.0 Practice Problems", nameTh: "2.0 โจทย์ฝึกปฏิบัติ", path: "modules/m2/problems.html" },
+                { name: "2.1 Arithmetic Operations", nameTh: "2.1 ตัวดำเนินการคณิตศาสตร์", path: "modules/m2/math.html" },
+                { name: "2.2 Boolean & Relational", nameTh: "2.2 ตรรกศาสตร์และการเปรียบเทียบ", path: "modules/m2/boolean.html" },
+                { name: "2.3 Bitwise Operations", nameTh: "2.3 ตัวดำเนินการระดับบิต", path: "modules/m2/bitwise.html" },
+                { name: "2.4 AST & Precedence", nameTh: "2.4 ลำดับความสำคัญและ AST", path: "modules/m2/precedence.html" }
             ]
         },
         {
@@ -167,8 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 3: การควบคุมทิศทางของโปรแกรม",
             id: "m3",
             pages: [
-                { name: "3.1 Conditionals", nameTh: "3.1 โครงสร้างการตัดสินใจเงื่อนไข", path: "modules/m3/conditionals.html" },
-                { name: "3.2 Loop Constructs", nameTh: "3.2 โครงสร้างลูปและการทำซ้ำ", path: "modules/m3/loops.html" },
+                { name: "3.0 Practice Problems", nameTh: "3.0 โจทย์ฝึกปฏิบัติ", path: "modules/m3/problems.html" },
+                { name: "3.1 Conditionals & Branching", nameTh: "3.1 การตัดสินใจเงื่อนไข", path: "modules/m3/conditionals.html" },
+                { name: "3.2 Loop Constructs & Tracing", nameTh: "3.2 โครงสร้างลูปและการทำซ้ำ", path: "modules/m3/loops.html" },
                 { name: "3.3 Jump Statements", nameTh: "3.3 คำสั่งข้ามและคำสั่งย้อนกลับ", path: "modules/m3/jumps.html" }
             ]
         },
@@ -177,7 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 4: ฟังก์ชันและขอบเขตของตัวแปร",
             id: "m4",
             pages: [
-                { name: "4.1 Call Stack Visualizer", nameTh: "4.1 ตัวจำลองคอลสแต็กฟังก์ชัน", path: "modules/m4/stack.html" }
+                { name: "4.0 Practice Problems", nameTh: "4.0 โจทย์ฝึกปฏิบัติ", path: "modules/m4/problems.html" },
+                { name: "4.1 Call Stack Visualizer", nameTh: "4.1 ตัวจำลองคอลสแต็กฟังก์ชัน", path: "modules/m4/stack.html" },
+                { name: "4.2 Recursion & Frames", nameTh: "4.2 การเรียกซ้ำและสแต็กเฟรม", path: "modules/m4/recursion.html" }
             ]
         },
         {
@@ -185,7 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 5: อาร์เรย์และสตริง",
             id: "m5",
             pages: [
-                { name: "5.1 String NULL Term", nameTh: "5.1 อักขระว่างสำหรับสิ้นสุดสตริง", path: "modules/m5/strings.html" }
+                { name: "5.0 Practice Problems", nameTh: "5.0 โจทย์ฝึกปฏิบัติ", path: "modules/m5/problems.html" },
+                { name: "5.1 String NULL Termination", nameTh: "5.1 อักขระว่างสำหรับสิ้นสุดสตริง", path: "modules/m5/strings.html" },
+                { name: "5.2 Array Memory Indexing", nameTh: "5.2 การจัดเก็บและดัชนีอาร์เรย์", path: "modules/m5/arrays.html" }
             ]
         },
         {
@@ -193,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 6: พอยเตอร์และหน่วยความจำฮีป",
             id: "m6",
             pages: [
+                { name: "6.0 Practice Problems", nameTh: "6.0 โจทย์ฝึกปฏิบัติ", path: "modules/m6/problems.html" },
                 { name: "6.1 Pointers & Addresses", nameTh: "6.1 พอยเตอร์และแอดเดรสหน่วยความจำ", path: "modules/m6/pointers.html" },
                 { name: "6.2 Dynamic malloc/free", nameTh: "6.2 การจัดสรรหน่วยความจำแบบไดนามิก", path: "modules/m6/dynamic.html" }
             ]
@@ -202,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 7: โครงสร้างข้อมูลและไฟล์",
             id: "m7",
             pages: [
+                { name: "7.0 Practice Problems", nameTh: "7.0 โจทย์ฝึกปฏิบัติ", path: "modules/m7/problems.html" },
                 { name: "7.1 Struct Alignment & Padding", nameTh: "7.1 การจัดตำแหน่งและแพดดิ้งโครงสร้างข้อมูล", path: "modules/m7/structs.html" }
             ]
         }
@@ -244,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${themeLabel}
                     </button>
                     <button id="lang-toggle-btn" class="btn btn-secondary" style="flex: 1; padding: 6px 12px; font-size: 0.8rem; font-weight: 500; text-align: center; justify-content: center; display: flex; align-items: center; gap: 4px;">
-                        ${langLabel}
+                        🌐 ${langLabel}
                     </button>
                 </div>
             </div>
@@ -380,28 +383,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const problems = (window.cProblems ? window.cProblems[moduleId] : []) || [];
         const lang = UI_LANG[currentLang] || UI_LANG.EN;
 
-        // Build HTML for the practice tab
+        // Build HTML for the practice tab (Cleaned: No duplicate in-page language button)
         practiceSection.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px;">${lang.title}</h3>
                     <p style="color: var(--text-secondary); font-size: 0.95rem;">${lang.subtitle}</p>
                 </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="btn btn-secondary" id="btn-practice-lang-toggle" style="padding: 10px 18px; font-size: 0.9rem; border-radius: 12px;">
-                        🌐 ${currentLang === 'TH' ? '🇹🇭 TH' : '🇺🇸 EN'}
-                    </button>
-                    <button class="btn btn-primary" id="btn-draw-random" style="padding: 10px 20px; font-size: 0.95rem; border-radius: 12px; gap: 8px;">
-                        ${lang.pickBtn}
-                    </button>
-                </div>
+                <button class="btn btn-primary" id="btn-draw-random" style="padding: 10px 20px; font-size: 0.95rem; border-radius: 12px; gap: 8px;">
+                    ${lang.pickBtn}
+                </button>
             </div>
 
             <div style="margin-bottom: 20px;">
                 <input type="text" id="problem-search" placeholder="${lang.searchPlaceholder}" style="width: 100%; padding: 12px 16px; font-size: 1rem; border-radius: 8px;">
             </div>
 
-            <div id="problems-list-container" style="max-height: 500px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 12px;">
+            <div id="problems-list-container" style="max-height: 600px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 12px;">
                 <!-- List of 100 problems dynamically populated -->
             </div>
 
@@ -426,17 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const listContainer = document.getElementById('problems-list-container');
         const searchInput = document.getElementById('problem-search');
         const drawBtn = document.getElementById('btn-draw-random');
-        const langToggleBtn = document.getElementById('btn-practice-lang-toggle');
-
-        if (langToggleBtn) {
-            langToggleBtn.addEventListener('click', () => {
-                currentLang = currentLang === 'EN' ? 'TH' : 'EN';
-                localStorage.setItem('c-lang', currentLang);
-                renderSidebar();
-                initializePracticeTab();
-                applyTranslation();
-            });
-        }
         
         const modal = document.getElementById('random-picker-modal');
         const modalId = document.getElementById('modal-problem-id');

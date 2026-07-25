@@ -72,6 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLang = localStorage.getItem('dsa-lang') || 'EN';
 
     function applyTranslation() {
+        if (currentLang === 'TH') {
+            document.body.classList.remove('lang-en');
+            document.body.classList.add('lang-th');
+        } else {
+            document.body.classList.remove('lang-th');
+            document.body.classList.add('lang-en');
+        }
+
         function walk(node) {
             if (node.nodeType === Node.TEXT_NODE) {
                 let val = node.nodeValue.trim();

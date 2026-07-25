@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Memory & Endianness</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+        .mem-cell {
+            padding: 12px;
+            border: 2px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            text-align: center;
+            font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+            transition: var(--transition-smooth);
+        }
+        .mem-cell.highlight-char {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+        }
+        .mem-cell.highlight-int {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--accent-purple);
+        }
+        .mem-cell.highlight-float {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-emerald);
+        }
+        .mem-cell.highlight-double {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--accent-amber);
+        }
+        .cell-addr {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .cell-hex {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        .cell-lbl {
+            font-size: 0.7rem;
+            color: var(--accent-blue);
+            margin-top: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 6px;
+        }
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-amber);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="lang-en">1.4 Memory Layout & Endianness</span>
+                <span class="lang-th">1.4 การจัดวางหน่วยความจำและเอ็นเดียน</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Visualize Little-Endian byte ordering, stack memory frame alignment, and allocate variables into raw memory cells in real time.</span>
+                <span class="lang-th">เรียนรู้รูปแบบจัดเก็บไบต์แบบ Little-Endian ตำแหน่งสแต็กหน่วยความจำ และทดลองจัดสรรตัวแปรลงในเซลล์ไบต์แบบเรียลไทม์</span>
+            </p>
+        </div>
+
+        <div class="grid-single-col">
+            <div class="card">
+                <h3 class="card-title">Memory Endianness (Little-Endian vs Big-Endian)</h3>
+                <p class="card-description">
+                    Endianness defines the order in which multi-byte data types (e.g. 4-byte <code>int</code>) are arranged in memory addresses:
+                </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Little-Endian (x86 / x64 / ARM):</strong> The <em>Least Significant Byte (LSB)</em> is stored at the lowest memory address. For example, integer <code>258</code> (hex <code>0x00000102</code>) is stored as byte sequence <code>[02] [01] [00] [00]</code>.</li>
+                    <li><strong>Big-Endian (Network Byte Order):</strong> The <em>Most Significant Byte (MSB)</em> is stored at the lowest memory address (e.g., <code>[00] [00] [01] [02]</code>).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Memory Endianness Visual Diagram -->
+        <div class="diagram-container">
+            <h3 style="margin-bottom: 16px; color: var(--accent-purple); font-weight: 700;">Little-Endian Byte Alignment (Integer Value = 258 / Hex 0x00000102)</h3>
+            <svg viewBox="0 0 750 140" style="width: 100%; max-width: 700px; height: auto;">
+                <text x="80" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff00</text>
+                <text x="240" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff01</text>
+                <text x="400" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff02</text>
+                <text x="560" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff03</text>
+
+                <rect x="10" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="80" y="65" text-anchor="middle" fill="#a7f3d0" font-weight="bold" font-size="16">0x02</text>
+                <text x="80" y="83" text-anchor="middle" fill="#818cf8" font-size="11">LSB (Byte 0)</text>
+
+                <rect x="170" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="240" y="65" text-anchor="middle" fill="#a7f3d0" font-weight="bold" font-size="16">0x01</text>
+                <text x="240" y="83" text-anchor="middle" fill="#818cf8" font-size="11">Byte 1</text>
+
+                <rect x="330" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="400" y="65" text-anchor="middle" fill="#9ca3af" font-weight="bold" font-size="16">0x00</text>
+                <text x="400" y="83" text-anchor="middle" fill="#818cf8" font-size="11">Byte 2</text>
+
+                <rect x="490" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="560" y="65" text-anchor="middle" fill="#9ca3af" font-weight="bold" font-size="16">0x00</text>
+                <text x="560" y="83" text-anchor="middle" fill="#818cf8" font-size="11">MSB (Byte 3)</text>
+            </svg>
+        </div>
+
+        <!-- INTERACTIVE STACK MEMORY ALLOCATOR VISUALIZER -->
+        <div class="visualizer-container">
+            <div class="visualizer-controls">
+                <div class="control-group">
+                    <label>Variable Name:</label>
+                    <input type="text" id="var-name" value="x" style="width: 60px; text-align: center;">
+                </div>
+                <div class="control-group">
+                    <label>Type:</label>
+                    <select id="var-type" onchange="updateDefaultVal()">
+                        <option value="char">char (1 byte)</option>
+                        <option value="int">int (4 bytes)</option>
+                        <option value="float">float (4 bytes)</option>
+                        <option value="double">double (8 bytes)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Value:</label>
+                    <input type="text" id="var-val" value="258" style="width: 120px;">
+                </div>
+                <button class="btn btn-primary" onclick="declareVariable()">Declare & Allocate</button>
+                <button class="btn btn-secondary" onclick="resetMemory()">Reset Stack</button>
+            </div>
+
+            <div style="padding: 24px;">
+                <div style="display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.85rem; flex-wrap: wrap;">
+                    <span><span class="legend-dot" style="background: var(--accent-blue);"></span>char</span>
+                    <span><span class="legend-dot" style="background: var(--accent-purple);"></span>int</span>
+                    <span><span class="legend-dot" style="background: var(--accent-emerald);"></span>float</span>
+                    <span><span class="legend-dot" style="background: var(--accent-amber);"></span>double</span>
+                </div>
+
+                <div class="memory-grid" id="memory-cells-container">
+                    <!-- Memory cells populated dynamically -->
+                </div>
+
+                <div class="card" style="background: rgba(0,0,0,0.2); margin-top: 20px;">
+                    <h4 style="margin-bottom: 8px;">Action Log</h4>
+                    <pre id="stack-log" style="height: 120px; font-size: 0.85rem; color: var(--accent-emerald);">Stack initialized. Ready to allocate variables.</pre>
+                </div>
+            </div>
+
+            <div class="visualizer-stats">
+                <div class="stat-item">Total Bytes: <span id="stat-allocated">0</span> / 16</div>
+                <div class="stat-item">Endianness: <span style="color: var(--accent-amber);">Little-Endian</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const memorySize = 16;
+        let memory = Array(memorySize).fill(null);
+        let baseAddr = 0x7ffee3bc89f0;
+
+        function renderMemory() {
+            const container = document.getElementById('memory-cells-container');
+            container.innerHTML = '';
+
+            let countAllocated = 0;
+
+            for (let i = 0; i < memorySize; i++) {
+                const cell = memory[i];
+                let cellClass = 'mem-cell';
+                let valueHex = '00';
+                let label = `Byte ${i}`;
+
+                if (cell) {
+                    countAllocated++;
+                    valueHex = cell.byteVal.toString(16).padStart(2, '0').toUpperCase();
+                    cellClass += ` highlight-${cell.type}`;
+                    label = `${cell.name}[${cell.byteOffset}]`;
+                }
+
+                container.innerHTML += `
+                    <div class="${cellClass}">
+                        <div class="cell-addr">0x${(baseAddr + i).toString(16)}</div>
+                        <div class="cell-hex">${valueHex}</div>
+                        <div class="cell-lbl" title="${label}">${label}</div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('stat-allocated').innerText = countAllocated;
+        }
+
+        function updateDefaultVal() {
+            const type = document.getElementById('var-type').value;
+            const valInput = document.getElementById('var-val');
+            if (type === 'char') valInput.value = 'A';
+            else if (type === 'int') valInput.value = '258';
+            else if (type === 'float') valInput.value = '1.5';
+            else if (type === 'double') valInput.value = '0.1';
+        }
+
+        function typeToBytes(type, valStr) {
+            let bytes = [];
+            const buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+
+            if (type === 'char') {
+                const byteVal = valStr.length > 0 ? valStr.charCodeAt(0) : 0;
+                bytes.push(byteVal & 0xFF);
+            } else if (type === 'int') {
+                const val = parseInt(valStr) || 0;
+                view.setInt32(0, val, true);
+                for(let i = 0; i < 4; i++) {
+                    bytes.push(view.getUint8(i));
+                }
+            } else if (type === 'float') {
+                const val = parseFloat(valStr) || 0;
+                view.setFloat32(0, val, true);
+                for(let i = 0; i < 4; i++) {
+                    bytes.push(view.getUint8(i));
+                }
+            } else if (type === 'double') {
+                const val = parseFloat(valStr) || 0;
+                view.setFloat64(0, val, true);
+                for(let i = 0; i < 8; i++) {
+                    bytes.push(view.getUint8(i));
+                }
+            }
+            return bytes;
+        }
+
+        function declareVariable() {
+            const name = document.getElementById('var-name').value.trim() || 'v';
+            const type = document.getElementById('var-type').value;
+            const valStr = document.getElementById('var-val').value;
+            const bytes = typeToBytes(type, valStr);
+            const numBytes = bytes.length;
+
+            let freeStart = -1;
+            for (let i = 0; i <= memorySize - numBytes; i++) {
+                let fits = true;
+                for (let j = 0; j < numBytes; j++) {
+                    if (memory[i + j] !== null) {
+                        fits = false;
+                        break;
+                    }
+                }
+                if (fits) {
+                    freeStart = i;
+                    break;
+                }
+            }
+
+            const logEl = document.getElementById('stack-log');
+
+            if (freeStart === -1) {
+                logEl.innerText += `\n[ERROR] Stack overflow! Cannot allocate ${numBytes} bytes for '${name}'. Out of 16-byte frame memory.`;
+                return;
+            }
+
+            for (let b = 0; b < numBytes; b++) {
+                memory[freeStart + b] = {
+                    name: name,
+                    type: type,
+                    byteVal: bytes[b],
+                    byteOffset: b
+                };
+            }
+
+            const hexStr = bytes.map(b => '0x' + b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+            logEl.innerText += `\nAllocated '${name}' (${type}, ${numBytes} bytes) at 0x${(baseAddr + freeStart).toString(16)} -> Bytes: [ ${hexStr} ]`;
+            renderMemory();
+        }
+
+        function resetMemory() {
+            memory = Array(memorySize).fill(null);
+            document.getElementById('stack-log').innerText = "Stack memory cleared.";
+            renderMemory();
+        }
+
+        window.onload = () => {
+            renderMemory();
+        };
+    </script>
+</body>
+</html>

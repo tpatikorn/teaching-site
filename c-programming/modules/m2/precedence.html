@@ -140,24 +140,23 @@
 <body>
     <main>
         <div class="page-header">
-            <h1 class="page-title">2.1 Operator Precedence & Evaluation</h1>
-            <p class="page-subtitle">Understand how the compiler parses nested expressions, operator ranks, and associative rules.</p>
+            <h1 class="page-title">
+                <span class="lang-en">2.4 AST & Operator Precedence</span>
+                <span class="lang-th">2.4 ลำดับความสำคัญของตัวดำเนินการและแผนภูมิ AST</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Understand how the compiler parses nested expressions into Abstract Syntax Trees (AST), operator precedence ranks, and associative evaluation rules.</span>
+                <span class="lang-th">เข้าใจการวิเคราะห์ลำดับความสำคัญของตัวดำเนินการ การจัดโครงสร้างแผนภูมิ AST และทิศทางการประเมินค่าของคอมไพเลอร์</span>
+            </p>
         </div>
 
-        <div class="tabs-container">
-            <div class="tabs-headers" style="margin-bottom: 24px;">
-                <button class="tab-btn active" onclick="switchTab('visualizer')">AST Evaluator & Lecture</button>
-                <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
-            </div>
-
-            <!-- TAB 1: VISUALIZER -->
-            <div id="visualizer" class="tab-content active">
-                <!-- Operators Guide Table (Moved up as primary) -->
-                <div class="card" style="margin-bottom: 32px;">
-                    <h3 class="card-title">
-                        <span class="lang-en">Operators Guide & Reference</span>
-                        <span class="lang-th">ข้อมูลคู่มือตัวดำเนินการภาษา C</span>
-                    </h3>
+        <div class="grid-single-col">
+            <!-- Operators Guide Table (Moved up as primary) -->
+            <div class="card" style="margin-bottom: 32px;">
+                <h3 class="card-title">
+                    <span class="lang-en">Operators Guide & Precedence Reference Table</span>
+                    <span class="lang-th">ข้อมูลตารางคู่มือและลำดับความสำคัญของตัวดำเนินการภาษา C</span>
+                </h3>
                     <p class="card-description">
                         <span class="lang-en">Below is a detailed reference of the core C operators, descriptions, and evaluation results.</span>
                         <span class="lang-th">ตารางสรุปตัวดำเนินการภาษา C คำอธิบายการทำงาน และผลลัพธ์การประเมินค่าจากการใช้งานจริง</span>
@@ -553,16 +552,10 @@
                         </div>
                     </div>
                 </div>
-            </div>          </div>
-        </div>
-            </div>
-
-            <!-- TAB 2: PRACTICE PROBLEMS -->
-            <div id="practice" class="tab-content">
-                <div id="practice-section"></div>
             </div>
         </div>
-    </main>    <script>
+    </main>
+    <script>
         const expressions = {
             mulAdd: {
                 display: "5 + 3 * 4",

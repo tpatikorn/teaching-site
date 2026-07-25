@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Boolean & Relational Operations</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-emerald);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="lang-en">2.2 Boolean & Relational Operations</span>
+                <span class="lang-th">2.2 ตัวดำเนินการเปรียบเทียบและตรรกศาสตร์</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Master relational comparisons (==, !=, <, >), logical boolean operators (&&, ||, !), short-circuit evaluation rules, and ternary conditional expressions.</span>
+                <span class="lang-th">เรียนรู้ตัวดำเนินการเปรียบเทียบ ค่าความจริง ตรรกศาสตร์ (&&, ||, !) กฎการประเมินค่าแบบลัดวงจร (Short-Circuit) และ Ternary Operator</span>
+            </p>
+        </div>
+
+        <div class="grid-single-col">
+            
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">1. Relational Operators & Truth Representation in C</span>
+                    <span class="lang-th">1. ตัวดำเนินการเปรียบเทียบและการแทนค่าความจริงใน C</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">In C (C99 and prior), there is no native primitive boolean keyword by default; boolean values are represented numerically:</span>
+                    <span class="lang-th">ในภาษา C ค่าความจริง (Boolean) ถูกแทนด้วยตัวเลขจำนวนเต็มเป็นหลัก:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>False:</strong> Represented by exact integer <code>0</code>.</span>
+                        <span class="lang-th"><strong>เท็จ (False):</strong> แทนด้วยค่าจำนวนเต็ม <code>0</code></span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>True:</strong> Evaluates to integer <code>1</code> for relational comparisons; any non-zero value (e.g. <code>-5</code>, <code>42</code>) is treated as <em>True</em> in conditionals!</span>
+                        <span class="lang-th"><strong>จริง (True):</strong> การเปรียบเทียบจะคืนค่า <code>1</code>; ค่าที่ไม่ใช่ศูนย์ทั้งหมด (เช่น <code>-5</code>, <code>42</code>) ถือว่าเป็น <em>จริง</em> ในการตรวจสอบเงื่อนไข!</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Relational Set:</strong> Equal <code>==</code>, Not Equal <code>!=</code>, Greater <code>></code>, Less <code><</code>, Greater or Equal <code>>=</code>, Less or Equal <code><=</code>.</span>
+                        <span class="lang-th"><strong>ตัวดำเนินการเปรียบเทียบ:</strong> เท่ากับ <code>==</code>, ไม่เท่ากับ <code>!=</code>, มากกว่า <code>></code>, น้อยกว่า <code><</code>, มากกว่าหรือเท่ากับ <code>>=</code>, น้อยกว่าหรือเท่ากับ <code><=</code></span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">2. Logical Operators (&&, ||, !)</span>
+                    <span class="lang-th">2. ตัวดำเนินการทางตรรกศาสตร์ (AND, OR, NOT)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">Combine multiple boolean conditions into complex logical expressions:</span>
+                    <span class="lang-th">รวมเงื่อนไขย่อยหลายเงื่อนไขเข้าด้วยกันเป็นนิพจน์ตรรกศาสตร์:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>Logical AND (&&):</strong> Evaluates to <code>1</code> if and only if <em>both</em> operands are non-zero (true).</span>
+                        <span class="lang-th"><strong>Logical AND (&&):</strong> เป็นจริง (<code>1</code>) ก็ต่อเมื่อเงื่อนไขทั้งสองฝั่งเป็นจริงทั้งคู่</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Logical OR (||):</strong> Evaluates to <code>1</code> if <em>at least one</em> operand is non-zero (true).</span>
+                        <span class="lang-th"><strong>Logical OR (||):</strong> เป็นจริง (<code>1</code>) เมื่อมีเงื่อนไขอย่างน้อยหนึ่งฝั่งเป็นจริง</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Logical NOT (!):</strong> Inverts truth state: <code>!0</code> becomes <code>1</code>, while <code>!1</code> (or <code>!non-zero</code>) becomes <code>0</code>.</span>
+                        <span class="lang-th"><strong>Logical NOT (!):</strong> นิเสธหรือกลับค่าความจริง: <code>!0</code> กลายเป็น <code>1</code> และ <code>!1</code> (หรือ <code>!ค่าไม่ใช่ศูนย์</code>) กลายเป็น <code>0</code></span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">3. Short-Circuit Evaluation Rules</span>
+                    <span class="lang-th">3. กฎการประเมินผลแบบลัดวงจร (Short-Circuit Evaluation)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">C optimizes logical expressions by evaluating left-to-right and stopping as soon as the final result is guaranteed:</span>
+                    <span class="lang-th">ภาษา C เพิ่มประสิทธิภาพการประเมินผลโดยหยุดประเมินฝั่งขวาทันทีเมื่อทราบผลลัพธ์สุดท้ายแน่ชัด:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>AND Short-Circuit (A && B):</strong> If <code>A</code> evaluates to <code>0</code> (false), <code>B</code> is <strong>NEVER executed or evaluated</strong>! (e.g. <code>ptr != NULL && ptr->val > 0</code> safely avoids null dereference crashes).</span>
+                        <span class="lang-th"><strong>AND Short-Circuit (A && B):</strong> ถ้า <code>A</code> เป็น <code>0</code> (เท็จ) ฝั่ง <code>B</code> จะ <strong>ไม่ถูกประเมินผลหรือทำงานเลย</strong>! (ช่วยป้องกันการเข้าถึงพอยเตอร์ที่เป็น NULL)</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>OR Short-Circuit (A || B):</strong> If <code>A</code> evaluates to non-zero (true), <code>B</code> is <strong>skipped completely</strong> because the entire expression is already true.</span>
+                        <span class="lang-th"><strong>OR Short-Circuit (A || B):</strong> ถ้า <code>A</code> เป็นจริง (ไม่ใช่ 0) ฝั่ง <code>B</code> จะ <strong>ถูกข้ามไปทันที</strong> เพราะทั้งนิพจน์เป็นจริงแน่นอนแล้ว</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">4. Ternary Conditional Operator (? :)</span>
+                    <span class="lang-th">4. ตัวดำเนินการเงื่อนไขสามระดับ (Ternary Operator)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">Provides a concise inline <code>if-else</code> expression: <code>condition ? expr_if_true : expr_if_false</code>. (e.g., <code>int max = (a > b) ? a : b;</code>).</span>
+                    <span class="lang-th">คำสั่งตัดสินใจแบบย่อในบรรทัดเดียว: <code>เงื่อนไข ? นิพจน์ถ้าเป็นจริง : นิพจน์ถ้าเป็นเท็จ</code> (เช่น <code>int max = (a > b) ? a : b;</code>)</span>
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Short Circuit Visual Diagram -->
+        <div class="diagram-container">
+            <h3 style="margin-bottom: 16px; color: var(--accent-emerald); font-weight: 700;">
+                <span class="lang-en">Short-Circuit Execution Protection Diagram</span>
+                <span class="lang-th">แผนผังการทำงานลัดวงจรเพื่อความปลอดภัยของหน่วยความจำ</span>
+            </h3>
+            <svg viewBox="0 0 750 140" style="width: 100%; max-width: 700px; height: auto;">
+                <rect x="20" y="35" width="220" height="70" rx="10" fill="#1e1b4b" stroke="#10b981" stroke-width="2"/>
+                <text x="130" y="65" text-anchor="middle" fill="#10b981" font-weight="bold" font-size="14">ptr != NULL</text>
+                <text x="130" y="85" text-anchor="middle" fill="#a7f3d0" font-size="12">Evaluates False (0)</text>
+
+                <path d="M 240 70 L 285 70" stroke="#f43f5e" stroke-width="3" stroke-dasharray="4"/>
+                <text x="262" y="60" text-anchor="middle" fill="#f43f5e" font-weight="bold" font-size="16">❌</text>
+
+                <rect x="290" y="35" width="220" height="70" rx="10" fill="#271c1c" stroke="#f43f5e" stroke-width="2"/>
+                <text x="400" y="65" text-anchor="middle" fill="#f43f5e" font-weight="bold" font-size="14">ptr->data > 0</text>
+                <text x="400" y="85" text-anchor="middle" fill="#fca5a5" font-size="12">SKIPPED (Prevents Crash!)</text>
+
+                <rect x="540" y="35" width="190" height="70" rx="10" fill="#1e293b" stroke="#6b7280" stroke-width="2"/>
+                <text x="635" y="65" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="14">Result: 0 (False)</text>
+                <text x="635" y="85" text-anchor="middle" fill="#9ca3af" font-size="11">Execution Safe</text>
+            </svg>
+        </div>
+
+    </main>
+</body>
+</html>

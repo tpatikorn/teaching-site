@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
     --bg-primary: #0b0f19;
@@ -535,7 +535,7 @@ body:not(.lang-th) .lang-th {
     margin-bottom: 10px;
 }
 .c-sim-filename {
-    font-family: 'Fira Code', Monaco, Consolas, monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
     font-size: 0.85rem;
     color: var(--accent-blue);
     font-weight: 600;
@@ -556,7 +556,7 @@ body:not(.lang-th) .lang-th {
 }
 .c-sim-boilerplate {
     padding: 8px 12px;
-    font-family: 'Fira Code', Monaco, Consolas, monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
     font-size: 0.85rem;
     color: var(--accent-emerald);
     user-select: none;
@@ -567,7 +567,7 @@ body:not(.lang-th) .lang-th {
     color: var(--text-primary);
     border: none;
     padding: 4px 12px 4px 28px;
-    font-family: 'Fira Code', Monaco, Consolas, monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
     font-size: 0.9rem;
     line-height: 1.5;
     outline: none;
@@ -618,7 +618,7 @@ body:not(.lang-th) .lang-th {
     color: var(--text-primary);
     padding: 8px 12px;
     border-radius: 6px;
-    font-family: 'Fira Code', Monaco, Consolas, monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
     font-size: 0.85rem;
 }
 .c-sim-console-wrapper {
@@ -642,7 +642,7 @@ body:not(.lang-th) .lang-th {
 }
 .c-sim-console-output {
     color: #38bdf8;
-    font-family: 'Fira Code', Monaco, Consolas, monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
     font-size: 0.85rem;
     margin: 0;
     white-space: pre-wrap;

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Fundamentals - Arithmetic Operations</title>
+    <link rel="stylesheet" href="../../global.css">
+    <script src="../../nav.js"></script>
+    <style>
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="lang-en">2.1 Arithmetic Operations</span>
+                <span class="lang-th">2.1 ตัวดำเนินการทางคณิตศาสตร์</span>
+            </h1>
+            <p class="page-subtitle">
+                <span class="lang-en">Master binary and unary math operators (+, -, *, /, %), integer truncation vs floating-point division, pre/post increments (++x, x++), and explicit type casting.</span>
+                <span class="lang-th">เรียนรู้ตัวดำเนินการทางคณิตศาสตร์พื้นฐาน การหารจำนวนเต็ม ทศนิยม การเพิ่ม/ลดค่า (++x, x++) และการแปลงชนิดตัวแปร (Type Casting)</span>
+            </p>
+        </div>
+
+        <div class="grid-single-col">
+            
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">1. Binary Arithmetic Operators</span>
+                    <span class="lang-th">1. ตัวดำเนินการคณิตศาสตร์สองระดับ (Binary Operators)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">C supports standard arithmetic operators that compute values between two operands:</span>
+                    <span class="lang-th">ภาษา C รองรับตัวดำเนินการคณิตศาสตร์มาตรฐานสำหรับคำนวณค่าระหว่างสองตัวแปร:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>Addition (+) & Subtraction (-):</strong> Computes sum and difference between numbers.</span>
+                        <span class="lang-th"><strong>การบวก (+) และ การลบ (-):</strong> คำนวณผลรวมและผลต่างของตัวเลข</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Multiplication (*):</strong> Multiplies two numeric factors.</span>
+                        <span class="lang-th"><strong>การคูณ (*):</strong> คำนวณผลคูณของสองจำนวน</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Division (/):</strong> Integer division (e.g. <code>5 / 2</code>) truncates the fractional part to <code>2</code>! Floating-point division requires at least one float/double operand (e.g. <code>5.0 / 2</code> yields <code>2.5</code>).</span>
+                        <span class="lang-th"><strong>การหาร (/):</strong> การหารจำนวนเต็ม (เช่น <code>5 / 2</code>) จะตัดเศษทศนิยมทิ้งเหลือ <code>2</code>! หากต้องการผลลัพธ์ทศนิยมต้องมีตัวแปร float/double อย่างน้อย 1 ตัว (เช่น <code>5.0 / 2</code> ได้ <code>2.5</code>)</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Modulus (%):</strong> Calculates the integer remainder of division (e.g. <code>7 % 3 == 1</code>). Modulus requires integer operands only.</span>
+                        <span class="lang-th"><strong>การมอดุโลหรือหาเศษ (%):</strong> คำนวณเศษที่เหลือจากการหารจำนวนเต็ม (เช่น <code>7 % 3 == 1</code>) ใช้ได้กับจำนวนเต็มเท่านั้น</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">2. Pre-increment vs Post-increment (++x vs x++)</span>
+                    <span class="lang-th">2. การเพิ่มค่าก่อนและหลัง (Pre-increment vs Post-increment)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">Unary increment (<code>++</code>) and decrement (<code>--</code>) operators behave differently depending on position in an expression:</span>
+                    <span class="lang-th">ตัวดำเนินการเพิ่มค่า (<code>++</code>) และลดค่า (<code>--</code>) มีพฤติกรรมการทำงานต่างกันตามตำแหน่งในนิพจน์:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>Pre-increment (++x):</strong> Increments <code>x</code> <em>first</em>, then evaluates the new value in the expression. (e.g., if <code>x=5</code>, <code>y = ++x</code> assigns <code>6</code> to <code>y</code>).</span>
+                        <span class="lang-th"><strong>Pre-increment (++x):</strong> เพิ่มค่า <code>x</code> ขึ้น 1 <em>ก่อน</em> แล้วจึงนำค่าใหม่ไปใช้ในนิพจน์ (เช่น ถ้า <code>x=5</code>, <code>y = ++x</code> จะทำให้ <code>y</code> เป็น <code>6</code>)</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Post-increment (x++):</strong> Evaluates current <code>x</code> <em>first</em> in the expression, then increments <code>x</code> afterward. (e.g., if <code>x=5</code>, <code>y = x++</code> assigns <code>5</code> to <code>y</code>, then <code>x</code> becomes <code>6</code>).</span>
+                        <span class="lang-th"><strong>Post-increment (x++):</strong> นำค่า <code>x</code> เดิมไปใช้ในนิพจน์ <em>ก่อน</em> แล้วจึงเพิ่มค่า <code>x</code> ขึ้น 1 หลังเสร็จสิ้นคำสั่ง (เช่น ถ้า <code>x=5</code>, <code>y = x++</code> จะทำให้ <code>y</code> เป็น <code>5</code> แล้ว <code>x</code> กลายเป็น <code>6</code>)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">
+                    <span class="lang-en">3. Type Casting & Implicit Coercion</span>
+                    <span class="lang-th">3. การแปลงชนิดข้อมูล (Type Casting & Promotion)</span>
+                </h3>
+                <p class="card-description">
+                    <span class="lang-en">When operating between different types, C performs automatic promotion or requires explicit casting:</span>
+                    <span class="lang-th">เมื่อคำนวณระหว่างชนิดข้อมูลที่ต่างกัน ภาษา C จะปรับชนิดข้อมูลอัตโนมัติหรือต้องใช้การแปลงชนิดข้อมูลอย่างชัดเจน:</span>
+                </p>
+                <ul class="concept-bullet-list">
+                    <li>
+                        <span class="lang-en"><strong>Implicit Promotion:</strong> Narrow types are automatically promoted to wider types (e.g., <code>int + double</code> promotes <code>int</code> to <code>double</code>).</span>
+                        <span class="lang-th"><strong>Implicit Promotion:</strong> ตัวแปรขนาดเล็กจะถูกปรับเป็นชนิดข้อมูลที่ใหญ่กว่าอัตโนมัติ (เช่น <code>int + double</code> จะปรับ <code>int</code> เป็น <code>double</code> ก่อนคำนวณ)</span>
+                    </li>
+                    <li>
+                        <span class="lang-en"><strong>Explicit Casting:</strong> Prefixing an expression with <code>(type)</code> converts the result explicitly (e.g., <code>(float)total / count</code> avoids integer truncation).</span>
+                        <span class="lang-th"><strong>Explicit Casting:</strong> การระบุ <code>(ชนิดข้อมูล)</code> นำหน้านิพจน์เพื่อแปลงชนิดข้อมูลโดยตรง (เช่น <code>(float)total / count</code> ป้องกันการหารตัดเศษจำนวนเต็ม)</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Increment Visual Diagram -->
+        <div class="diagram-container">
+            <h3 style="margin-bottom: 16px; color: var(--accent-blue); font-weight: 700;">
+                <span class="lang-en">Pre-increment (++x) vs Post-increment (x++) Execution Order</span>
+                <span class="lang-th">ลำดับการทำงาน Pre-increment (++x) เปรียบเทียบกับ Post-increment (x++)</span>
+            </h3>
+            <svg viewBox="0 0 750 140" style="width: 100%; max-width: 700px; height: auto;">
+                <rect x="20" y="35" width="330" height="75" rx="10" fill="#1e1b4b" stroke="#3b82f6" stroke-width="2"/>
+                <text x="185" y="60" text-anchor="middle" fill="#3b82f6" font-weight="bold" font-size="15">Pre-Increment: y = ++x</text>
+                <text x="185" y="80" text-anchor="middle" fill="#f3f4f6" font-size="12">1. x = x + 1 (Increment First)</text>
+                <text x="185" y="98" text-anchor="middle" fill="#9ca3af" font-size="12">2. Assign new x value to y</text>
+
+                <rect x="400" y="35" width="330" height="75" rx="10" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="565" y="60" text-anchor="middle" fill="#8b5cf6" font-weight="bold" font-size="15">Post-Increment: y = x++</text>
+                <text x="565" y="80" text-anchor="middle" fill="#f3f4f6" font-size="12">1. Assign current x value to y</text>
+                <text x="565" y="98" text-anchor="middle" fill="#9ca3af" font-size="12">2. x = x + 1 (Increment After)</text>
+            </svg>
+        </div>
+
+    </main>
+</body>
+</html>
