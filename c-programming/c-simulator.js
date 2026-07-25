@@ -150,6 +150,9 @@ class CSimulator {
  * UI Component Generator for C Code Editor & Console Output Box Pair
  */
 window.CSimulatorUI = {
+    init(containerId, initialCode = "", initialInput = "") {
+        return this.render(containerId, { initialCode, initialInput });
+    },
     render(containerId, options = {}) {
         const target = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
         if (!target) return;

@@ -459,14 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const simId = 'card_sim_' + p.id.replace(/[^a-zA-Z0-9]/g, '_');
 
                 itemDiv.innerHTML = `
-                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="display: flex; gap: 12px; align-items: flex-start; cursor: pointer;">
                         <span style="font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace; color: var(--accent-blue); font-weight: 600; min-width: 90px; flex-shrink: 0;">[${p.id.toUpperCase()}]</span>
                         <div style="flex-grow: 1;">
                             <div style="font-weight: 500; line-height: 1.5; color: var(--text-primary); margin-bottom: 8px;">${qText}</div>
                             ${p.code ? `<pre style="font-size: 0.825rem; margin-top: 6px; padding: 10px; border-radius: 6px; max-height: 120px; overflow-y: auto;"><code>${escapeHtml(p.code)}</code></pre>` : ''}
-                            
-                            <!-- Card Embedded Simulator Area -->
-                            <div id="${simId}" style="margin-top: 12px; display: none;"></div>
                         </div>
                         <button class="btn btn-secondary btn-try-sim" data-prob-id="${p.id}" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; flex-shrink: 0;">
                             ⚡ Try Code
@@ -475,21 +472,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 listContainer.appendChild(itemDiv);
 
-                // Bind Try Code simulator toggle
-                const tryBtn = itemDiv.querySelector('.btn-try-sim');
-                tryBtn.addEventListener('click', () => {
-                    const simBox = document.getElementById(simId);
-                    if (simBox.style.display === 'none') {
-                        simBox.style.display = 'block';
-                        tryBtn.innerHTML = '❌ Close Simulator';
-                        if (window.CSimulatorUI) {
-                            window.CSimulatorUI.init(simId, p.code || 'int main() {\n    // Write your code here\n    return 0;\n}');
-                        }
-                    } else {
-                        simBox.style.display = 'none';
-                        tryBtn.innerHTML = '⚡ Try Code';
-                        simBox.innerHTML = '';
-                    }
+                // Clicking anywhere on the item or the Try Code button opens the problem modal
+                itemDiv.addEventListener('click', () => {
+                    openProblemModal(p);
                 });
             });
         }
@@ -502,11 +487,9 @@ document.addEventListener('DOMContentLoaded', () => {
             renderProblems(e.target.value);
         });
 
-        // Random Draw Handler
-        function drawRandomProblem() {
-            if (problems.length === 0) return;
-            const randomIndex = Math.floor(Math.random() * problems.length);
-            const p = problems[randomIndex];
+        // Open Problem Modal Handler
+        function openProblemModal(p) {
+            if (!p) return;
 
             modalId.innerText = `${lang.modalProblem} [${p.id.toUpperCase()}]`;
             modalText.innerText = currentLang === 'TH' ? (p.questionTh || p.question) : p.question;
@@ -521,8 +504,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Embed Interactive Simulator inside Modal
             const modalSimBox = document.getElementById('modal-sim-box');
             modalSimBox.innerHTML = '';
-            if (window.CSimulatorUI) {
+            if (window.CSimulatorUI && typeof window.CSimulatorUI.init === 'function') {
                 window.CSimulatorUI.init('modal-sim-box', p.code || 'int main() {\n    // Write code here\n    return 0;\n}');
+            } else if (window.CSimulatorUI && typeof window.CSimulatorUI.render === 'function') {
+                window.CSimulatorUI.render('modal-sim-box', { initialCode: p.code || 'int main() {\n    // Write code here\n    return 0;\n}' });
             }
 
             // Show Modal
@@ -531,6 +516,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.style.opacity = '1';
                 modal.querySelector('.card').style.transform = 'scale(1)';
             }, 10);
+        }
+
+        // Random Draw Handler
+        function drawRandomProblem() {
+            if (problems.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * problems.length);
+            openProblemModal(problems[randomIndex]);
         }
 
         function closeModal() {
