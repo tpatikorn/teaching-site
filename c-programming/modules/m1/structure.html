@@ -51,56 +51,149 @@
                 grid-template-columns: 1fr;
             }
         }
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="page-header">
             <h1 class="page-title">1.1 Structure of a C Program</h1>
-            <p class="page-subtitle">Learn the boilerplate code, the entry point function, and how a C file converts to machine execution.</p>
+            <p class="page-subtitle">Master the complete anatomy of C programs: header inclusions, preprocessor mechanics, entry point main(), exit codes, and multi-stage toolchain compilation.</p>
         </div>
 
         <div class="tabs-container">
             <div class="tabs-headers" style="margin-bottom: 24px;">
-                <button class="tab-btn active" onclick="switchTab('visualizer')">Interactive Visualizer</button>
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Interactive Visualizer & Lecture</button>
                 <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
             </div>
 
-            <!-- TAB 1: VISUALIZER -->
+            <!-- TAB 1: VISUALIZER & DETAILED LECTURE -->
             <div id="visualizer" class="tab-content active">
-        <div class="grid-container">
-            <div class="card">
-                <h3 class="card-title">C Compilation Steps</h3>
-                <p class="card-description">Unlike interpreted languages, C source code must go through a multi-stage compilation process to generate standalone binary machine code. Click each step below to inspect how the source code is converted.</p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">1. Preprocessor Directives</h3>
-                <p class="card-description">
-                    Lines starting with <code>#</code> are preprocessor commands. They run <em>before</em> actual compilation:
-                    <br>• <code>#include &lt;stdio.h&gt;</code>: Imports the Standard Input/Output library.
-                    <br>• <code>#define LIMIT 100</code>: Replaces the name <code>LIMIT</code> with <code>100</code> throughout the code.
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">2. Main Boilerplate</h3>
-                <p class="card-description">
-                    Every C program must have an <code>int main()</code> function. This is where execution begins.
-                    <br>• Returns <code>0</code> upon successful termination, indicating to the OS that no error occurred.
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">3. Linker Role</h3>
-                <p class="card-description">
-                    The <strong>Linker</strong> combines the binary object files with pre-compiled standard library codes (like the implementation of <code>printf</code>), creating a single runnable executable.
-                </p>
-            </div>
-        </div>
+                <div class="grid-container">
+                    
+                    <div class="card">
+                        <h3 class="card-title">1. Preprocessor Directives (#include & #define)</h3>
+                        <p class="card-description">
+                            Lines beginning with <code>#</code> are processed by the preprocessor before actual code compilation begins:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>#include &lt;stdio.h&gt;:</strong> Inserts system header files containing standard I/O library function prototypes (e.g., <code>printf</code>, <code>scanf</code>).</li>
+                            <li><strong>#include "myheader.h":</strong> Inserts user-defined local header files located in the current project directory.</li>
+                            <li><strong>#define MAX 100:</strong> Textual macro substitution that replaces every occurrence of <code>MAX</code> with <code>100</code> before compiling.</li>
+                            <li><strong>Header Guards:</strong> Uses <code>#ifndef HEADER_H</code>, <code>#define HEADER_H</code>, and <code>#endif</code> to prevent duplicate declaration errors during inclusion.</li>
+                        </ul>
+                    </div>
 
-                <!-- compilation visualizer -->
+                    <div class="card">
+                        <h3 class="card-title">2. Entry Point & Function Anatomy</h3>
+                        <p class="card-description">
+                            Every executable C program requires exactly one primary entry point function:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>int main():</strong> The entry point function called by the C runtime startup code (<code>crt0.o</code>).</li>
+                            <li><strong>Command-Line Arguments:</strong> <code>int main(int argc, char *argv[])</code> receives argument count (<code>argc</code>) and an array of null-terminated strings (<code>argv</code>).</li>
+                            <li><strong>Return Exit Status:</strong> Returning <code>0</code> (or <code>EXIT_SUCCESS</code>) signals successful execution to the OS. Returning a non-zero value (e.g., <code>1</code> or <code>EXIT_FAILURE</code>) indicates runtime errors.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">3. Standard Stream Buffers</h3>
+                        <p class="card-description">
+                            C programs interact with operating system environments via three pre-opened file streams:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>stdin (File Descriptor 0):</strong> Standard input stream, line-buffered by default (keyboard input).</li>
+                            <li><strong>stdout (File Descriptor 1):</strong> Standard output stream, flushed automatically on newline (<code>\n</code>) or program termination.</li>
+                            <li><strong>stderr (File Descriptor 2):</strong> Standard error stream, unbuffered by default so diagnostic messages print immediately during crashes.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">4. Multi-Stage Compilation Pipeline</h3>
+                        <p class="card-description">
+                            Unlike interpreted languages (like Python or JS), C is compiled into native CPU machine instructions through 4 distinct phases:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>Preprocessing:</strong> Macro expansion, line splicing, comment stripping, and header file inclusion (Output: <code>.i</code> file).</li>
+                            <li><strong>Compilation:</strong> Parsing syntax trees, optimizing code, and generating architecture-specific Assembly instructions (Output: <code>.s</code> file).</li>
+                            <li><strong>Assembly:</strong> Converting Assembly language instructions into binary relocation machine code opcodes (Output: <code>.o</code> / <code>.obj</code> object file).</li>
+                            <li><strong>Linking:</strong> Resolving external symbol references and combining object files with C standard libraries into a runnable executable (Output: <code>.exe</code> / <code>a.out</code>).</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Compilation Pipeline Architecture Diagram -->
+                <div class="diagram-container">
+                    <h3 style="margin-bottom: 16px; color: var(--accent-blue); font-weight: 700;">C Toolchain Build Architecture</h3>
+                    <svg viewBox="0 0 850 160" style="width: 100%; max-width: 800px; height: auto;">
+                        <!-- Nodes -->
+                        <rect x="10" y="55" width="120" height="50" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="70" y="78" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="13">main.c / header.h</text>
+                        <text x="70" y="95" text-anchor="middle" fill="#9ca3af" font-size="11">Source Files</text>
+
+                        <path d="M 130 80 L 165 80" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow-head)"/>
+
+                        <rect x="170" y="55" width="120" height="50" rx="10" fill="#1e293b" stroke="#8b5cf6" stroke-width="2"/>
+                        <text x="230" y="78" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="13">Preprocessor</text>
+                        <text x="230" y="95" text-anchor="middle" fill="#9ca3af" font-size="11">Expands #include/#define</text>
+
+                        <path d="M 290 80 L 325 80" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow-head)"/>
+
+                        <rect x="330" y="55" width="120" height="50" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+                        <text x="390" y="78" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="13">Compiler</text>
+                        <text x="390" y="95" text-anchor="middle" fill="#9ca3af" font-size="11">Generates Assembly (.s)</text>
+
+                        <path d="M 450 80 L 485 80" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow-head)"/>
+
+                        <rect x="490" y="55" width="120" height="50" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="550" y="78" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="13">Assembler</text>
+                        <text x="550" y="95" text-anchor="middle" fill="#9ca3af" font-size="11">Machine Code (.o)</text>
+
+                        <path d="M 610 80 L 645 80" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow-head)"/>
+
+                        <rect x="650" y="55" width="120" height="50" rx="10" fill="#1e293b" stroke="#f43f5e" stroke-width="2"/>
+                        <text x="710" y="78" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="13">Linker</text>
+                        <text x="710" y="95" text-anchor="middle" fill="#9ca3af" font-size="11">Combines libc & Object</text>
+
+                        <defs>
+                            <marker id="arrow-head" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" />
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+
+                <!-- COMPILATION INTERACTIVE VISUALIZER -->
                 <div class="visualizer-container">
                     <div class="visualizer-controls">
-                        <span style="font-weight: bold;">Interactive Pipeline:</span>
-                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Click any phase to see source transformation</span>
+                        <span style="font-weight: bold;">Interactive Pipeline Explorer:</span>
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Click any phase to inspect the intermediate code output</span>
                     </div>
 
                     <div style="padding: 24px;">
@@ -141,7 +234,7 @@
                                     <pre id="code-left" style="height: 250px; font-size: 0.85rem;"></pre>
                                 </div>
                                 <div>
-                                    <div style="font-size: 0.8rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">Action & Output:</div>
+                                    <div style="font-size: 0.8rem; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">Action & Toolchain Output:</div>
                                     <pre id="code-right" style="height: 250px; font-size: 0.85rem; color: var(--accent-emerald);"></pre>
                                 </div>
                             </div>
@@ -150,7 +243,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: PRACTICE PROBLEMS (bootstrapped by nav.js) -->
+            <!-- TAB 2: PRACTICE PROBLEMS -->
             <div id="practice" class="tab-content">
                 <div id="practice-section"></div>
             </div>
@@ -160,39 +253,39 @@
     <script>
         const stages = {
             source: {
-                title: "Source Code (main.c)",
+                title: "1. Source Code (main.c)",
                 color: "var(--accent-blue)",
-                desc: "This is the initial text file containing your C code. It includes preprocessor instructions (lines starting with #) and human-readable syntax.",
-                left: `#include <stdio.h>\n#define MAX 100\n\nint main() {\n    // Print hello\n    printf("Max: %d\\n", MAX);\n    return 0;\n}`,
-                right: "File ready for preprocessor.\nNo code compilation has occurred yet."
+                desc: "Human-readable C text file containing main() boilerplate, standard includes (#include <stdio.h>), and preprocessor macros (#define MAX 100).",
+                left: `#include <stdio.h>\n#define MAX 100\n\nint main(int argc, char *argv[]) {\n    // Print formatted message\n    printf("Max Limit: %d\\n", MAX);\n    return 0;\n}`,
+                right: "Source file ready for build process.\nNo compilation or machine translation has occurred yet."
             },
             preprocess: {
-                title: "Preprocessed Code (main.i)",
+                title: "2. Preprocessed Output (main.i)",
                 color: "var(--accent-purple)",
-                desc: "The preprocessor strips out comments, resolves macros (replaces MAX with 100), and expands header files (copies contents of <stdio.h> directly into the file).",
-                left: `// Contents of stdio.h header pasted here...\nextern int printf(const char *format, ...);\n\nint main() {\n\n    printf("Max: %d\\n", 100);\n    return 0;\n}`,
-                right: "Command: gcc -E main.c -o main.i\n\nComment '// Print hello' removed.\n#define MAX 100 replaced with literals.\nstdio.h contents expanded."
+                desc: "The C preprocessor strips comments, expands macros (replaces MAX with 100), and pastes header declarations directly into the code.",
+                left: `// Contents of <stdio.h> expanded...\nextern int printf(const char *format, ...);\n\nint main(int argc, char *argv[]) {\n    printf("Max Limit: %d\\n", 100);\n    return 0;\n}`,
+                right: "Command: gcc -E main.c -o main.i\n\n- Stripped line comment '// Print formatted message'\n- Replaced MAX with 100 literal\n- Pasted stdio.h library declarations."
             },
             compile: {
-                title: "Assembly Translation (main.s)",
+                title: "3. Assembly Language Code (main.s)",
                 color: "var(--accent-emerald)",
-                desc: "The compiler translates the preprocessed C source code into assembly language, which is specific to your target processor architecture (e.g., x86_64).",
-                left: `.file "main.c"\n.section .rodata\n.LC0:\n    .string "Max: %d\\n"\n.text\n.globl main\nmain:\n    pushq %rbp\n    movq %rsp, %rbp\n    movl $100, %esi\n    leaq .LC0(%rip), %rdi\n    call printf\n    movl $0, %eax\n    popq %rbp\n    ret`,
-                right: "Command: gcc -S main.i -o main.s\n\nHigh-level expressions translated into CPU instructions (push, mov, call, ret)."
+                desc: "The compiler translates preprocessed C constructs into target architecture CPU assembly instructions (registers, stack manipulation, jumps).",
+                left: `.file "main.c"\n.section .rodata\n.LC0:\n    .string "Max Limit: %d\\n"\n.text\n.globl main\nmain:\n    pushq %rbp\n    movq %rsp, %rbp\n    movl $100, %esi\n    leaq .LC0(%rip), %rdi\n    call printf\n    movl $0, %eax\n    popq %rbp\n    ret`,
+                right: "Command: gcc -S main.i -o main.s\n\n- C expressions compiled to x86_64 assembly\n- Pushes stack frame pointer (%rbp)\n- Loads string format and argument 100 into registers (%rdi, %esi)."
             },
             assemble: {
-                title: "Object Machine Code (main.o)",
+                title: "4. Relocatable Object File (main.o)",
                 color: "var(--accent-amber)",
-                desc: "The assembler translates the assembly code into machine instructions (binary format). However, external references (like calls to 'printf') are not yet resolved.",
-                left: `ELF 64-bit LSB relocatable, x86-64\nRaw binary instructions in hexadecimal:\n55 48 89 e5 be 64 00 00 00 48 8d 3d\n00 00 00 00 e8 00 00 00 00 b8 00 00\n00 00 5d c3`,
-                right: "Command: gcc -c main.s -o main.o\n\nAssembly converted to 0s and 1s.\nMemory address offsets are temporary placeholders."
+                desc: "The assembler converts human-readable assembly instructions into binary CPU machine opcodes, leaving external library function addresses unresolved.",
+                left: `ELF 64-bit LSB relocatable, x86-64\nRaw binary machine opcodes (hex view):\n55 48 89 e5 be 64 00 00 00 48 8d 3d\n00 00 00 00 e8 00 00 00 00 b8 00 00\n00 00 5d c3`,
+                right: "Command: gcc -c main.s -o main.o\n\n- Assembly instructions converted into 0s and 1s\n- Call address for printf remains a zero placeholder (unlinked)."
             },
             link: {
-                title: "Executable Binary (main.exe / a.out)",
+                title: "5. Standalone Executable (main.exe / a.out)",
                 color: "var(--accent-rose)",
-                desc: "The linker merges your object file with compiled library code (like standard C printf implementation) to create a single standalone executable binary ready to run.",
-                left: `ELF 64-bit LSB executable, x86-64\nFully resolved machine addresses.\nReady for CPU execution.`,
-                right: "Command: gcc main.o -o main.exe\n\nLinked with standard C run-time libraries.\nResolves external dependencies.\nOutput: Max: 100"
+                desc: "The linker merges object files with C runtime initialization code and standard libraries (libc), resolving function call addresses for final execution.",
+                left: `ELF 64-bit LSB executable binary\nFully resolved machine addresses.\nReady for OS execution.`,
+                right: "Command: gcc main.o -o main.exe\n\n- Linked with standard C runtime (crt0.o & libc)\n- Resolved printf memory address\n- Runtime Execution Output: Max Limit: 100"
             }
         };
 

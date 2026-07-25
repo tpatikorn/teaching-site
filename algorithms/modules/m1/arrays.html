@@ -64,30 +64,179 @@
             font-size: 0.85rem;
             color: var(--accent-emerald);
         }
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        .complexity-table th, .complexity-table td {
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .complexity-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent-blue);
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="page-header">
             <h1 class="page-title">1.1 Arrays</h1>
-            <p class="page-subtitle">Contiguous memory collection. Explore shifts, accesses, and search operations step-by-step.</p>
+            <p class="page-subtitle">Master contiguous memory structures: indexing mathematics, element shifting mechanics, 2D row-major layouts, and CPU cache spatial locality.</p>
         </div>
 
-        <!-- LECTURE CONTENT -->
+        <!-- DETAILED LECTURE CONTENT -->
         <div class="grid-container">
+            
             <div class="card">
-                <h3 class="card-title">Memory Contiguity</h3>
+                <h3 class="card-title">1. Memory Contiguity & Indexing Formula</h3>
                 <p class="card-description">
-                    An <strong>Array</strong> stores elements in contiguous memory slots. Because memory addresses are consecutive, finding element <code>A[i]</code> takes <strong>O(1)</strong> time via simple formula: 
-                    <br><code>Address = BaseAddress + i * ElementSize</code>
+                    An <strong>Array</strong> stores elements in contiguous (consecutive) memory slots. Because addresses are sequential, accessing element <code>A[i]</code> takes instant <strong>O(1)</strong> time via the offset calculation formula:
                 </p>
+                <ul class="concept-bullet-list">
+                    <li><code>Address(A[i]) = BaseAddress + (i * ElementSize)</code></li>
+                    <li><strong>Direct O(1) Access:</strong> Eliminates the need to traverse preceding elements.</li>
+                    <li><strong>Zero-Based Indexing:</strong> Index <code>0</code> aligns directly with <code>BaseAddress</code> offset zero.</li>
+                </ul>
             </div>
+
             <div class="card">
-                <h3 class="card-title">Element Shifting</h3>
+                <h3 class="card-title">2. Element Shifting & Insertion Costs</h3>
                 <p class="card-description">
-                    Inserting or deleting in the middle of an array requires shifting adjacent elements to prevent gaps or overlaps, making insertions and deletions average <strong>O(N)</strong>.
+                    Inserting or deleting in the middle of an array requires shifting neighboring elements to prevent memory gaps or overlaps:
                 </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Insertion at Index i:</strong> Shifts elements from index <code>i</code> up to <code>N-1</code> one slot right (<strong>O(N)</strong> operations).</li>
+                    <li><strong>Deletion at Index i:</strong> Shifts elements from <code>i+1</code> down to <code>N-1</code> one slot left (<strong>O(N)</strong> operations).</li>
+                    <li><strong>Append at End:</strong> Fast <strong>O(1)</strong> operation if pre-allocated capacity remains.</li>
+                </ul>
             </div>
+
+            <div class="card">
+                <h3 class="card-title">3. Multi-Dimensional Row-Major Order</h3>
+                <p class="card-description">
+                    Since physical computer RAM is linear (1D), 2D arrays <code>A[rows][cols]</code> map to 1D memory using <strong>Row-Major Order</strong>:
+                </p>
+                <ul class="concept-bullet-list">
+                    <li><code>Address(A[i][j]) = BaseAddress + (i * Cols + j) * ElementSize</code></li>
+                    <li>Rows are stored sequentially, one after another, in RAM.</li>
+                    <li>Iterating through rows sequentially maximizes CPU cache hits.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">4. CPU Cache Spatial Locality & Performance</h3>
+                <p class="card-description">
+                    Arrays deliver unmatched performance on modern hardware due to memory hierarchy optimization:
+                </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Spatial Locality:</strong> Accessing element <code>A[i]</code> automatically prefetches <code>A[i+1]...A[i+k]</code> into L1/L2 CPU cache lines (64 bytes).</li>
+                    <li><strong>Minimal Overhead:</strong> 100% memory utilization for data, with zero extra bytes wasted on node pointers.</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Complexity Matrix Table -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Array Time & Space Complexity Summary</h3>
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>Best Case</th>
+                        <th>Average / Worst Case</th>
+                        <th>Space Complexity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Random Index Access (A[i])</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Linear Search (Unsorted)</td>
+                        <td>O(1)</td>
+                        <td>O(N)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Binary Search (Sorted)</td>
+                        <td>O(1)</td>
+                        <td>O(log N)</td>
+                        <td>O(1)</td>
+                    </tr>
+                    <tr>
+                        <td>Insertion / Deletion (Middle)</td>
+                        <td>O(1) [at end]</td>
+                        <td>O(N) [shifting]</td>
+                        <td>O(1) auxiliary</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 1D & 2D Memory Layout Diagram -->
+        <div class="diagram-container">
+            <h3 style="margin-bottom: 16px; color: var(--accent-blue); font-weight: 700;">Linear Memory Contiguity & 2D Row-Major Mapping</h3>
+            <svg viewBox="0 0 750 130" style="width: 100%; max-width: 700px; height: auto;">
+                <!-- 1D Array Cells -->
+                <text x="75" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Index [0]</text>
+                <text x="215" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Index [1]</text>
+                <text x="355" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Index [2]</text>
+                <text x="495" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Index [3]</text>
+
+                <rect x="15" y="35" width="120" height="55" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                <text x="75" y="65" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="16">Val: 15</text>
+                <text x="75" y="80" text-anchor="middle" fill="#9ca3af" font-size="10">BaseAddr + 0</text>
+
+                <rect x="155" y="35" width="120" height="55" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                <text x="215" y="65" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="16">Val: 42</text>
+                <text x="215" y="80" text-anchor="middle" fill="#9ca3af" font-size="10">BaseAddr + 4</text>
+
+                <rect x="295" y="35" width="120" height="55" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                <text x="355" y="65" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="16">Val: 87</text>
+                <text x="355" y="80" text-anchor="middle" fill="#9ca3af" font-size="10">BaseAddr + 8</text>
+
+                <rect x="435" y="35" width="120" height="55" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                <text x="495" y="65" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="16">Val: 99</text>
+                <text x="495" y="80" text-anchor="middle" fill="#9ca3af" font-size="10">BaseAddr + 12</text>
+
+                <rect x="575" y="35" width="160" height="55" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+                <text x="655" y="60" text-anchor="middle" fill="#10b981" font-weight="bold" font-size="13">L1/L2 Cache Line</text>
+                <text x="655" y="78" text-anchor="middle" fill="#9ca3af" font-size="10">64-Byte Prefetch Burst</text>
+            </svg>
         </div>
 
         <!-- VISUALIZER -->
@@ -99,270 +248,264 @@
                 </div>
                 <div class="control-group">
                     <label>Index:</label>
-                    <input type="number" id="element-idx" value="2" min="0" max="9" style="width: 50px;">
+                    <input type="number" id="element-idx" value="2" min="0" max="7" style="width: 50px;">
                 </div>
-                <button class="btn btn-primary" onclick="setupAction('insert')">Insert</button>
-                <button class="btn btn-primary" onclick="setupAction('delete')">Delete</button>
-                <button class="btn btn-primary" onclick="setupAction('search')">Search</button>
+                <button class="btn btn-primary" onclick="setupAction('read')">Read [i]</button>
+                <button class="btn btn-primary" onclick="setupAction('insert')">Insert [i]</button>
+                <button class="btn btn-primary" onclick="setupAction('delete')">Delete [i]</button>
+                <button class="btn btn-primary" onclick="setupAction('search')">Search Val</button>
                 
                 <span style="border-left: 1px solid var(--glass-border); height: 24px; margin: 0 8px;"></span>
                 
                 <button class="btn btn-secondary" id="btn-play" onclick="togglePlay()">Pause</button>
                 <button class="btn btn-secondary" onclick="stepForward()">Next Step</button>
                 <button class="btn btn-secondary" onclick="resetArray()">Reset</button>
-                
+
                 <div class="control-group" style="margin-left: 10px;">
                     <label><input type="checkbox" id="chk-autoplay" checked> Autoplay</label>
                 </div>
             </div>
-            
+
             <div class="visualizer-display" style="flex-direction: column; justify-content: space-around; height: auto; padding: 20px 0;">
-                <div class="array-container" id="array-visualizer">
-                    <!-- Cells -->
-                </div>
+                <div class="array-container" id="array-cells-container"></div>
                 <div style="width: 90%; padding: 0 20px;">
-                    <div class="action-log" id="array-log">Ready. Plan an operation then click Play or Next Step.</div>
+                    <div class="action-log" id="array-log">Select an operation and press Play or Next Step to visualize.</div>
                 </div>
             </div>
 
             <div class="visualizer-stats">
-                <div class="stat-item">Reads: <span id="stat-reads">0</span></div>
-                <div class="stat-item">Writes: <span id="stat-writes">0</span></div>
+                <div class="stat-item">Reads (Memory): <span id="stat-reads">0</span></div>
+                <div class="stat-item">Writes (Shifts): <span id="stat-writes">0</span></div>
                 <div class="stat-item">Comparisons: <span id="stat-comps">0</span></div>
             </div>
         </div>
     </main>
 
     <script>
-        let array = [12, 45, 78, 23, 56, 89];
-        const capacity = 10;
-        
-        let history = [];
-        let currentStep = 0;
-        let playInterval = null;
+        let array = [12, 45, 68, 23, 89, 34];
+        const maxCapacity = 8;
+        let animationQueue = [];
+        let currentStepIndex = 0;
         let isPlaying = false;
+        let playInterval = null;
 
-        function render(state) {
-            const container = document.getElementById('array-visualizer');
+        let readsCount = 0;
+        let writesCount = 0;
+        let compsCount = 0;
+
+        function renderArray(activeIdx = -1, stateClass = '') {
+            const container = document.getElementById('array-cells-container');
             container.innerHTML = '';
-            
-            const arr = state ? state.array : array;
-            const highlightIdx = state ? state.highlightIdx : -1;
-            const highlightClass = state ? state.highlightClass : '';
 
-            for (let i = 0; i < capacity; i++) {
-                const val = i < arr.length ? arr[i] : '';
-                let cellClass = 'array-cell';
-                if (i === highlightIdx) cellClass += ' ' + highlightClass;
-
-                container.innerHTML += `
-                    <div class="array-cell ${i === highlightIdx ? highlightClass : ''}" id="cell-${i}">
-                        <span class="cell-val">${val}</span>
-                        <span class="cell-index">${i}</span>
-                    </div>
-                `;
-            }
-
-            if (state) {
-                document.getElementById('stat-reads').innerText = state.reads;
-                document.getElementById('stat-writes').innerText = state.writes;
-                document.getElementById('stat-comps').innerText = state.comps;
+            for (let i = 0; i < maxCapacity; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'array-cell';
                 
-                const logEl = document.getElementById('array-log');
-                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
-                logEl.scrollTop = logEl.scrollHeight;
+                if (i < array.length) {
+                    cell.innerHTML = `<span>${array[i]}</span><span class="cell-index">${i}</span>`;
+                } else {
+                    cell.style.opacity = '0.3';
+                    cell.innerHTML = `<span>-</span><span class="cell-index">${i}</span>`;
+                }
+
+                if (i === activeIdx) {
+                    cell.classList.add(stateClass);
+                }
+
+                container.appendChild(cell);
             }
+
+            document.getElementById('stat-reads').innerText = readsCount;
+            document.getElementById('stat-writes').innerText = writesCount;
+            document.getElementById('stat-comps').innerText = compsCount;
+        }
+
+        function logAction(msg) {
+            const logEl = document.getElementById('array-log');
+            logEl.innerText += '\n> ' + msg;
+            logEl.scrollTop = logEl.scrollHeight;
         }
 
         function setupAction(type) {
-            pause();
-            history = [];
-            
-            const val = parseInt(document.getElementById('element-val').value);
-            const idx = parseInt(document.getElementById('element-idx').value);
-            const tempArr = [...array];
-            
-            let reads = 0;
-            let writes = 0;
-            let comps = 0;
+            stopAnimation();
+            const val = parseInt(document.getElementById('element-val').value) || 0;
+            const idx = parseInt(document.getElementById('element-idx').value) || 0;
 
-            document.getElementById('array-log').innerHTML = '';
+            animationQueue = [];
+            currentStepIndex = 0;
+            readsCount = 0;
+            writesCount = 0;
+            compsCount = 0;
 
-            if (type === 'insert') {
-                if (tempArr.length >= capacity) {
-                    alert("Array capacity overflow!");
+            document.getElementById('array-log').innerText = `[Action Planned: ${type.toUpperCase()}]`;
+
+            if (type === 'read') {
+                if (idx < 0 || idx >= array.length) {
+                    logAction(`Error: Index ${idx} out of bounds (0..${array.length - 1})`);
                     return;
                 }
-                if (idx > tempArr.length) {
-                    alert("Index out of bounds!");
-                    return;
-                }
-
-                history.push({
-                    array: [...tempArr],
-                    highlightIdx: -1,
-                    highlightClass: '',
-                    reads, writes, comps,
-                    log: `Planned Insert of ${val} at index ${idx}.`
+                animationQueue.push({
+                    action: () => {
+                        readsCount++;
+                        renderArray(idx, 'reading');
+                        logAction(`Direct O(1) Index Access: A[${idx}] -> ${array[idx]}. Formula: Address = Base + (${idx} * 4)`);
+                    }
                 });
+            } else if (type === 'insert') {
+                if (array.length >= maxCapacity) {
+                    logAction(`Error: Array is full (Max Capacity ${maxCapacity})`);
+                    return;
+                }
+                if (idx < 0 || idx > array.length) {
+                    logAction(`Error: Invalid insertion index ${idx}`);
+                    return;
+                }
 
-                // Shift right
-                for (let i = tempArr.length; i > idx; i--) {
-                    reads++;
-                    writes++;
-                    tempArr[i] = tempArr[i-1];
-                    history.push({
-                        array: [...tempArr],
-                        highlightIdx: i - 1,
-                        highlightClass: 'reading',
-                        reads, writes, comps,
-                        log: `Read index ${i-1} (${tempArr[i-1]}) and copy to index ${i}.`
+                logAction(`Preparing O(N) Insertion at index ${idx}. Elements right of ${idx} will shift right.`);
+                array.push(0); // Make room
+
+                for (let i = array.length - 1; i > idx; i--) {
+                    const fromIdx = i - 1;
+                    const toIdx = i;
+                    animationQueue.push({
+                        action: () => {
+                            array[toIdx] = array[fromIdx];
+                            writesCount++;
+                            readsCount++;
+                            renderArray(toIdx, 'writing');
+                            logAction(`Shifting element A[${fromIdx}] (${array[fromIdx]}) -> A[${toIdx}]`);
+                        }
                     });
                 }
-                
-                tempArr[idx] = val;
-                writes++;
-                history.push({
-                    array: [...tempArr],
-                    highlightIdx: idx,
-                    highlightClass: 'writing',
-                    reads, writes, comps,
-                    log: `Write value ${val} directly to target index ${idx}.`
-                });
 
+                animationQueue.push({
+                    action: () => {
+                        array[idx] = val;
+                        writesCount++;
+                        renderArray(idx, 'writing');
+                        logAction(`Inserted value ${val} at index A[${idx}].`);
+                    }
+                });
             } else if (type === 'delete') {
-                if (idx >= tempArr.length) {
-                    alert("Index out of range!");
+                if (array.length === 0) {
+                    logAction(`Error: Array is empty`);
+                    return;
+                }
+                if (idx < 0 || idx >= array.length) {
+                    logAction(`Error: Index ${idx} out of bounds`);
                     return;
                 }
 
-                history.push({
-                    array: [...tempArr],
-                    highlightIdx: idx,
-                    highlightClass: 'writing',
-                    reads, writes, comps,
-                    log: `Planned Delete at index ${idx}.`
-                });
-
-                // Shift left
-                for (let i = idx; i < tempArr.length - 1; i++) {
-                    reads++;
-                    writes++;
-                    tempArr[i] = tempArr[i+1];
-                    history.push({
-                        array: [...tempArr],
-                        highlightIdx: i + 1,
-                        highlightClass: 'reading',
-                        reads, writes, comps,
-                        log: `Read index ${i+1} (${tempArr[i+1]}) and shift left to index ${i}.`
+                logAction(`Deleting A[${idx}] (${array[idx]}). Elements to the right will shift left.`);
+                
+                for (let i = idx; i < array.length - 1; i++) {
+                    const nextVal = array[i + 1];
+                    animationQueue.push({
+                        action: () => {
+                            array[i] = nextVal;
+                            writesCount++;
+                            readsCount++;
+                            renderArray(i, 'writing');
+                            logAction(`Shifted element A[${i+1}] (${nextVal}) -> A[${i}]`);
+                        }
                     });
                 }
-                
-                tempArr.pop();
-                writes++;
-                history.push({
-                    array: [...tempArr],
-                    highlightIdx: -1,
-                    highlightClass: '',
-                    reads, writes, comps,
-                    log: `Remove last redundant slot. Deletion complete.`
-                });
-            } else {
-                // Search
-                history.push({
-                    array: [...tempArr],
-                    highlightIdx: -1,
-                    highlightClass: '',
-                    reads, writes, comps,
-                    log: `Planned Search for value ${val}.`
-                });
 
+                animationQueue.push({
+                    action: () => {
+                        array.pop();
+                        renderArray(-1, '');
+                        logAction(`Completed deletion. Array length updated to ${array.length}.`);
+                    }
+                });
+            } else if (type === 'search') {
+                logAction(`Starting Linear Search for target value ${val}...`);
                 let found = false;
-                for (let i = 0; i < tempArr.length; i++) {
-                    reads++;
-                    comps++;
-                    if (tempArr[i] === val) {
+                for (let i = 0; i < array.length; i++) {
+                    const currentVal = array[i];
+                    animationQueue.push({
+                        action: () => {
+                            readsCount++;
+                            compsCount++;
+                            if (currentVal === val) {
+                                renderArray(i, 'writing');
+                                logAction(`MATCH FOUND at index A[${i}] == ${val}! Search completed.`);
+                            } else {
+                                renderArray(i, 'comparing');
+                                logAction(`Comparing A[${i}] (${currentVal}) != ${val}... Keep searching.`);
+                            }
+                        }
+                    });
+                    if (currentVal === val) {
                         found = true;
-                        history.push({
-                            array: [...tempArr],
-                            highlightIdx: i,
-                            highlightClass: 'writing',
-                            reads, writes, comps,
-                            log: `Compare slot ${i} (${tempArr[i]}) with search target ${val} -> MATCH FOUND!`
-                        });
                         break;
-                    } else {
-                        history.push({
-                            array: [...tempArr],
-                            highlightIdx: i,
-                            highlightClass: 'comparing',
-                            reads, writes, comps,
-                            log: `Compare slot ${i} (${tempArr[i]}) with search target ${val} -> No match.`
-                        });
                     }
                 }
                 if (!found) {
-                    history.push({
-                        array: [...tempArr],
-                        highlightIdx: -1,
-                        highlightClass: '',
-                        reads, writes, comps,
-                        log: `Search target ${val} not found in array.`
+                    animationQueue.push({
+                        action: () => {
+                            renderArray(-1, '');
+                            logAction(`Linear Search finished: Value ${val} NOT found in array.`);
+                        }
                     });
                 }
             }
 
-            array = [...tempArr];
-            currentStep = 0;
-            render(history[0]);
-
-            // AUTOPLAY trigger
             if (document.getElementById('chk-autoplay').checked) {
-                play();
+                startAnimation();
             }
         }
 
         function stepForward() {
-            if (currentStep < history.length - 1) {
-                currentStep++;
-                render(history[currentStep]);
+            if (currentStepIndex < animationQueue.length) {
+                animationQueue[currentStepIndex].action();
+                currentStepIndex++;
             } else {
-                pause();
+                stopAnimation();
             }
         }
 
         function togglePlay() {
-            if (isPlaying) pause();
-            else play();
+            if (isPlaying) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
         }
 
-        function play() {
+        function startAnimation() {
+            if (isPlaying) return;
             isPlaying = true;
-            document.getElementById('btn-play').innerText = 'Pause';
-            clearInterval(playInterval);
-            playInterval = setInterval(stepForward, 800);
+            document.getElementById('btn-play').innerText = "Pause";
+            playInterval = setInterval(() => {
+                if (currentStepIndex < animationQueue.length) {
+                    stepForward();
+                } else {
+                    stopAnimation();
+                }
+            }, 600);
         }
 
-        function pause() {
+        function stopAnimation() {
             isPlaying = false;
-            document.getElementById('btn-play').innerText = 'Play';
-            clearInterval(playInterval);
+            if (playInterval) clearInterval(playInterval);
+            document.getElementById('btn-play').innerText = "Play";
         }
 
         function resetArray() {
-            pause();
-            array = [12, 45, 78, 23, 56, 89];
-            history = [];
-            currentStep = 0;
-            document.getElementById('array-log').innerHTML = 'System Reset. Ready.';
-            document.getElementById('stat-reads').innerText = '0';
-            document.getElementById('stat-writes').innerText = '0';
-            document.getElementById('stat-comps').innerText = '0';
-            render();
+            stopAnimation();
+            array = [12, 45, 68, 23, 89, 34];
+            animationQueue = [];
+            currentStepIndex = 0;
+            readsCount = 0;
+            writesCount = 0;
+            compsCount = 0;
+            document.getElementById('array-log').innerText = "Array reset to initial state.";
+            renderArray();
         }
 
         window.onload = () => {
-            render();
+            renderArray();
         };
     </script>
 </body>

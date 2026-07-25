@@ -56,29 +56,186 @@
             font-size: 0.85rem;
             color: var(--accent-emerald);
         }
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        .complexity-table th, .complexity-table td {
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .complexity-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--accent-purple);
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="page-header">
             <h1 class="page-title">1.2 Linked Lists</h1>
-            <p class="page-subtitle">Singly, Doubly, and Circular Linked Lists with step-by-step visual pointer routing.</p>
+            <p class="page-subtitle">Master dynamic node structures: Singly, Doubly, and Circular Linked Lists, pointer rewiring algorithms, dummy sentinel nodes, and trade-off comparison against arrays.</p>
         </div>
 
-        <!-- LECTURE CONTENT -->
+        <!-- DETAILED LECTURE CONTENT -->
         <div class="grid-container">
+            
             <div class="card">
-                <h3 class="card-title">Concept Overview</h3>
+                <h3 class="card-title">1. Dynamic Heap Allocation & Node Structure</h3>
                 <p class="card-description">
-                    Unlike arrays, Linked Lists allocate nodes dynamically in non-contiguous memory. Each node holds its data and a link (pointer) to the next node. Inserting and deleting elements is fast (<strong>O(1)</strong> pointer modifications) once the target node is found, but searching requires a linear traversal (<strong>O(N)</strong>).
+                    Unlike arrays, <strong>Linked Lists</strong> allocate nodes dynamically on the heap at scattered, non-contiguous memory locations:
                 </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Node Structure:</strong> Each node contains a data payload and a pointer address (<code>next</code>) referencing the subsequent node.</li>
+                    <li><strong>No Resizing Overhead:</strong> The list grows or shrinks dynamically without allocating contiguous blocks.</li>
+                    <li><strong>Head Pointer:</strong> A entry pointer storing the memory address of the first node (<code>NULL</code> if empty).</li>
+                </ul>
             </div>
+
             <div class="card">
-                <h3 class="card-title">Memory Allocation</h3>
+                <h3 class="card-title">2. Singly, Doubly & Circular Variants</h3>
                 <p class="card-description">
-                    Linked lists do not need contiguous blocks. They grow dynamically. However, they waste memory on pointer links and lack O(1) index access.
+                    Linked lists are classified by their pointer connectivity and directional links:
                 </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Singly Linked List:</strong> Uni-directional links (<code>next</code>). Requires traversing from head to reach any node.</li>
+                    <li><strong>Doubly Linked List:</strong> Bi-directional links (<code>next</code> and <code>prev</code>). Enables $O(1)$ node deletion when given a target node pointer.</li>
+                    <li><strong>Circular Linked List:</strong> The tail node's <code>next</code> pointer wraps around to reference the head node instead of <code>NULL</code> (used in round-robin schedulers).</li>
+                </ul>
             </div>
+
+            <div class="card">
+                <h3 class="card-title">3. Pointer Rewiring & Sentinel Nodes</h3>
+                <p class="card-description">
+                    Modifying linked list structures requires updating memory address links in correct order to prevent dangling references:
+                </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Insertion Step 1:</strong> Point new node's <code>next</code> to target position's successor.</li>
+                    <li><strong>Insertion Step 2:</strong> Rewire predecessor's <code>next</code> to point to the new node.</li>
+                    <li><strong>Sentinel (Dummy Head) Pattern:</strong> Using an empty dummy head node simplifies code by eliminating edge-case checks for empty lists or head insertions.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">4. Array vs Linked List Architectural Trade-offs</h3>
+                <p class="card-description">
+                    Selecting between arrays and linked lists depends on workload access patterns:
+                </p>
+                <ul class="concept-bullet-list">
+                    <li><strong>Random Access:</strong> Arrays $O(1)$ indexing vs Linked Lists $O(N)$ linear pointer chasing.</li>
+                    <li><strong>Middle Insertion:</strong> Arrays $O(N)$ element shifting vs Linked Lists $O(1)$ pointer rewiring (once node location is found).</li>
+                    <li><strong>Memory Overhead:</strong> Linked lists require extra 8 bytes per node on 64-bit systems for storing pointer addresses.</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Complexity Matrix Table -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 class="card-title">Linked List Operations Complexity Matrix</h3>
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>Singly Linked</th>
+                        <th>Doubly Linked</th>
+                        <th>Array Comparison</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Access / Search by Index</td>
+                        <td>O(N)</td>
+                        <td>O(N)</td>
+                        <td>O(1) [Fast]</td>
+                    </tr>
+                    <tr>
+                        <td>Insertion at Head (Index 0)</td>
+                        <td>O(1)</td>
+                        <td>O(1)</td>
+                        <td>O(N) [Shifting]</td>
+                    </tr>
+                    <tr>
+                        <td>Insertion / Deletion at Tail</td>
+                        <td>O(N) without tail ptr / O(1) with tail</td>
+                        <td>O(1) with tail ptr</td>
+                        <td>O(1) amortized</td>
+                    </tr>
+                    <tr>
+                        <td>Deletion given Target Node Ptr</td>
+                        <td>O(N) [find prev]</td>
+                        <td>O(1) [prev->next = next]</td>
+                        <td>O(N) [shifting]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pointer Links Visual Diagram -->
+        <div class="diagram-container">
+            <h3 style="margin-bottom: 16px; color: var(--accent-purple); font-weight: 700;">Doubly Linked List Bi-Directional Pointer Architecture</h3>
+            <svg viewBox="0 0 750 130" style="width: 100%; max-width: 700px; height: auto;">
+                <!-- Node 1 -->
+                <rect x="20" y="35" width="160" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="100" y="60" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="15">Node A (15)</text>
+                <text x="100" y="80" text-anchor="middle" fill="#818cf8" font-size="11">prev: NULL | next: 0x200</text>
+
+                <!-- Arrows Node 1 -> Node 2 -->
+                <path d="M 180 50 L 265 50" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                <path d="M 265 80 L 180 80" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber)"/>
+
+                <!-- Node 2 -->
+                <rect x="270" y="35" width="160" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="350" y="60" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="15">Node B (42)</text>
+                <text x="350" y="80" text-anchor="middle" fill="#818cf8" font-size="11">prev: 0x100 | next: 0x300</text>
+
+                <!-- Arrows Node 2 -> Node 3 -->
+                <path d="M 430 50 L 515 50" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                <path d="M 515 80 L 430 80" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrow-amber)"/>
+
+                <!-- Node 3 -->
+                <rect x="520" y="35" width="160" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="600" y="60" text-anchor="middle" fill="#f3f4f6" font-weight="bold" font-size="15">Node C (87)</text>
+                <text x="600" y="80" text-anchor="middle" fill="#818cf8" font-size="11">prev: 0x200 | next: NULL</text>
+
+                <defs>
+                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" />
+                    </marker>
+                    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b" />
+                    </marker>
+                </defs>
+            </svg>
         </div>
 
         <!-- VISUALIZER -->
@@ -148,234 +305,236 @@
         let list = [15, 30, 45, 60];
         let listType = "singly";
 
-        let history = [];
-        let currentStep = 0;
-        let playInterval = null;
+        let animationQueue = [];
+        let currentStepIndex = 0;
         let isPlaying = false;
+        let playInterval = null;
+
+        let readsCount = 0;
+        let writesCount = 0;
+        let compsCount = 0;
+
+        function renderList(activeIdx = -1, stateClass = '') {
+            const svgGroup = document.getElementById('elements-group');
+            svgGroup.innerHTML = '';
+
+            const startX = 60;
+            const startY = 100;
+            const nodeWidth = 70;
+            const nodeHeight = 40;
+            const gap = 60;
+
+            const svgWidth = document.getElementById('list-svg').clientWidth || 700;
+
+            for (let i = 0; i < list.length; i++) {
+                const x = startX + i * (nodeWidth + gap);
+                const y = startY;
+
+                // Rect
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x);
+                rect.setAttribute('y', y);
+                rect.setAttribute('width', nodeWidth);
+                rect.setAttribute('height', nodeHeight);
+                rect.setAttribute('rx', 6);
+                rect.setAttribute('class', `node-rect ${i === activeIdx ? stateClass : ''}`);
+                svgGroup.appendChild(rect);
+
+                // Text
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', x + nodeWidth / 2);
+                text.setAttribute('y', y + nodeHeight / 2 + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#f3f4f6');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('font-size', '14px');
+                text.textContent = list[i];
+                svgGroup.appendChild(text);
+
+                // Index Label
+                const idxText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                idxText.setAttribute('x', x + nodeWidth / 2);
+                idxText.setAttribute('y', y - 10);
+                idxText.setAttribute('text-anchor', 'middle');
+                idxText.setAttribute('fill', '#9ca3af');
+                idxText.setAttribute('font-size', '11px');
+                idxText.textContent = `Node [${i}]`;
+                svgGroup.appendChild(idxText);
+
+                // Pointer line to next
+                if (i < list.length - 1) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x + nodeWidth);
+                    line.setAttribute('y1', y + nodeHeight / 2);
+                    line.setAttribute('x2', x + nodeWidth + gap - 8);
+                    line.setAttribute('y2', y + nodeHeight / 2);
+                    line.setAttribute('class', 'pointer-line');
+                    svgGroup.appendChild(line);
+
+                    if (listType === 'doubly') {
+                        const backLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        backLine.setAttribute('x1', x + nodeWidth + gap);
+                        backLine.setAttribute('y1', y + nodeHeight / 2 + 10);
+                        backLine.setAttribute('x2', x + nodeWidth + 8);
+                        backLine.setAttribute('y2', y + nodeHeight / 2 + 10);
+                        backLine.setAttribute('class', 'pointer-line updating');
+                        svgGroup.appendChild(backLine);
+                    }
+                } else if (listType === 'circular') {
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const endX = x + nodeWidth / 2;
+                    const endY = y + nodeHeight;
+                    const pathStr = `M ${endX} ${endY} Q ${svgWidth / 2} ${endY + 70} ${startX + nodeWidth / 2} ${startY + nodeHeight}`;
+                    path.setAttribute('d', pathStr);
+                    path.setAttribute('class', 'pointer-line updating');
+                    svgGroup.appendChild(path);
+                }
+            }
+
+            document.getElementById('stat-reads').innerText = readsCount;
+            document.getElementById('stat-writes').innerText = writesCount;
+            document.getElementById('stat-comps').innerText = compsCount;
+        }
+
+        function logAction(msg) {
+            const logEl = document.getElementById('list-log');
+            logEl.innerText += '\n> ' + msg;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
 
         function changeListType() {
             listType = document.getElementById('list-type').value;
             resetList();
         }
 
-        function resetList() {
-            pause();
-            list = [15, 30, 45, 60];
-            history = [];
-            currentStep = 0;
-            document.getElementById('list-log').innerHTML = 'System Reset. Ready.';
-            document.getElementById('stat-reads').innerText = '0';
-            document.getElementById('stat-writes').innerText = '0';
-            document.getElementById('stat-comps').innerText = '0';
-            render();
-        }
-
-        function render(state) {
-            const svg = document.getElementById('list-svg');
-            const group = document.getElementById('elements-group');
-            group.innerHTML = '';
-
-            const arr = state ? state.array : list;
-            const highlightedIndex = state ? state.highlightedIndex : -1;
-            const updatingPointer = state ? state.updatingPointer : null;
-
-            const n = arr.length;
-            const startX = 60;
-            const nodeWidth = 70;
-            const nodeHeight = 40;
-            const gap = 60;
-
-            for (let i = 0; i < n; i++) {
-                const x = startX + i * (nodeWidth + gap);
-                const y = 80;
-
-                const isHighlighted = i === highlightedIndex;
-                let rectClass = 'node-rect';
-                if (isHighlighted) rectClass += ' highlighted';
-
-                group.innerHTML += `
-                    <g id="node-${i}">
-                        <rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="5" class="${rectClass}" />
-                        <text x="${x + nodeWidth/2}" y="${y + 24}" fill="var(--text-primary)" text-anchor="middle" font-family="Outfit" font-size="14">${arr[i]}</text>
-                        <text x="${x + nodeWidth/2}" y="${y + 55}" fill="var(--text-muted)" text-anchor="middle" font-size="10">Node ${i}</text>
-                    </g>
-                `;
-
-                if (i < n - 1) {
-                    const isPointerUpdating = updatingPointer === i;
-                    const strokeColor = isPointerUpdating ? 'var(--accent-amber)' : '#6b7280';
-                    const marker = isPointerUpdating ? 'url(#arrow-amber)' : 'url(#arrow)';
-                    
-                    group.innerHTML += `
-                        <path d="M ${x + nodeWidth} ${y + nodeHeight/2} L ${x + nodeWidth + gap} ${y + nodeHeight/2}" 
-                              stroke="${strokeColor}" stroke-width="2" marker-end="${marker}" fill="none" />
-                    `;
-                }
-
-                if (listType === 'doubly' && i > 0) {
-                    group.innerHTML += `
-                        <path d="M ${x} ${y + nodeHeight/3 * 2} L ${x - gap} ${y + nodeHeight/3 * 2}" 
-                              stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arrow)" fill="none" />
-                    `;
-                }
-            }
-
-            if (listType === 'circular' && n > 0) {
-                const lastX = startX + (n - 1) * (nodeWidth + gap);
-                const endY = 80 + nodeHeight / 2;
-                group.innerHTML += `
-                    <path d="M ${lastX + nodeWidth} ${endY} 
-                             C ${lastX + nodeWidth + 60} ${endY + 60}, 
-                               ${startX - 30} ${endY + 60}, 
-                               ${startX} ${endY}" 
-                          stroke="var(--accent-purple)" stroke-width="2" marker-end="url(#arrow)" fill="none" />
-                `;
-            }
-
-            if (state) {
-                document.getElementById('stat-reads').innerText = state.reads;
-                document.getElementById('stat-writes').innerText = state.writes;
-                document.getElementById('stat-comps').innerText = state.comps;
-                
-                const logEl = document.getElementById('list-log');
-                logEl.innerHTML += `<div>&gt; ${state.log}</div>`;
-                logEl.scrollTop = logEl.scrollHeight;
-            }
-        }
-
         function setupAction(type) {
-            pause();
-            history = [];
+            stopAnimation();
+            const val = parseInt(document.getElementById('list-val').value) || 0;
+            const idx = parseInt(document.getElementById('list-idx').value) || 0;
 
-            const val = parseInt(document.getElementById('list-val').value);
-            const idx = parseInt(document.getElementById('list-idx').value);
-            const tempArr = [...list];
+            animationQueue = [];
+            currentStepIndex = 0;
+            readsCount = 0;
+            writesCount = 0;
+            compsCount = 0;
 
-            let reads = 0;
-            let writes = 0;
-            let comps = 0;
-
-            document.getElementById('list-log').innerHTML = '';
+            document.getElementById('list-log').innerText = `[Action Planned: ${type.toUpperCase()}]`;
 
             if (type === 'insert') {
-                if (idx < 0 || idx > tempArr.length) {
-                    alert("Index out of bounds!");
+                if (idx < 0 || idx > list.length) {
+                    logAction(`Error: Invalid insertion index ${idx}`);
                     return;
                 }
 
-                history.push({
-                    array: [...tempArr],
-                    highlightedIndex: -1,
-                    updatingPointer: null,
-                    reads, writes, comps,
-                    log: `Planned Insert Node(${val}) at Index ${idx}.`
-                });
+                logAction(`Starting ${listType.toUpperCase()} Linked List Insertion at index ${idx}.`);
 
-                let current = 0;
-                while (current < idx) {
-                    reads++;
-                    comps++;
-                    history.push({
-                        array: [...tempArr],
-                        highlightedIndex: current,
-                        updatingPointer: null,
-                        reads, writes, comps,
-                        log: `Traversing past Node ${current} (${tempArr[current]}).`
+                for (let i = 0; i < idx; i++) {
+                    const stepIdx = i;
+                    animationQueue.push({
+                        action: () => {
+                            readsCount++;
+                            renderList(stepIdx, 'highlighted');
+                            logAction(`Traversing pointer: Node [${stepIdx}] (Val: ${list[stepIdx]}). Pointer next -> Node [${stepIdx + 1}]`);
+                        }
                     });
-                    current++;
                 }
 
-                writes++;
-                if (listType === 'doubly') writes++;
-                tempArr.splice(idx, 0, val);
-
-                history.push({
-                    array: [...tempArr],
-                    highlightedIndex: idx,
-                    updatingPointer: idx - 1 >= 0 ? idx - 1 : null,
-                    reads, writes, comps,
-                    log: `Point Node ${idx-1 >= 0 ? idx-1 : 'Head'} to new Node(${val}). Point new Node.next to Node ${idx+1}.`
+                animationQueue.push({
+                    action: () => {
+                        list.splice(idx, 0, val);
+                        writesCount += (listType === 'doubly' ? 2 : 1);
+                        renderList(idx, 'writing');
+                        logAction(`Allocated new heap node (${val}) & updated pointer links: Node [${idx-1 < 0 ? 'HEAD' : idx-1}] -> ${val} -> Node [${idx+1}]`);
+                    }
                 });
-
-            } else {
-                // Delete
-                if (idx < 0 || idx >= tempArr.length) {
-                    alert("Index out of range!");
+            } else if (type === 'delete') {
+                if (list.length === 0) {
+                    logAction(`Error: List is empty`);
+                    return;
+                }
+                if (idx < 0 || idx >= list.length) {
+                    logAction(`Error: Deletion index ${idx} out of bounds`);
                     return;
                 }
 
-                history.push({
-                    array: [...tempArr],
-                    highlightedIndex: -1,
-                    updatingPointer: null,
-                    reads, writes, comps,
-                    log: `Planned Delete at Index ${idx}.`
-                });
+                logAction(`Deleting Node [${idx}] (Val: ${list[idx]}). Pointer links will bypass target node.`);
 
-                let current = 0;
-                while (current < idx) {
-                    reads++;
-                    comps++;
-                    history.push({
-                        array: [...tempArr],
-                        highlightedIndex: current,
-                        updatingPointer: null,
-                        reads, writes, comps,
-                        log: `Traversing past Node ${current} (${tempArr[current]}).`
+                for (let i = 0; i <= idx; i++) {
+                    const stepIdx = i;
+                    animationQueue.push({
+                        action: () => {
+                            readsCount++;
+                            renderList(stepIdx, 'highlighted');
+                            logAction(`Traversing to target node [${stepIdx}]...`);
+                        }
                     });
-                    current++;
                 }
 
-                writes++;
-                tempArr.splice(idx, 1);
-                history.push({
-                    array: [...tempArr],
-                    highlightedIndex: idx - 1 >= 0 ? idx - 1 : -1,
-                    updatingPointer: idx - 1 >= 0 ? idx - 1 : null,
-                    reads, writes, comps,
-                    log: `Reroute link: point Node ${idx-1 >= 0 ? idx-1 : 'Head'} past target index to Node ${idx}.`
+                animationQueue.push({
+                    action: () => {
+                        const removedVal = list.splice(idx, 1)[0];
+                        writesCount += (listType === 'doubly' ? 2 : 1);
+                        renderList(-1, '');
+                        logAction(`Unlinked & freed heap memory for Node (Val: ${removedVal}). Node [${idx-1 < 0 ? 'HEAD' : idx-1}] next pointer bypassed.`);
+                    }
                 });
             }
 
-            list = [...tempArr];
-            currentStep = 0;
-            render(history[0]);
-
-            // AUTOPLAY trigger
             if (document.getElementById('chk-autoplay').checked) {
-                play();
+                startAnimation();
             }
         }
 
         function stepForward() {
-            if (currentStep < history.length - 1) {
-                currentStep++;
-                render(history[currentStep]);
+            if (currentStepIndex < animationQueue.length) {
+                animationQueue[currentStepIndex].action();
+                currentStepIndex++;
             } else {
-                pause();
+                stopAnimation();
             }
         }
 
         function togglePlay() {
-            if (isPlaying) pause();
-            else play();
+            if (isPlaying) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
         }
 
-        function play() {
+        function startAnimation() {
+            if (isPlaying) return;
             isPlaying = true;
-            document.getElementById('btn-play').innerText = 'Pause';
-            clearInterval(playInterval);
-            playInterval = setInterval(stepForward, 800);
+            document.getElementById('btn-play').innerText = "Pause";
+            playInterval = setInterval(() => {
+                if (currentStepIndex < animationQueue.length) {
+                    stepForward();
+                } else {
+                    stopAnimation();
+                }
+            }, 600);
         }
 
-        function pause() {
+        function stopAnimation() {
             isPlaying = false;
-            document.getElementById('btn-play').innerText = 'Play';
-            clearInterval(playInterval);
+            if (playInterval) clearInterval(playInterval);
+            document.getElementById('btn-play').innerText = "Play";
+        }
+
+        function resetList() {
+            stopAnimation();
+            list = [15, 30, 45, 60];
+            animationQueue = [];
+            currentStepIndex = 0;
+            readsCount = 0;
+            writesCount = 0;
+            compsCount = 0;
+            document.getElementById('list-log').innerText = "Linked list reset to initial state.";
+            renderList();
         }
 
         window.onload = () => {
-            render();
+            renderList();
         };
     </script>
 </body>

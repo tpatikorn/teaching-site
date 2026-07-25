@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Computer Science Portal | Dr. Thanaporn Patikorn</title>
+    <meta name="description" content="Interactive undergrad-level courseware for C Programming, Data Structures & Algorithms, and AI / Machine Learning Visualizers by Dr. Thanaporn Patikorn.">
+    <link rel="stylesheet" href="shared/css/global.css">
+    <script src="shared/js/nav.js"></script>
+    <style>
+        .portal-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        .hero {
+            text-align: center;
+            position: relative;
+            padding: 60px 20px 40px;
+            margin-bottom: 60px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: var(--accent-blue);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 30%, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-mode .hero-title {
+            background: linear-gradient(135deg, #0f172a 30%, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 720px;
+            margin: 0 auto 36px;
+            line-height: 1.6;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 32px;
+        }
+
+        .course-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .card-c::before { background: linear-gradient(90deg, #3b82f6, #10b981); }
+        .card-algo::before { background: linear-gradient(90deg, #8b5cf6, #ec4899); }
+        .card-ai::before { background: linear-gradient(90deg, #f59e0b, #3b82f6); }
+
+        .course-icon-badge {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .course-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .course-desc {
+            color: var(--text-secondary);
+            font-size: 0.975rem;
+            line-height: 1.6;
+            margin-bottom: 28px;
+            flex-grow: 1;
+        }
+
+        .course-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+        }
+
+        .course-card:hover .course-meta span.arrow {
+            transform: translateX(6px);
+        }
+
+        .arrow {
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .footer {
+            margin-top: 80px;
+            border-top: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Top Bar -->
+    <header class="portal-header">
+        <a href="#" class="brand">
+            <div class="brand-icon">TP</div>
+            <div class="brand-title">Dr. Thanaporn Patikorn</div>
+        </a>
+        <div class="header-actions">
+            <button class="btn" onclick="toggleTheme()">
+                <span id="theme-toggle-text">☀️ Light Mode</span>
+            </button>
+            <button class="btn" onclick="toggleLanguage()">
+                <span id="lang-text">🌐 TH / EN</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="container">
+        
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-badge">
+                <span>⚡ Interactive Serverless Learning Modules</span>
+            </div>
+            <h1 class="hero-title" id="txt-hero-title">Computer Science Courseware</h1>
+            <p class="hero-subtitle" id="txt-hero-sub">
+                Explore interactive visualizers, step-by-step memory stack debuggers, dynamic algorithm execution environments, and machine learning interactive demos.
+            </p>
+        </section>
+
+        <!-- Courseware Grid -->
+        <section>
+            <div class="section-header">
+                <h2 class="section-title" id="txt-courses-title">Available Courses & Visualizers</h2>
+            </div>
+
+            <div class="course-grid">
+                
+                <!-- C Programming Card -->
+                <a href="c-programming/index.html" class="glass-card course-card card-c">
+                    <div>
+                        <div class="course-icon-badge">💻</div>
+                        <h3 class="course-title" id="txt-c-title">Programming Fundamentals in C</h3>
+                        <p class="course-desc" id="txt-c-desc">
+                            Raw memory byte visualizers, expression precedence parsing trees, loop tracers, stack frames, heap allocators, and structured practice problem lists.
+                        </p>
+                    </div>
+                    <div class="course-meta">
+                        <span id="txt-c-btn">Open C Courseware</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- Algorithms Card -->
+                <a href="algorithms/index.html" class="glass-card course-card card-algo">
+                    <div>
+                        <div class="course-icon-badge">📊</div>
+                        <h3 class="course-title" id="txt-algo-title">Data Structures & Algorithms</h3>
+                        <p class="course-desc" id="txt-algo-desc">
+                            Interactive visualizers for array operations, stack/queue memory, graph traversals, sorting step-by-step executions, and complexity analysis.
+                        </p>
+                    </div>
+                    <div class="course-meta">
+                        <span id="txt-algo-btn">Explore Algorithms</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- AI Card -->
+                <a href="AI/decision_tree/index.html" class="glass-card course-card card-ai">
+                    <div>
+                        <div class="course-icon-badge">🎾</div>
+                        <h3 class="course-title" id="txt-ai-title">AI: Decision Tree Visualizer</h3>
+                        <p class="course-desc" id="txt-ai-desc">
+                            Interactive Machine Learning demonstration of Decision Tree classification using the Tennis Players dataset. Learn Entropy & Information Gain visually.
+                        </p>
+                    </div>
+                    <div class="course-meta">
+                        <span id="txt-ai-btn">Launch Decision Tree Demo</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Dr. Thanaporn Patikorn. Serverless interactive learning platform loaded directly via <code>file:///</code> protocol.</p>
+    </footer>
+
+    <script>
+        const DICT = {
+            en: {
+                title: "Computer Science Courseware",
+                sub: "Explore interactive visualizers, step-by-step memory stack debuggers, dynamic algorithm execution environments, and machine learning interactive demos.",
+                courses: "Available Courses & Visualizers",
+                cTitle: "Programming Fundamentals in C",
+                cDesc: "Raw memory byte visualizers, expression precedence parsing trees, loop tracers, stack frames, heap allocators, and structured practice problem lists.",
+                cBtn: "Open C Courseware",
+                algoTitle: "Data Structures & Algorithms",
+                algoDesc: "Interactive visualizers for array operations, stack/queue memory, graph traversals, sorting step-by-step executions, and complexity analysis.",
+                algoBtn: "Explore Algorithms",
+                aiTitle: "AI: Decision Tree Visualizer",
+                aiDesc: "Interactive Machine Learning demonstration of Decision Tree classification using the Tennis Players dataset. Learn Entropy & Information Gain visually.",
+                aiBtn: "Launch Decision Tree Demo"
+            },
+            th: {
+                title: "คอร์สเรียนวิทยาการคอมพิวเตอร์แบบโต้ตอบ",
+                sub: "เครื่องมือจำลองหน่วยความจำ ตัวติดตามการทำงานของลูป เครื่องมือวิเคราะห์อัลกอริทึม และชุดการเรียนรู้ปัญญาประดิษฐ์แบบโต้ตอบ",
+                courses: "บทเรียนและเครื่องมือจำลองทั้งหมด",
+                cTitle: "การเขียนโปรแกรมคอมพิวเตอร์ภาษา C",
+                cDesc: "เครื่องมือจำลองไบต์ในหน่วยความจำ แผนภูมิวิเคราะห์ลำดับตัวดำเนินการ ตัวติดตามลูป สแต็กเฟรม และโจทย์ฝึกปฏิบัติ",
+                cBtn: "เข้าสู่บทเรียนภาษา C",
+                algoTitle: "โครงสร้างข้อมูลและอัลกอริทึม",
+                algoDesc: "เครื่องมือจำลองโครงสร้างข้อมูล อาร์เรย์ สแต็ก คิว การท่องไปในกราฟ อัลกอริทึมการเรียงลำดับแบบทีละขั้นตอน",
+                algoBtn: "เข้าสู่บทเรียนอัลกอริทึม",
+                aiTitle: "ปัญญาประดิษฐ์: Decision Tree Visualizer",
+                aiDesc: "เครื่องมือจำลองแมชชีนเลิร์นนิง Decision Tree แบบโต้ตอบด้วยชุดข้อมูล Tennis Players เรียนรู้ค่า Entropy และ Information Gain",
+                aiBtn: "เปิดเครื่องมือ Decision Tree"
+            }
+        };
+
+        let currentLang = localStorage.getItem('portal-lang') || 'en';
+
+        function applyPortalLang() {
+            const langData = DICT[currentLang];
+            document.getElementById('txt-hero-title').textContent = langData.title;
+            document.getElementById('txt-hero-sub').textContent = langData.sub;
+            document.getElementById('txt-courses-title').textContent = langData.courses;
+            document.getElementById('txt-c-title').textContent = langData.cTitle;
+            document.getElementById('txt-c-desc').textContent = langData.cDesc;
+            document.getElementById('txt-c-btn').textContent = langData.cBtn;
+            document.getElementById('txt-algo-title').textContent = langData.algoTitle;
+            document.getElementById('txt-algo-desc').textContent = langData.algoDesc;
+            document.getElementById('txt-algo-btn').textContent = langData.algoBtn;
+            document.getElementById('txt-ai-title').textContent = langData.aiTitle;
+            document.getElementById('txt-ai-desc').textContent = langData.aiDesc;
+            document.getElementById('txt-ai-btn').textContent = langData.aiBtn;
+            document.getElementById('lang-text').textContent = currentLang === 'en' ? '🌐 TH / EN' : '🌐 EN / TH';
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'th' : 'en';
+            localStorage.setItem('portal-lang', currentLang);
+            applyPortalLang();
+        }
+
+        document.addEventListener('DOMContentLoaded', applyPortalLang);
+    </script>
+</body>
+</html>

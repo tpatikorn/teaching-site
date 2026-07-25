@@ -68,58 +68,138 @@
             border-radius: 3px;
             margin-right: 6px;
         }
+        .concept-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px;
+        }
+        .concept-bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        .concept-bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+        .diagram-container {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 24px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="page-header">
             <h1 class="page-title">1.2 Variables & Data Types</h1>
-            <p class="page-subtitle">Understand sizes, formatting types, and visualize how variables map to raw memory bytes in Little-Endian layout.</p>
+            <p class="page-subtitle">Understand data type sizes, standard format specifiers, scope lifetimes, and visualize how variables map to stack memory bytes in Little-Endian layout.</p>
         </div>
 
         <div class="tabs-container">
             <div class="tabs-headers" style="margin-bottom: 24px;">
-                <button class="tab-btn active" onclick="switchTab('visualizer')">Memory Visualizer</button>
+                <button class="tab-btn active" onclick="switchTab('visualizer')">Memory Visualizer & Lecture</button>
                 <button class="tab-btn" onclick="switchTab('practice')">Practice Problems</button>
             </div>
 
-            <!-- TAB 1: VISUALIZER -->
+            <!-- TAB 1: VISUALIZER & DETAILED LECTURE -->
             <div id="visualizer" class="tab-content active">
                 <div class="grid-container">
-            <div class="card">
-                <h3 class="card-title">C Variables & Bytes</h3>
-                <p class="card-description">In C, declaring a variable reserves a specific number of contiguous bytes in memory. The visualizer below demonstrates the actual byte alignment and values stored on the stack (using standard Little-Endian storage).</p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">1. Standard Sizes & Ranges</h3>
-                <p class="card-description">
-                    C defines standard ranges for data types:
-                    <br>• <code>char</code>: 1 byte (signed: -128 to 127, unsigned: 0 to 255)
-                    <br>• <code>int</code>: 4 bytes (typically)
-                    <br>• <code>float</code>: 4 bytes (single-precision floating point)
-                    <br>• <code>double</code>: 8 bytes (double-precision floating point)
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">2. Format Specifiers</h3>
-                <p class="card-description">
-                    Used in <code>printf</code> and <code>scanf</code> to identify type categories:
-                    <br>• <code>%d</code> or <code>%i</code>: decimal integer
-                    <br>• <code>%f</code>: float (printed as decimal)
-                    <br>• <code>%lf</code>: double (in scanf, printf can also use %f)
-                    <br>• <code>%c</code>: single character
-                    <br>• <code>%s</code>: character string array
-                </p>
-            </div>
-            <div class="card">
-                <h3 class="card-title">3. Local Scopes & Garbage Values</h3>
-                <p class="card-description">
-                    Variables declared inside a function are <strong>local</strong>. They are not automatically initialized by C and start with <strong>garbage values</strong> (random bytes left over in RAM).
-                    <br>Use the <code>static</code> keyword to preserve a local variable's state across multiple function calls.
-                </p>
-            </div>
-        </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title">1. Fundamental Data Types & Byte Sizes</h3>
+                        <p class="card-description">
+                            Declaring a variable reserves a specific number of contiguous bytes in RAM memory:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>char (1 byte):</strong> Stores a single ASCII character or small integer (-128 to 127 signed, 0 to 255 unsigned).</li>
+                            <li><strong>short (2 bytes):</strong> Small integer representation (-32,768 to 32,767).</li>
+                            <li><strong>int (4 bytes):</strong> Standard integer value (-2,147,483,648 to 2,147,483,647).</li>
+                            <li><strong>long long (8 bytes):</strong> 64-bit wide integer for large range data.</li>
+                            <li><strong>float (4 bytes):</strong> IEEE 754 single-precision floating point (approx. 7 decimal digits of precision).</li>
+                            <li><strong>double (8 bytes):</strong> IEEE 754 double-precision floating point (approx. 15 decimal digits of precision).</li>
+                        </ul>
+                    </div>
 
+                    <div class="card">
+                        <h3 class="card-title">2. Format Specifiers & I/O Modifiers</h3>
+                        <p class="card-description">
+                            Format specifiers instruct <code>printf</code> and <code>scanf</code> how to interpret binary memory patterns:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><code>%d</code> / <code>%i</code>: Signed decimal integer.</li>
+                            <li><code>%u</code>: Unsigned decimal integer.</li>
+                            <li><code>%x</code> / <code>%X</code>: Hexadecimal integer output (lowercase / uppercase).</li>
+                            <li><code>%f</code> / <code>%lf</code>: Floating point decimal format (<code>%lf</code> for double in <code>scanf</code>).</li>
+                            <li><code>%c</code>: Character representation of ASCII integer code.</li>
+                            <li><code>%p</code>: Pointer memory address in hexadecimal format.</li>
+                            <li><strong>Formatting Flags:</strong> <code>%.2f</code> (rounds float to 2 decimal places), <code>%05d</code> (pads integer with leading zeroes up to width 5).</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">3. Scopes, Lifetimes & Storage Classes</h3>
+                        <p class="card-description">
+                            Variable scope determines where a variable can be accessed and how long it stays in memory:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>Local Automatic (Stack):</strong> Declared inside function blocks. Allocated when the function runs; contains <em>garbage values</em> if not initialized!</li>
+                            <li><strong>Global Variables (.data / .bss):</strong> Declared outside functions. Available throughout the entire execution lifetime, zero-initialized by default.</li>
+                            <li><strong>static Keyword:</strong> Preserves a local variable's stored value across multiple function invocation calls.</li>
+                            <li><strong>const Qualifier:</strong> Makes a variable read-only; attempting to modify it causes a compilation error.</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-title">4. Memory Endianness (Little-Endian vs Big-Endian)</h3>
+                        <p class="card-description">
+                            Endianness defines the order in which bytes of multi-byte numbers (e.g. 4-byte <code>int</code>) are arranged in memory:
+                        </p>
+                        <ul class="concept-bullet-list">
+                            <li><strong>Little-Endian (x86 / x64 / ARM):</strong> The <em>Least Significant Byte (LSB)</em> is stored at the lowest memory address. For example, integer <code>258</code> (hex <code>0x00000102</code>) is stored as byte sequence <code>[02] [01] [00] [00]</code>.</li>
+                            <li><strong>Big-Endian (Network Byte Order):</strong> The <em>Most Significant Byte (MSB)</em> is stored at the lowest memory address (e.g., <code>[00] [00] [01] [02]</code>).</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- Memory Endianness Visual Diagram -->
+                <div class="diagram-container">
+                    <h3 style="margin-bottom: 16px; color: var(--accent-purple); font-weight: 700;">Little-Endian Byte Alignment (Integer Value = 258 / Hex 0x00000102)</h3>
+                    <svg viewBox="0 0 750 140" style="width: 100%; max-width: 700px; height: auto;">
+                        <!-- Addresses -->
+                        <text x="80" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff00</text>
+                        <text x="240" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff01</text>
+                        <text x="400" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff02</text>
+                        <text x="560" y="25" text-anchor="middle" fill="#9ca3af" font-size="12">Addr: 0x7fff03</text>
+
+                        <!-- Cells -->
+                        <rect x="10" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                        <text x="80" y="65" text-anchor="middle" fill="#a7f3d0" font-weight="bold" font-size="16">0x02</text>
+                        <text x="80" y="83" text-anchor="middle" fill="#818cf8" font-size="11">LSB (Byte 0)</text>
+
+                        <rect x="170" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                        <text x="240" y="65" text-anchor="middle" fill="#a7f3d0" font-weight="bold" font-size="16">0x01</text>
+                        <text x="240" y="83" text-anchor="middle" fill="#818cf8" font-size="11">Byte 1</text>
+
+                        <rect x="330" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                        <text x="400" y="65" text-anchor="middle" fill="#9ca3af" font-weight="bold" font-size="16">0x00</text>
+                        <text x="400" y="83" text-anchor="middle" fill="#818cf8" font-size="11">Byte 2</text>
+
+                        <rect x="490" y="35" width="140" height="60" rx="8" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="2"/>
+                        <text x="560" y="65" text-anchor="middle" fill="#9ca3af" font-weight="bold" font-size="16">0x00</text>
+                        <text x="560" y="83" text-anchor="middle" fill="#818cf8" font-size="11">MSB (Byte 3)</text>
+                    </svg>
+                </div>
+
+                <!-- INTERACTIVE STACK MEMORY ALLOCATOR VISUALIZER -->
                 <div class="visualizer-container">
                     <div class="visualizer-controls">
                         <div class="control-group">
@@ -137,7 +217,7 @@
                         </div>
                         <div class="control-group">
                             <label>Value:</label>
-                            <input type="text" id="var-val" value="65" style="width: 120px;">
+                            <input type="text" id="var-val" value="258" style="width: 120px;">
                         </div>
                         <button class="btn btn-primary" onclick="declareVariable()">Declare & Allocate</button>
                         <button class="btn btn-secondary" onclick="resetMemory()">Reset Stack</button>
@@ -221,7 +301,7 @@
             else if (type === 'double') valInput.value = '0.1';
         }
 
-        // Convert data types to bytes
+        // Convert data types to bytes (Little-Endian)
         function typeToBytes(type, valStr) {
             let bytes = [];
             const buffer = new ArrayBuffer(8);
@@ -253,68 +333,52 @@
         }
 
         function declareVariable() {
-            const name = document.getElementById('var-name').value.trim();
+            const name = document.getElementById('var-name').value.trim() || 'v';
             const type = document.getElementById('var-type').value;
-            const valStr = document.getElementById('var-val').value.trim();
-
-            if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
-                alert("Invalid C identifier name!");
-                return;
-            }
-
-            // Check if name already exists
-            const exists = memory.some(c => c && c.name === name);
-            if (exists) {
-                alert(`Variable '${name}' is already declared in this scope!`);
-                return;
-            }
-
+            const valStr = document.getElementById('var-val').value;
             const bytes = typeToBytes(type, valStr);
-            const neededSize = bytes.length;
+            const numBytes = bytes.length;
 
-            // Find contiguous memory block
-            let startIndex = -1;
-            for (let i = 0; i <= memorySize - neededSize; i++) {
-                let free = true;
-                for (let j = 0; j < neededSize; j++) {
+            // Find free contiguous memory slot
+            let freeStart = -1;
+            for (let i = 0; i <= memorySize - numBytes; i++) {
+                let fits = true;
+                for (let j = 0; j < numBytes; j++) {
                     if (memory[i + j] !== null) {
-                        free = false;
+                        fits = false;
                         break;
                     }
                 }
-                if (free) {
-                    startIndex = i;
+                if (fits) {
+                    freeStart = i;
                     break;
                 }
             }
 
-            if (startIndex === -1) {
-                alert("Stack overflow! Not enough contiguous free bytes to allocate this variable.");
+            const logEl = document.getElementById('stack-log');
+
+            if (freeStart === -1) {
+                logEl.innerText += `\n[ERROR] Stack overflow! Cannot allocate ${numBytes} bytes for '${name}'. Out of 16-byte frame memory.`;
                 return;
             }
 
-            // Allocate
-            for (let i = 0; i < neededSize; i++) {
-                memory[startIndex + i] = {
-                    name,
-                    type,
-                    byteVal: bytes[i],
-                    byteOffset: i
+            for (let b = 0; b < numBytes; b++) {
+                memory[freeStart + b] = {
+                    name: name,
+                    type: type,
+                    byteVal: bytes[b],
+                    byteOffset: b
                 };
             }
 
-            const hexRep = bytes.map(b => '0x' + b.toString(16).padStart(2, '0').toUpperCase()).join(', ');
-            const logEl = document.getElementById('stack-log');
-            logEl.innerHTML += `\n&gt; Declared '${type} ${name} = ${valStr};' at address 0x${(baseAddr + startIndex).toString(16)}\n  Allocated ${neededSize} bytes. Byte values: [${hexRep}]`;
-            logEl.scrollTop = logEl.scrollHeight;
-
+            const hexStr = bytes.map(b => '0x' + b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+            logEl.innerText += `\nAllocated '${name}' (${type}, ${numBytes} bytes) at 0x${(baseAddr + freeStart).toString(16)} -> Bytes: [ ${hexStr} ]`;
             renderMemory();
         }
 
         function resetMemory() {
             memory = Array(memorySize).fill(null);
-            const logEl = document.getElementById('stack-log');
-            logEl.innerHTML = "Stack reset. All local variables cleared.";
+            document.getElementById('stack-log').innerText = "Stack memory cleared.";
             renderMemory();
         }
 

@@ -567,11 +567,11 @@
             mulAdd: {
                 display: "5 + 3 * 4",
                 vars: "a=5, b=3, c=4",
-                log: "Expression: 5 + 3 * 4
+                log: `Expression: 5 + 3 * 4
 Precedence: '*' has rank 13, '+' has rank 12.
 So, 3 * 4 evaluates first. / นิพจน์: 5 + 3 * 4
 ลำดับสำคัญ: '*' มีความสำคัญระดับ 13, '+' มีความสำคัญระดับ 12
-ดังนั้น 3 * 4 จะประเมินผลก่อน",
+ดังนั้น 3 * 4 จะประเมินผลก่อน`,
                 steps: [
                     {
                         activeNodes: ["mul"],
@@ -609,11 +609,11 @@ So, 3 * 4 evaluates first. / นิพจน์: 5 + 3 * 4
             parenMul: {
                 display: "(5 + 3) * 4",
                 vars: "a=5, b=3, c=4",
-                log: "Expression: (5 + 3) * 4
+                log: `Expression: (5 + 3) * 4
 Precedence: Parenthesis '()' has highest rank 15.
 So, 5 + 3 inside evaluates first. / นิพจน์: (5 + 3) * 4
 ลำดับสำคัญ: วงเล็บ '()' มีความสำคัญสูงสุดระดับ 15
-ดังนั้น 5 + 3 ข้างในจะประเมินผลก่อน",
+ดังนั้น 5 + 3 ข้างในจะประเมินผลก่อน`,
                 steps: [
                     {
                         activeNodes: ["add"],
@@ -651,11 +651,11 @@ So, 5 + 3 inside evaluates first. / นิพจน์: (5 + 3) * 4
             logicAndOr: {
                 display: "1 || 0 && 0",
                 vars: "a=1, b=0, c=0",
-                log: "Expression: 1 || 0 && 0
+                log: `Expression: 1 || 0 && 0
 Precedence: '&&' (Logical AND) has rank 11, '||' (Logical OR) has rank 10.
 So, 0 && 0 evaluates first. / นิพจน์: 1 || 0 && 0
 ลำดับสำคัญ: '&&' (AND ทางตรรกศาสตร์) มีความสำคัญระดับ 11, '||' (OR ทางตรรกศาสตร์) มีความสำคัญระดับ 10
-ดังนั้น 0 && 0 จะประเมินผลก่อน",
+ดังนั้น 0 && 0 จะประเมินผลก่อน`,
                 steps: [
                     {
                         activeNodes: ["and"],
@@ -693,9 +693,9 @@ So, 0 && 0 evaluates first. / นิพจน์: 1 || 0 && 0
             assignAssoc: {
                 display: "x = y = z = 5",
                 vars: "x=0, y=0, z=0",
-                log: "Expression: x = y = z = 5
+                log: `Expression: x = y = z = 5
 Precedence: Assignment '=' has rank 2, and evaluates Right-to-Left. / นิพจน์: x = y = z = 5
-ลำดับสำคัญ: ตัวกำหนดค่า '=' มีความสำคัญระดับ 2 และมีทิศทางประเมินค่าจากขวาไปซ้าย",
+ลำดับสำคัญ: ตัวกำหนดค่า '=' มีความสำคัญระดับ 2 และมีทิศทางประเมินค่าจากขวาไปซ้าย`,
                 steps: [
                     {
                         activeNodes: ["eq3"],
