@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression Performance Evaluator | Dr. Thanaporn Patikorn</title>
+    <link rel="stylesheet" href="../../shared/css/global.css">
+    <style>
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 24px;
+        }
+
+        .integrated-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* 70% / 30% Horizontal Layout Split */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 24px;
+            align-items: start;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 3px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Compact Table Styling */
+        .table-scroll-container {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .compact-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .compact-table th {
+            padding: 8px 10px;
+            border-bottom: 2px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 10;
+        }
+
+        .compact-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+
+        .compact-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .input-val {
+            width: 75px;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+        }
+
+        /* Right Panel Metrics Stack (Top to Bottom) */
+        .metrics-checkbox-bar {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-label input {
+            accent-color: var(--accent-purple);
+            cursor: pointer;
+        }
+
+        .checkbox-label:hover {
+            color: var(--text-primary);
+        }
+
+        .vertical-metrics-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .metric-card-sm {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            transition: var(--transition-smooth);
+        }
+
+        .metric-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-val-sm {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        .calc-sub-text {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            color: var(--accent-emerald);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Integrated Top Header Bar -->
+    <header class="integrated-header">
+        <div class="header-title-group">
+            <a href="../../index.html" class="nav-btn">← Main Portal</a>
+            <a href="../index.html" class="nav-btn">🤖 AI Learning Hub</a>
+            <h1 class="page-title">
+                <span class="lang-en">Regression Performance Evaluator</span>
+                <span class="lang-th">เครื่องมือวัดประสิทธิภาพ Regression</span>
+            </h1>
+        </div>
+        <div>
+            <button class="nav-btn" onclick="toggleLanguage()">🌐 <span id="lang-btn-text">TH</span></button>
+        </div>
+    </header>
+
+    <!-- 70% / 30% Horizontal Split Layout -->
+    <div class="split-layout">
+        
+        <!-- LEFT PANEL (~70% Width): Controls, Compact Table & Residual Plot -->
+        <div class="left-panel">
+            
+            <!-- Controls Bar -->
+            <div class="panel-card" style="padding: 14px 18px;">
+                <div class="controls-row">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="font-weight: 700; font-size: 0.85rem; white-space: nowrap;">
+                            <span class="lang-en">Features (p):</span>
+                            <span class="lang-th">ฟีเจอร์ (p):</span>
+                        </label>
+                        <input type="number" id="input-p" class="input-val" value="1" min="1" max="10" onchange="updateCalculations()">
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div class="toggle-group">
+                            <button id="btn-mode-values" class="toggle-btn active" onclick="setViewMode('values')">
+                                <span class="lang-en">Values Only</span>
+                                <span class="lang-th">แสดงเฉพาะค่า</span>
+                            </button>
+                            <button id="btn-mode-math" class="toggle-btn" onclick="setViewMode('math')">
+                                <span class="lang-en">Show Calculations</span>
+                                <span class="lang-th">แสดงวิธีคำนวณ</span>
+                            </button>
+                        </div>
+
+                        <button class="nav-btn" style="background: var(--accent-purple); color: #fff; border: none; padding: 6px 12px;" onclick="addRandomSample()">
+                            ➕ <span class="lang-en">Add Random Sample</span><span class="lang-th">เพิ่มตัวอย่างสุ่ม</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vertically Compact Table -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.85rem; font-weight: 700;">
+                        <span class="lang-en">Dataset Samples & Residual Errors</span>
+                        <span class="lang-th">ตัวอย่างข้อมูลและค่าความคลาดเคลื่อน</span>
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        <span class="lang-en">Total Records (n):</span><span class="lang-th">จำนวนข้อมูลทั้งหมด (n):</span> <strong id="lbl-total-count" style="color: var(--text-primary);">0</strong>
+                    </span>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table class="compact-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>
+                                    <span class="lang-en">Actual (y)</span>
+                                    <span class="lang-th">ค่าจริง (y)</span>
+                                </th>
+                                <th>
+                                    <span class="lang-en">Predicted (ŷ)</span>
+                                    <span class="lang-th">ค่าทำนาย (ŷ)</span>
+                                </th>
+                                <th>
+                                    <span class="lang-en">Error (e)</span>
+                                    <span class="lang-th">ความคลาดเคลื่อน</span>
+                                </th>
+                                <th>Abs (|e|)</th>
+                                <th>Sq (e²)</th>
+                                <th>APE %</th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Samples dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Scatter & Residual Error Plot Graph -->
+            <div class="panel-card" style="text-align: center;">
+                <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; color: var(--accent-purple);">
+                    <span class="lang-en">Actual vs Predicted Scatter & Residual Error Plot</span>
+                    <span class="lang-th">กราฟกระจายตัวเทียบระหว่างค่าจริง กับค่าทำนาย (Residual Plot)</span>
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">
+                    <span class="lang-en">Actual samples plotted against the ideal 1:1 regression line (y = ŷ).</span>
+                    <span class="lang-th">เปรียบเทียบตำแหน่งของข้อมูลจริงเทียบกับเส้นทำนายสมบูรณ์แบบ (y = ŷ)</span>
+                </p>
+
+                <svg id="scatter-graph" viewBox="0 0 500 380" style="width: 100%; max-width: 480px; height: auto; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <!-- Scatter Plot dynamic elements -->
+                </svg>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL (~30% Width): Metrics Visibility Checkboxes & Top-to-Bottom Vertical Metrics Stack -->
+        <div class="right-panel">
+            
+            <!-- Checkbox Bar to Show/Hide Each Metric -->
+            <div class="metrics-checkbox-bar">
+                <span style="width: 100%; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    <span class="lang-en">Toggle Metrics Visibility:</span>
+                    <span class="lang-th">เลือกแสดง/ซ่อน เมตริก:</span>
+                </span>
+                <label class="checkbox-label"><input type="checkbox" id="chk-mae" checked onchange="toggleMetricVisibility()"> MAE</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-mse" checked onchange="toggleMetricVisibility()"> MSE</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-rmse" checked onchange="toggleMetricVisibility()"> RMSE</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-mape" checked onchange="toggleMetricVisibility()"> MAPE %</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-r2" checked onchange="toggleMetricVisibility()"> R²</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-adj-r2" checked onchange="toggleMetricVisibility()"> Adj R²</label>
+            </div>
+
+            <!-- Top to Bottom Vertical Metrics Stack -->
+            <div class="vertical-metrics-stack">
+                
+                <!-- MAE Card -->
+                <div id="card-metric-mae" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>MAE (Mean Absolute Error)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-blue);">Average Abs Error</span>
+                    </div>
+                    <div id="val-mae" class="metric-val-sm">0.00</div>
+                    <div id="math-mae-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>MAE</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mn>1</mn>
+                                    <mi>n</mi>
+                                </mfrac>
+                                <munderover>
+                                    <mo>∑</mo>
+                                    <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                                    <mi>n</mi>
+                                </munderover>
+                                <mrow>
+                                    <mo>|</mo>
+                                    <msub><mi>y</mi><mi>i</mi></msub>
+                                    <mo>−</mo>
+                                    <msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub>
+                                    <mo>|</mo>
+                                </mrow>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- MSE Card -->
+                <div id="card-metric-mse" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>MSE (Mean Squared Error)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-purple);">Variance</span>
+                    </div>
+                    <div id="val-mse" class="metric-val-sm">0.00</div>
+                    <div id="math-mse-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>MSE</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mn>1</mn>
+                                    <mi>n</mi>
+                                </mfrac>
+                                <munderover>
+                                    <mo>∑</mo>
+                                    <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                                    <mi>n</mi>
+                                </munderover>
+                                <msup>
+                                    <mrow>
+                                        <mo>(</mo>
+                                        <msub><mi>y</mi><mi>i</mi></msub>
+                                        <mo>−</mo>
+                                        <msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub>
+                                        <mo>)</mo>
+                                    </mrow>
+                                    <mn>2</mn>
+                                </msup>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- RMSE Card -->
+                <div id="card-metric-rmse" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>RMSE (Root Mean Sq Error)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-emerald);">Std Dev</span>
+                    </div>
+                    <div id="val-rmse" class="metric-val-sm">0.00</div>
+                    <div id="math-rmse-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>RMSE</mtext>
+                                <mo>=</mo>
+                                <msqrt>
+                                    <mtext>MSE</mtext>
+                                </msqrt>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- MAPE Card -->
+                <div id="card-metric-mape" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>MAPE (Mean Abs % Error)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-amber);">Relative %</span>
+                    </div>
+                    <div id="val-mape" class="metric-val-sm">0.00%</div>
+                    <div id="math-mape-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>MAPE</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mrow><mn>100</mn><mo>%</mo></mrow>
+                                    <mi>n</mi>
+                                </mfrac>
+                                <munderover>
+                                    <mo>∑</mo>
+                                    <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                                    <mi>n</mi>
+                                </munderover>
+                                <mrow>
+                                    <mo>|</mo>
+                                    <mfrac>
+                                        <mrow><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub></mrow>
+                                        <msub><mi>y</mi><mi>i</mi></msub>
+                                    </mfrac>
+                                    <mo>|</mo>
+                                </mrow>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- R-Squared Card -->
+                <div id="card-metric-r2" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>R² (Coeff of Determination)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-rose);">Explained Var</span>
+                    </div>
+                    <div id="val-r2" class="metric-val-sm">0.000</div>
+                    <div id="math-r2-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <msup><mi>R</mi><mn>2</mn></msup>
+                                <mo>=</mo>
+                                <mn>1</mn>
+                                <mo>−</mo>
+                                <mfrac>
+                                    <mrow><mo>∑</mo><msup><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><mo>)</mo></mrow><mn>2</mn></msup></mrow>
+                                    <mrow><mo>∑</mo><msup><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>y</mi><mo>¯</mo></mover><mo>)</mo></mrow><mn>2</mn></msup></mrow>
+                                </mfrac>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- Adjusted R-Squared Card -->
+                <div id="card-metric-adj-r2" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>Adjusted R²</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-blue);">Feature Penalty</span>
+                    </div>
+                    <div id="val-adj-r2" class="metric-val-sm">0.000</div>
+                    <div id="math-adj-r2-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <msubsup><mtext>R</mtext><mtext>adj</mtext><mn>2</mn></msubsup>
+                                <mo>=</mo>
+                                <mn>1</mn>
+                                <mo>−</mo>
+                                <mrow>
+                                    <mo>[</mo>
+                                    <mfrac>
+                                        <mrow><mo>(</mo><mn>1</mn><mo>−</mo><msup><mi>R</mi><mn>2</mn></msup><mo>)</mo><mo>(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo></mrow>
+                                        <mrow><mi>n</mi><mo>−</mo><mi>p</mi><mo>−</mo><mn>1</mn></mrow>
+                                    </mfrac>
+                                    <mo>]</mo>
+                                </mrow>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('ai-lang') || 'EN';
+        let viewMode = 'values'; // 'values' or 'math'
+
+        // Initial default dataset for regression
+        let samples = [
+            { id: 1, actual: 120, pred: 115 },
+            { id: 2, actual: 150, pred: 158 },
+            { id: 3, actual: 200, pred: 190 },
+            { id: 4, actual: 250, pred: 260 },
+            { id: 5, actual: 310, pred: 300 },
+            { id: 6, actual: 360, pred: 375 },
+            { id: 7, actual: 420, pred: 410 },
+            { id: 8, actual: 480, pred: 495 }
+        ];
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'EN' ? 'TH' : 'EN';
+            localStorage.setItem('ai-lang', currentLang);
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            document.getElementById('lang-btn-text').innerText = currentLang === 'EN' ? 'TH' : 'EN';
+            if (currentLang === 'TH') {
+                document.body.classList.remove('lang-en');
+                document.body.classList.add('lang-th');
+            } else {
+                document.body.classList.remove('lang-th');
+                document.body.classList.add('lang-en');
+            }
+            updateCalculations();
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('btn-mode-values').classList.toggle('active', mode === 'values');
+            document.getElementById('btn-mode-math').classList.toggle('active', mode === 'math');
+            
+            const calcTexts = document.querySelectorAll('.calc-sub-text');
+            calcTexts.forEach(el => {
+                el.style.display = mode === 'math' ? 'block' : 'none';
+            });
+        }
+
+        function toggleMetricVisibility() {
+            document.getElementById('card-metric-mae').style.display = document.getElementById('chk-mae').checked ? 'block' : 'none';
+            document.getElementById('card-metric-mse').style.display = document.getElementById('chk-mse').checked ? 'block' : 'none';
+            document.getElementById('card-metric-rmse').style.display = document.getElementById('chk-rmse').checked ? 'block' : 'none';
+            document.getElementById('card-metric-mape').style.display = document.getElementById('chk-mape').checked ? 'block' : 'none';
+            document.getElementById('card-metric-r2').style.display = document.getElementById('chk-r2').checked ? 'block' : 'none';
+            document.getElementById('card-metric-adj-r2').style.display = document.getElementById('chk-adj-r2').checked ? 'block' : 'none';
+        }
+
+        function addRandomSample() {
+            const nextId = samples.length > 0 ? Math.max(...samples.map(s => s.id)) + 1 : 1;
+            const actual = Math.round((50 + Math.random() * 450) * 10) / 10;
+            const noise = (Math.random() - 0.5) * 40;
+            const pred = Math.round(Math.max(10, actual + noise) * 10) / 10;
+            samples.push({ id: nextId, actual, pred });
+            updateCalculations();
+        }
+
+        function deleteSample(id) {
+            samples = samples.filter(s => s.id !== id);
+            updateCalculations();
+        }
+
+        function updateSampleActual(id, val) {
+            const s = samples.find(x => x.id === id);
+            if (s) {
+                let v = parseFloat(val);
+                if (isNaN(v)) v = 0;
+                s.actual = v;
+                updateCalculations();
+            }
+        }
+
+        function updateSamplePred(id, val) {
+            const s = samples.find(x => x.id === id);
+            if (s) {
+                let v = parseFloat(val);
+                if (isNaN(v)) v = 0;
+                s.pred = v;
+                updateCalculations();
+            }
+        }
+
+        function updateCalculations() {
+            const numFeatures = parseInt(document.getElementById('input-p').value) || 1;
+            document.getElementById('lbl-total-count').innerText = samples.length;
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            let sumAbsErr = 0;
+            let sumSqErr = 0;
+            let sumApe = 0;
+            let sumActual = 0;
+
+            samples.forEach(s => {
+                const err = s.actual - s.pred;
+                const absErr = Math.abs(err);
+                const sqErr = err * err;
+                const ape = s.actual !== 0 ? (absErr / Math.abs(s.actual)) * 100 : 0;
+
+                sumAbsErr += absErr;
+                sumSqErr += sqErr;
+                sumApe += ape;
+                sumActual += s.actual;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 700; font-family: monospace; color: var(--accent-purple);">#${s.id}</td>
+                    <td>
+                        <input type="number" class="input-val" step="0.1" value="${s.actual}" onchange="updateSampleActual(${s.id}, this.value)">
+                    </td>
+                    <td>
+                        <input type="number" class="input-val" step="0.1" value="${s.pred}" onchange="updateSamplePred(${s.id}, this.value)">
+                    </td>
+                    <td style="font-weight: 600; color: ${err >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">${err >= 0 ? '+' : ''}${err.toFixed(1)}</td>
+                    <td style="font-weight: 600;">${absErr.toFixed(1)}</td>
+                    <td style="font-weight: 600;">${sqErr.toFixed(1)}</td>
+                    <td style="font-weight: 600;">${ape.toFixed(1)}%</td>
+                    <td style="text-align: center;">
+                        <button class="nav-btn" style="padding: 2px 6px; font-size: 0.75rem; color: var(--accent-rose);" onclick="deleteSample(${s.id})">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const n = samples.length;
+            const mae = n > 0 ? sumAbsErr / n : 0;
+            const mse = n > 0 ? sumSqErr / n : 0;
+            const rmse = Math.sqrt(mse);
+            const mape = n > 0 ? sumApe / n : 0;
+
+            const yMean = n > 0 ? sumActual / n : 0;
+            let ssTot = 0;
+            samples.forEach(s => {
+                ssTot += Math.pow(s.actual - yMean, 2);
+            });
+
+            const ssRes = sumSqErr;
+            const r2 = ssTot > 0 ? (1 - (ssRes / ssTot)) : 0;
+
+            let adjR2 = 0;
+            if (n > numFeatures + 1) {
+                adjR2 = 1 - (((1 - r2) * (n - 1)) / (n - numFeatures - 1));
+            } else {
+                adjR2 = r2;
+            }
+
+            document.getElementById('val-mae').innerText = mae.toFixed(2);
+            document.getElementById('val-mse').innerText = mse.toFixed(2);
+            document.getElementById('val-rmse').innerText = rmse.toFixed(2);
+            document.getElementById('val-mape').innerText = `${mape.toFixed(2)}%`;
+            document.getElementById('val-r2').innerText = r2.toFixed(3);
+            document.getElementById('val-adj-r2').innerText = adjR2.toFixed(3);
+
+            // Sub Calculations text
+            document.querySelector('#math-mae-sub .calc-step-val').innerHTML = `= ${sumAbsErr.toFixed(1)} / ${n} = <strong>${mae.toFixed(2)}</strong>`;
+            document.querySelector('#math-mse-sub .calc-step-val').innerHTML = `= ${sumSqErr.toFixed(1)} / ${n} = <strong>${mse.toFixed(2)}</strong>`;
+            document.querySelector('#math-rmse-sub .calc-step-val').innerHTML = `= √(${mse.toFixed(2)}) = <strong>${rmse.toFixed(2)}</strong>`;
+            document.querySelector('#math-mape-sub .calc-step-val').innerHTML = `= ${sumApe.toFixed(1)}% / ${n} = <strong>${mape.toFixed(2)}%</strong>`;
+            document.querySelector('#math-r2-sub .calc-step-val').innerHTML = `= 1 - (${ssRes.toFixed(1)} / ${ssTot.toFixed(1)}) = <strong>${r2.toFixed(3)}</strong>`;
+            document.querySelector('#math-adj-r2-sub .calc-step-val').innerHTML = `= 1 - [((1 - ${r2.toFixed(3)}) × ${n - 1}) / (${n} - ${numFeatures} - 1)] = <strong>${adjR2.toFixed(3)}</strong>`;
+
+            renderScatterGraph();
+            toggleMetricVisibility();
+        }
+
+        function renderScatterGraph() {
+            const svg = document.getElementById('scatter-graph');
+            svg.innerHTML = '';
+
+            const width = 500;
+            const height = 380;
+            const padding = 45;
+            const plotW = width - 2 * padding;
+            const plotH = height - 2 * padding;
+
+            if (samples.length === 0) return;
+
+            const allVals = samples.flatMap(s => [s.actual, s.pred]);
+            let minVal = Math.min(...allVals);
+            let maxVal = Math.max(...allVals);
+
+            if (minVal === maxVal) {
+                minVal -= 10;
+                maxVal += 10;
+            }
+
+            const range = maxVal - minVal;
+            minVal = Math.max(0, minVal - range * 0.1);
+            maxVal = maxVal + range * 0.1;
+
+            const mapX = (actualVal) => padding + ((actualVal - minVal) / (maxVal - minVal)) * plotW;
+            const mapY = (predVal) => height - padding - ((predVal - minVal) / (maxVal - minVal)) * plotH;
+
+            let gridHtml = '';
+            const step = (maxVal - minVal) / 5;
+            for (let v = minVal; v <= maxVal; v += step) {
+                const x = mapX(v);
+                const y = mapY(v);
+                gridHtml += `<line x1="${x}" y1="${padding}" x2="${x}" y2="${height - padding}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3"/>`;
+                gridHtml += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3"/>`;
+                gridHtml += `<text x="${x}" y="${height - padding + 16}" fill="#9ca3af" font-size="10" text-anchor="middle">${v.toFixed(0)}</text>`;
+                gridHtml += `<text x="${padding - 8}" y="${y + 4}" fill="#9ca3af" font-size="10" text-anchor="end">${v.toFixed(0)}</text>`;
+            }
+
+            const lineD = `M ${mapX(minVal)} ${mapY(minVal)} L ${mapX(maxVal)} ${mapY(maxVal)}`;
+            let idealLineHtml = `<path d="${lineD}" stroke="var(--accent-purple)" stroke-width="2" stroke-dasharray="6,6"/>`;
+
+            let pointsHtml = '';
+            samples.forEach(s => {
+                const px = mapX(s.actual);
+                const pyActual = mapY(s.actual);
+                const pyPred = mapY(s.pred);
+
+                const err = s.actual - s.pred;
+                const barColor = err >= 0 ? '#10b981' : '#f43f5e';
+
+                pointsHtml += `<line x1="${px}" y1="${pyActual}" x2="${px}" y2="${pyPred}" stroke="${barColor}" stroke-width="2" stroke-dasharray="2,2"/>`;
+                pointsHtml += `<circle cx="${px}" cy="${pyPred}" r="5" fill="${barColor}" stroke="#ffffff" stroke-width="1.5"/>`;
+            });
+
+            let labelsHtml = `
+                <text x="${width / 2}" y="${height - 8}" fill="#f3f4f6" font-size="11" font-weight="bold" text-anchor="middle">Actual Values (y)</text>
+                <text x="12" y="${height / 2}" fill="#f3f4f6" font-size="11" font-weight="bold" text-anchor="middle" transform="rotate(-90 12 ${height / 2})">Predicted Targets (ŷ)</text>
+            `;
+
+            svg.innerHTML = gridHtml + idealLineHtml + pointsHtml + labelsHtml;
+        }
+
+        window.onload = () => {
+            updateLanguageUI();
+        };
+    </script>
+</body>
+</html>

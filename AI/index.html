@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Machine Learning Visualizers | Dr. Thanaporn Patikorn</title>
+    <link rel="stylesheet" href="../shared/css/global.css">
+    <style>
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 28px;
+        }
+
+        .module-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .card-tree::before { background: linear-gradient(90deg, #10b981, #3b82f6); }
+        .card-class::before { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        .card-regr::before { background: linear-gradient(90deg, #8b5cf6, #f59e0b); }
+
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.975rem;
+            line-height: 1.6;
+            margin-bottom: 28px;
+            flex-grow: 1;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+        }
+
+        .footer {
+            margin-top: 80px;
+            border-top: 1px solid var(--glass-border);
+            padding: 40px 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="header-nav">
+        <div class="nav-left">
+            <a href="../index.html" class="nav-btn">← Main Portal</a>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="nav-btn" onclick="toggleLanguage()">🌐 <span id="lang-btn-text">TH</span></button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <section class="hero">
+            <h1 class="hero-title">
+                <span class="lang-en">AI & Machine Learning Visualizers</span>
+                <span class="lang-th">ชุดการเรียนรู้และเครื่องมือจำลองปัญญาประดิษฐ์ (AI & Machine Learning)</span>
+            </h1>
+            <p class="hero-subtitle">
+                <span class="lang-en">Explore interactive demonstrations for Decision Tree classification, Classification performance metrics (TP, FP, TN, FN, Accuracy, Precision, Recall, F1, AUC), and Regression error analysis (MAE, MSE, RMSE, MAPE, R²).</span>
+                <span class="lang-th">เครื่องมือจำลองแบบโต้ตอบสำหรับ Decision Tree, การวัดประสิทธิภาพ Classification (TP, FP, TN, FN, Accuracy, Precision, Recall, F1, AUC) และการวิเคราะห์ค่าความคลาดเคลื่อนของ Regression (MAE, MSE, RMSE, MAPE, R²)</span>
+            </p>
+        </section>
+
+        <!-- Module Grid -->
+        <div class="module-grid">
+            
+            <!-- Decision Tree Card -->
+            <a href="decision_tree/index.html" class="module-card card-tree">
+                <div>
+                    <div class="card-icon">🎾</div>
+                    <h3 class="card-title">
+                        <span class="lang-en">Decision Tree Visualizer</span>
+                        <span class="lang-th">เครื่องมือจำลอง Decision Tree</span>
+                    </h3>
+                    <p class="card-desc">
+                        <span class="lang-en">Interactive Machine Learning demonstration of Decision Tree classification using the Tennis Players dataset. Learn Entropy & Information Gain visually.</span>
+                        <span class="lang-th">สาธิตการทำเหมืองข้อมูลแบบแผนภูมิการตัดสินใจด้วยชุดข้อมูลการเล่นเทนนิส เรียนรู้การคำนวณ Entropy และ Information Gain</span>
+                    </p>
+                </div>
+                <div class="card-meta">
+                    <span>
+                        <span class="lang-en">Launch Decision Tree</span>
+                        <span class="lang-th">เปิด Decision Tree Demo</span>
+                    </span>
+                    <span>→</span>
+                </div>
+            </a>
+
+            <!-- Classification Performance Card -->
+            <a href="performance_classification/index.html" class="module-card card-class">
+                <div>
+                    <div class="card-icon">🎯</div>
+                    <h3 class="card-title">
+                        <span class="lang-en">Classification Metrics Evaluator</span>
+                        <span class="lang-th">การวัดประสิทธิภาพ Classification</span>
+                    </h3>
+                    <p class="card-desc">
+                        <span class="lang-en">Interactive evaluation table with editable fuzzy predictions, decision threshold slider, TP/FP/TN/FN matrix, Accuracy, Precision, Recall, F1 Score, and ROC AUC curve graph with MathML formulas.</span>
+                        <span class="lang-th">ตารางประเมินผลแบบปรับแต่งได้ ปรับ Threshold, คำนวณ Confusion Matrix, Accuracy, Precision, Recall, F1, ROC AUC และสูตร MathML</span>
+                    </p>
+                </div>
+                <div class="card-meta">
+                    <span>
+                        <span class="lang-en">Launch Classification Demo</span>
+                        <span class="lang-th">เปิด Classification Metrics</span>
+                    </span>
+                    <span>→</span>
+                </div>
+            </a>
+
+            <!-- Regression Performance Card -->
+            <a href="performance_regression/index.html" class="module-card card-regr">
+                <div>
+                    <div class="card-icon">📈</div>
+                    <h3 class="card-title">
+                        <span class="lang-en">Regression Metrics Evaluator</span>
+                        <span class="lang-th">การวัดประสิทธิภาพ Regression</span>
+                    </h3>
+                    <p class="card-desc">
+                        <span class="lang-en">Interactive error evaluator for continuous target values. Computes MAE, MSE, RMSE, MAPE %, R², and Adjusted R² live with MathML step-by-step calculations and residual plot graph.</span>
+                        <span class="lang-th">คำนวณค่าความคลาดเคลื่อน MAE, MSE, RMSE, MAPE %, R², Adjusted R² พร้อมวิธีทำ MathML และกราฟ Residual Error</span>
+                    </p>
+                </div>
+                <div class="card-meta">
+                    <span>
+                        <span class="lang-en">Launch Regression Demo</span>
+                        <span class="lang-th">เปิด Regression Metrics</span>
+                    </span>
+                    <span>→</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 Dr. Thanaporn Patikorn. Serverless interactive learning platform loaded directly via <code>file:///</code> protocol.</p>
+    </footer>
+
+    <script>
+        let currentLang = localStorage.getItem('ai-lang') || 'EN';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'EN' ? 'TH' : 'EN';
+            localStorage.setItem('ai-lang', currentLang);
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            document.getElementById('lang-btn-text').innerText = currentLang === 'EN' ? 'TH' : 'EN';
+            if (currentLang === 'TH') {
+                document.body.classList.remove('lang-en');
+                document.body.classList.add('lang-th');
+            } else {
+                document.body.classList.remove('lang-th');
+                document.body.classList.add('lang-en');
+            }
+        }
+
+        window.onload = () => {
+            updateLanguageUI();
+        };
+    </script>
+</body>
+</html>

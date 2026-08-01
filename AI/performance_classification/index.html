@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Performance Evaluator | Dr. Thanaporn Patikorn</title>
+    <link rel="stylesheet" href="../../shared/css/global.css">
+    <style>
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 24px;
+        }
+
+        .integrated-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* 70% / 30% Horizontal Layout Split */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 24px;
+            align-items: start;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .threshold-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+            min-width: 220px;
+        }
+
+        .threshold-slider {
+            flex-grow: 1;
+            accent-color: var(--accent-blue);
+            height: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .toggle-group {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 3px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Compact Table Styling */
+        .table-scroll-container {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .compact-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .compact-table th {
+            padding: 8px 10px;
+            border-bottom: 2px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 10;
+        }
+
+        .compact-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--glass-border);
+            vertical-align: middle;
+        }
+
+        .compact-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .dot-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .dot-actual-yes { background-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
+        .dot-actual-no { background-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+
+        .select-actual {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .input-pred {
+            width: 65px;
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+        }
+
+        .badge-outcome {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-tp { background: rgba(21, 128, 61, 0.25); color: #22c55e; border: 1px solid #16a34a; }
+        .badge-fp { background: rgba(239, 68, 68, 0.22); color: #f87171; border: 1px solid #ef4444; }
+        .badge-tn { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid #4ade80; }
+        .badge-fn { background: rgba(249, 115, 22, 0.22); color: #fb923c; border: 1px solid #f97316; }
+
+        /* Right Panel Metrics Stack (Top to Bottom) */
+        .metrics-checkbox-bar {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-label input {
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .checkbox-label:hover {
+            color: var(--text-primary);
+        }
+
+        .vertical-metrics-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .metric-card-sm {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            transition: var(--transition-smooth);
+        }
+
+        .metric-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-val-sm {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        .calc-sub-text {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.85rem;
+            color: var(--accent-emerald);
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            padding: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Integrated Top Header Bar -->
+    <header class="integrated-header">
+        <div class="header-title-group">
+            <a href="../../index.html" class="nav-btn">← Main Portal</a>
+            <a href="../index.html" class="nav-btn">🤖 AI Learning Hub</a>
+            <h1 class="page-title">
+                <span class="lang-en">Classification Performance Evaluator</span>
+                <span class="lang-th">เครื่องมือวัดประสิทธิภาพ Classification</span>
+            </h1>
+        </div>
+        <div>
+            <button class="nav-btn" onclick="toggleLanguage()">🌐 <span id="lang-btn-text">TH</span></button>
+        </div>
+    </header>
+
+    <!-- 70% / 30% Horizontal Split Layout -->
+    <div class="split-layout">
+        
+        <!-- LEFT PANEL (~70% Width): Controls, Compact Table & ROC Curve Graph -->
+        <div class="left-panel">
+            
+            <!-- Controls Bar -->
+            <div class="panel-card" style="padding: 14px 18px;">
+                <div class="controls-row">
+                    <div class="threshold-group">
+                        <label style="font-weight: 700; font-size: 0.85rem; white-space: nowrap;">
+                            <span class="lang-en">Threshold (τ):</span>
+                            <span class="lang-th">เกณฑ์ (Threshold τ):</span>
+                            <span id="txt-threshold-val" style="color: var(--accent-blue); margin-left: 4px;">0.50</span>
+                        </label>
+                        <input type="range" id="slider-threshold" class="threshold-slider" min="0" max="1" step="0.01" value="0.50" oninput="updateCalculations()">
+                    </div>
+
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div class="toggle-group">
+                            <button id="btn-mode-values" class="toggle-btn active" onclick="setViewMode('values')">
+                                <span class="lang-en">Values Only</span>
+                                <span class="lang-th">แสดงเฉพาะค่า</span>
+                            </button>
+                            <button id="btn-mode-math" class="toggle-btn" onclick="setViewMode('math')">
+                                <span class="lang-en">Show Calculations</span>
+                                <span class="lang-th">แสดงวิธีคำนวณ</span>
+                            </button>
+                        </div>
+
+                        <button class="nav-btn" style="background: var(--accent-blue); color: #fff; border: none; padding: 6px 12px;" onclick="addRandomSample()">
+                            ➕ <span class="lang-en">Add Random Sample</span><span class="lang-th">เพิ่มตัวอย่างสุ่ม</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vertically Compact Table -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.85rem; font-weight: 700;">
+                        <span class="lang-en">Dataset Samples & Predictions</span>
+                        <span class="lang-th">ตัวอย่างข้อมูลและค่าการทำนาย</span>
+                    </span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        <span class="lang-en">Total Records:</span><span class="lang-th">จำนวนข้อมูลทั้งหมด:</span> <strong id="lbl-total-count" style="color: var(--text-primary);">0</strong>
+                    </span>
+                </div>
+
+                <div class="table-scroll-container">
+                    <table class="compact-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>
+                                    <span class="lang-en">Actual (y)</span>
+                                    <span class="lang-th">ค่าจริง (y)</span>
+                                </th>
+                                <th>
+                                    <span class="lang-en">Predicted Prob (ŷ)</span>
+                                    <span class="lang-th">ความน่าจะเป็น (ŷ)</span>
+                                </th>
+                                <th>
+                                    <span class="lang-en">Outcome</span>
+                                    <span class="lang-th">ผลการจำแนก</span>
+                                </th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Samples dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Interactive ROC Curve Graph -->
+            <div class="panel-card" style="text-align: center;">
+                <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; color: var(--accent-blue);">
+                    <span class="lang-en">Interactive ROC Curve (Receiver Operating Characteristic)</span>
+                    <span class="lang-th">เส้นโค้ง ROC แบบโต้ตอบ (Receiver Operating Characteristic)</span>
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 16px;">
+                    <span class="lang-en">True Positive Rate (TPR) vs False Positive Rate (FPR) across decision thresholds.</span>
+                    <span class="lang-th">ความสัมพันธ์ระหว่าง True Positive Rate กับ False Positive Rate ตามระดับ Threshold</span>
+                </p>
+
+                <svg id="roc-graph" viewBox="0 0 500 380" style="width: 100%; max-width: 480px; height: auto; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <!-- ROC Curve dynamic elements -->
+                </svg>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL (~30% Width): Metrics Visibility Checkboxes & Top-to-Bottom Vertical Metrics Stack -->
+        <div class="right-panel">
+            
+            <!-- Checkbox Bar to Show/Hide Each Metric -->
+            <div class="metrics-checkbox-bar">
+                <span style="width: 100%; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    <span class="lang-en">Toggle Metrics Visibility:</span>
+                    <span class="lang-th">เลือกแสดง/ซ่อน เมตริก:</span>
+                </span>
+                <label class="checkbox-label"><input type="checkbox" id="chk-cm" checked onchange="toggleMetricVisibility()"> Matrix</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-acc" checked onchange="toggleMetricVisibility()"> Accuracy</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-prec" checked onchange="toggleMetricVisibility()"> Precision</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-rec" checked onchange="toggleMetricVisibility()"> Recall</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-f1" checked onchange="toggleMetricVisibility()"> F1 Score</label>
+                <label class="checkbox-label"><input type="checkbox" id="chk-auc" checked onchange="toggleMetricVisibility()"> ROC AUC</label>
+            </div>
+
+            <!-- Top to Bottom Vertical Metrics Stack -->
+            <div class="vertical-metrics-stack">
+                
+                <!-- Natural Confusion Matrix Card (Standard 2x2 Grid) -->
+                <div id="card-metric-cm" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>Confusion Matrix (Standard Layout)</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">2x2 Grid</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75rem;">
+                        <div style="display: grid; grid-template-columns: 65px 1fr 1fr; gap: 6px; text-align: center; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">
+                            <div></div>
+                            <div>Actual Yes</div>
+                            <div>Actual No</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 65px 1fr 1fr; gap: 6px; text-align: center; align-items: center; margin-bottom: 6px;">
+                            <div style="font-weight: 700; color: var(--text-secondary); text-align: right; padding-right: 4px;">Pred Yes</div>
+                            <div style="background: rgba(21, 128, 61, 0.25); border: 1px solid #16a34a; padding: 6px; border-radius: 8px;">
+                                <div style="font-size: 0.65rem; font-weight: 700; color: #22c55e;">TP</div>
+                                <div id="val-tp" style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">0</div>
+                            </div>
+                            <div style="background: rgba(239, 68, 68, 0.22); border: 1px solid #ef4444; padding: 6px; border-radius: 8px;">
+                                <div style="font-size: 0.65rem; font-weight: 700; color: #f87171;">FP</div>
+                                <div id="val-fp" style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">0</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 65px 1fr 1fr; gap: 6px; text-align: center; align-items: center;">
+                            <div style="font-weight: 700; color: var(--text-secondary); text-align: right; padding-right: 4px;">Pred No</div>
+                            <div style="background: rgba(249, 115, 22, 0.22); border: 1px solid #f97316; padding: 6px; border-radius: 8px;">
+                                <div style="font-size: 0.65rem; font-weight: 700; color: #fb923c;">FN</div>
+                                <div id="val-fn" style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">0</div>
+                            </div>
+                            <div style="background: rgba(74, 222, 128, 0.18); border: 1px solid #4ade80; padding: 6px; border-radius: 8px;">
+                                <div style="font-size: 0.65rem; font-weight: 700; color: #4ade80;">TN</div>
+                                <div id="val-tn" style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accuracy Card -->
+                <div id="card-metric-acc" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>Accuracy (ความถูกต้องรวม)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-blue);">Overall</span>
+                    </div>
+                    <div id="val-accuracy" class="metric-val-sm">0.00%</div>
+                    <div id="math-accuracy-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>Accuracy</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mrow><mtext>TP</mtext><mo>+</mo><mtext>TN</mtext></mrow>
+                                    <mrow><mtext>TP</mtext><mo>+</mo><mtext>TN</mtext><mo>+</mo><mtext>FP</mtext><mo>+</mo><mtext>FN</mtext></mrow>
+                                </mfrac>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- Precision Card -->
+                <div id="card-metric-prec" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>Precision (ความแม่นยำ)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-emerald);">PPV</span>
+                    </div>
+                    <div id="val-precision" class="metric-val-sm">0.00%</div>
+                    <div id="math-precision-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>Precision</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mtext>TP</mtext>
+                                    <mrow><mtext>TP</mtext><mo>+</mo><mtext>FP</mtext></mrow>
+                                </mfrac>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- Recall Card -->
+                <div id="card-metric-rec" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>Recall / Sensitivity (ความไว)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-purple);">TPR</span>
+                    </div>
+                    <div id="val-recall" class="metric-val-sm">0.00%</div>
+                    <div id="math-recall-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>Recall</mtext>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mtext>TP</mtext>
+                                    <mrow><mtext>TP</mtext><mo>+</mo><mtext>FN</mtext></mrow>
+                                </mfrac>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- F1 Score Card -->
+                <div id="card-metric-f1" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>F1 Score (ค่าเฉลี่ย F1)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-amber);">Harmonic Mean</span>
+                    </div>
+                    <div id="val-f1" class="metric-val-sm">0.000</div>
+                    <div id="math-f1-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <msub><mtext>F</mtext><mn>1</mn></msub>
+                                <mo>=</mo>
+                                <mn>2</mn>
+                                <mo>×</mo>
+                                <mfrac>
+                                    <mrow><mtext>Precision</mtext><mo>×</mo><mtext>Recall</mtext></mrow>
+                                    <mrow><mtext>Precision</mtext><mo>+</mo><mtext>Recall</mtext></mrow>
+                                </mfrac>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+                <!-- ROC AUC Card -->
+                <div id="card-metric-auc" class="metric-card-sm">
+                    <div class="metric-card-title">
+                        <span>ROC AUC (พื้นที่ใต้เส้นโค้ง ROC)</span>
+                        <span style="font-size: 0.75rem; color: var(--accent-rose);">Area Under Curve</span>
+                    </div>
+                    <div id="val-auc" class="metric-val-sm">0.000</div>
+                    <div id="math-auc-sub" class="calc-sub-text" style="display: none;">
+                        <math display="block">
+                            <mrow>
+                                <mtext>AUC</mtext>
+                                <mo>=</mo>
+                                <msubsup>
+                                    <mo>∫</mo>
+                                    <mn>0</mn>
+                                    <mn>1</mn>
+                                </msubsup>
+                                <mtext>TPR</mtext>
+                                <mo stretchy="false">(</mo><mtext>FPR</mtext><mo stretchy="false">)</mo>
+                                <mi>d</mi><mo stretchy="false">(</mo><mtext>FPR</mtext><mo stretchy="false">)</mo>
+                            </mrow>
+                        </math>
+                        <div class="calc-step-val"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('ai-lang') || 'EN';
+        let viewMode = 'values'; // 'values' or 'math'
+
+        // Initial default dataset
+        let samples = [
+            { id: 1, actual: 'yes', pred: 0.92 },
+            { id: 2, actual: 'yes', pred: 0.85 },
+            { id: 3, actual: 'no',  pred: 0.78 },
+            { id: 4, actual: 'yes', pred: 0.65 },
+            { id: 5, actual: 'no',  pred: 0.45 },
+            { id: 6, actual: 'yes', pred: 0.40 },
+            { id: 7, actual: 'no',  pred: 0.32 },
+            { id: 8, actual: 'no',  pred: 0.15 },
+            { id: 9, actual: 'yes', pred: 0.70 },
+            { id: 10, actual: 'no', pred: 0.05 }
+        ];
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'EN' ? 'TH' : 'EN';
+            localStorage.setItem('ai-lang', currentLang);
+            updateLanguageUI();
+        }
+
+        function updateLanguageUI() {
+            document.getElementById('lang-btn-text').innerText = currentLang === 'EN' ? 'TH' : 'EN';
+            if (currentLang === 'TH') {
+                document.body.classList.remove('lang-en');
+                document.body.classList.add('lang-th');
+            } else {
+                document.body.classList.remove('lang-th');
+                document.body.classList.add('lang-en');
+            }
+            updateCalculations();
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('btn-mode-values').classList.toggle('active', mode === 'values');
+            document.getElementById('btn-mode-math').classList.toggle('active', mode === 'math');
+            
+            const calcTexts = document.querySelectorAll('.calc-sub-text');
+            calcTexts.forEach(el => {
+                el.style.display = mode === 'math' ? 'block' : 'none';
+            });
+        }
+
+        function toggleMetricVisibility() {
+            document.getElementById('card-metric-cm').style.display = document.getElementById('chk-cm').checked ? 'block' : 'none';
+            document.getElementById('card-metric-acc').style.display = document.getElementById('chk-acc').checked ? 'block' : 'none';
+            document.getElementById('card-metric-prec').style.display = document.getElementById('chk-prec').checked ? 'block' : 'none';
+            document.getElementById('card-metric-rec').style.display = document.getElementById('chk-rec').checked ? 'block' : 'none';
+            document.getElementById('card-metric-f1').style.display = document.getElementById('chk-f1').checked ? 'block' : 'none';
+            document.getElementById('card-metric-auc').style.display = document.getElementById('chk-auc').checked ? 'block' : 'none';
+        }
+
+        function getPredColor(prob) {
+            const r = Math.round(239 * (1 - prob) + 59 * prob);
+            const g = Math.round(68 * (1 - prob) + 130 * prob);
+            const b = Math.round(68 * (1 - prob) + 246 * prob);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function addRandomSample() {
+            const nextId = samples.length > 0 ? Math.max(...samples.map(s => s.id)) + 1 : 1;
+            const actual = Math.random() > 0.5 ? 'yes' : 'no';
+            const pred = Math.round(Math.random() * 100) / 100;
+            samples.push({ id: nextId, actual, pred });
+            updateCalculations();
+        }
+
+        function deleteSample(id) {
+            samples = samples.filter(s => s.id !== id);
+            updateCalculations();
+        }
+
+        function updateSampleActual(id, val) {
+            const s = samples.find(x => x.id === id);
+            if (s) {
+                s.actual = val;
+                updateCalculations();
+            }
+        }
+
+        function updateSamplePred(id, val) {
+            const s = samples.find(x => x.id === id);
+            if (s) {
+                let p = parseFloat(val);
+                if (isNaN(p)) p = 0;
+                if (p < 0) p = 0;
+                if (p > 1) p = 1;
+                s.pred = Math.round(p * 100) / 100;
+                updateCalculations();
+            }
+        }
+
+        function updateCalculations() {
+            const threshold = parseFloat(document.getElementById('slider-threshold').value);
+            document.getElementById('txt-threshold-val').innerText = threshold.toFixed(2);
+            document.getElementById('lbl-total-count').innerText = samples.length;
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            let tp = 0, fp = 0, tn = 0, fn = 0;
+
+            samples.forEach(s => {
+                const isPredYes = s.pred >= threshold;
+                let outcome = '';
+                let badgeClass = '';
+
+                if (s.actual === 'yes' && isPredYes) {
+                    outcome = 'TP';
+                    badgeClass = 'badge-tp';
+                    tp++;
+                } else if (s.actual === 'no' && isPredYes) {
+                    outcome = 'FP';
+                    badgeClass = 'badge-fp';
+                    fp++;
+                } else if (s.actual === 'no' && !isPredYes) {
+                    outcome = 'TN';
+                    badgeClass = 'badge-tn';
+                    tn++;
+                } else {
+                    outcome = 'FN';
+                    badgeClass = 'badge-fn';
+                    fn++;
+                }
+
+                const colorDotActual = s.actual === 'yes' ? 'dot-actual-yes' : 'dot-actual-no';
+                const colorPred = getPredColor(s.pred);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: 700; font-family: monospace; color: var(--accent-blue);">#${s.id}</td>
+                    <td>
+                        <span class="dot-indicator ${colorDotActual}"></span>
+                        <select class="select-actual" onchange="updateSampleActual(${s.id}, this.value)">
+                            <option value="yes" ${s.actual === 'yes' ? 'selected' : ''}>Yes</option>
+                            <option value="no" ${s.actual === 'no' ? 'selected' : ''}>No</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span class="dot-indicator" style="background-color: ${colorPred}; box-shadow: 0 0 8px ${colorPred};"></span>
+                        <input type="number" class="input-pred" min="0" max="1" step="0.01" value="${s.pred.toFixed(2)}" onchange="updateSamplePred(${s.id}, this.value)">
+                    </td>
+                    <td>
+                        <span class="badge-outcome ${badgeClass}">${outcome}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="nav-btn" style="padding: 2px 6px; font-size: 0.75rem; color: var(--accent-rose);" onclick="deleteSample(${s.id})">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Confusion Matrix Counts
+            document.getElementById('val-tp').innerText = tp;
+            document.getElementById('val-fp').innerText = fp;
+            document.getElementById('val-tn').innerText = tn;
+            document.getElementById('val-fn').innerText = fn;
+
+            const totalPositives = tp + fn;
+            const totalNegatives = tn + fp;
+            const totalSamples = samples.length;
+
+            const tpr = totalPositives > 0 ? (tp / totalPositives) : 0;
+            const fpr = totalNegatives > 0 ? (fp / totalNegatives) : 0;
+
+            // Compute Key Metrics
+            const accuracy = totalSamples > 0 ? ((tp + tn) / totalSamples) : 0;
+            const precision = (tp + fp) > 0 ? (tp / (tp + fp)) : 0;
+            const recall = tpr;
+            const f1 = (precision + recall) > 0 ? (2 * precision * recall / (precision + recall)) : 0;
+
+            document.getElementById('val-accuracy').innerText = `${(accuracy * 100).toFixed(2)}%`;
+            document.getElementById('val-precision').innerText = `${(precision * 100).toFixed(2)}%`;
+            document.getElementById('val-recall').innerText = `${(recall * 100).toFixed(2)}%`;
+            document.getElementById('val-f1').innerText = f1.toFixed(3);
+
+            // Sub Calculations text
+            document.querySelector('#math-accuracy-sub .calc-step-val').innerHTML = `= (${tp} + ${tn}) / ${totalSamples} = <strong>${(accuracy * 100).toFixed(2)}%</strong>`;
+            document.querySelector('#math-precision-sub .calc-step-val').innerHTML = `= ${tp} / (${tp} + ${fp}) = <strong>${(precision * 100).toFixed(2)}%</strong>`;
+            document.querySelector('#math-recall-sub .calc-step-val').innerHTML = `= ${tp} / (${tp} + ${fn}) = <strong>${(recall * 100).toFixed(2)}%</strong>`;
+            document.querySelector('#math-f1-sub .calc-step-val').innerHTML = `= 2 × (${precision.toFixed(3)} × ${recall.toFixed(3)}) / (${precision.toFixed(3)} + ${recall.toFixed(3)}) = <strong>${f1.toFixed(3)}</strong>`;
+
+            // Compute AUC and render ROC Graph
+            const auc = renderROCGraph(threshold);
+            document.getElementById('val-auc').innerText = auc.toFixed(3);
+            document.querySelector('#math-auc-sub .calc-step-val').innerHTML = `= Trapezoidal Integration = <strong>${auc.toFixed(3)}</strong>`;
+
+            toggleMetricVisibility();
+        }
+
+        function renderROCGraph(currentThreshold) {
+            const svg = document.getElementById('roc-graph');
+            svg.innerHTML = '';
+
+            const width = 500;
+            const height = 380;
+            const padding = 45;
+            const plotW = width - 2 * padding;
+            const plotH = height - 2 * padding;
+
+            const sorted = [...samples].sort((a, b) => b.pred - a.pred);
+            const P = sorted.filter(s => s.actual === 'yes').length;
+            const N = sorted.filter(s => s.actual === 'no').length;
+
+            let points = [{ fpr: 0, tpr: 0, thresh: 1.0 }];
+
+            if (P > 0 && N > 0) {
+                let tpCount = 0;
+                let fpCount = 0;
+
+                for (let i = 0; i < sorted.length; i++) {
+                    if (sorted[i].actual === 'yes') tpCount++;
+                    else fpCount++;
+
+                    const curTpr = tpCount / P;
+                    const curFpr = fpCount / N;
+                    points.push({ fpr: curFpr, tpr: curTpr, thresh: sorted[i].pred });
+                }
+            }
+            points.push({ fpr: 1.0, tpr: 1.0, thresh: 0.0 });
+
+            // Calculate AUC via trapezoidal integration
+            let auc = 0;
+            for (let i = 1; i < points.length; i++) {
+                const dFpr = points[i].fpr - points[i - 1].fpr;
+                const avgTpr = (points[i].tpr + points[i - 1].tpr) / 2;
+                auc += dFpr * avgTpr;
+            }
+            if (isNaN(auc)) auc = 0;
+
+            const mapX = (fprVal) => padding + fprVal * plotW;
+            const mapY = (tprVal) => height - padding - tprVal * plotH;
+
+            let gridHtml = '';
+            for (let v = 0; v <= 1.0; v += 0.2) {
+                const x = mapX(v);
+                const y = mapY(v);
+                gridHtml += `<line x1="${x}" y1="${padding}" x2="${x}" y2="${height - padding}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3"/>`;
+                gridHtml += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3"/>`;
+                gridHtml += `<text x="${x}" y="${height - padding + 16}" fill="#9ca3af" font-size="10" text-anchor="middle">${v.toFixed(1)}</text>`;
+                gridHtml += `<text x="${padding - 8}" y="${y + 4}" fill="#9ca3af" font-size="10" text-anchor="end">${v.toFixed(1)}</text>`;
+            }
+
+            gridHtml += `<line x1="${mapX(0)}" y1="${mapY(0)}" x2="${mapX(1)}" y2="${mapY(1)}" stroke="#6b7280" stroke-dasharray="5,5" stroke-width="1.5"/>`;
+
+            let pathD = `M ${mapX(0)} ${mapY(0)}`;
+            points.forEach(pt => {
+                pathD += ` L ${mapX(pt.fpr)} ${mapY(pt.tpr)}`;
+            });
+            pathD += ` L ${mapX(1)} ${mapY(0)} Z`;
+
+            let shadeHtml = `<path d="${pathD}" fill="rgba(59, 130, 246, 0.15)" stroke="none"/>`;
+
+            let lineD = `M ${mapX(0)} ${mapY(0)}`;
+            points.forEach(pt => {
+                lineD += ` L ${mapX(pt.fpr)} ${mapY(pt.tpr)}`;
+            });
+            let rocLineHtml = `<path d="${lineD}" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"/>`;
+
+            let curTp = 0, curFp = 0;
+            samples.forEach(s => {
+                if (s.pred >= currentThreshold) {
+                    if (s.actual === 'yes') curTp++;
+                    else curFp++;
+                }
+            });
+            const curTpr = P > 0 ? curTp / P : 0;
+            const curFpr = N > 0 ? curFp / N : 0;
+            const pointX = mapX(curFpr);
+            const pointY = mapY(curTpr);
+
+            let pointHtml = `
+                <circle cx="${pointX}" cy="${pointY}" r="6" fill="#f43f5e" stroke="#ffffff" stroke-width="2"/>
+                <text x="${pointX + 10}" y="${pointY - 6}" fill="#f43f5e" font-size="11" font-weight="bold">τ=${currentThreshold.toFixed(2)}</text>
+            `;
+
+            let labelsHtml = `
+                <text x="${width / 2}" y="${height - 8}" fill="#f3f4f6" font-size="11" font-weight="bold" text-anchor="middle">False Positive Rate (FPR)</text>
+                <text x="12" y="${height / 2}" fill="#f3f4f6" font-size="11" font-weight="bold" text-anchor="middle" transform="rotate(-90 12 ${height / 2})">True Positive Rate (TPR)</text>
+            `;
+
+            svg.innerHTML = gridHtml + shadeHtml + rocLineHtml + pointHtml + labelsHtml;
+            return auc;
+        }
+
+        window.onload = () => {
+            updateLanguageUI();
+        };
+    </script>
+</body>
+</html>
