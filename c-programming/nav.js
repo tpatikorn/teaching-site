@@ -163,10 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
             titleTh: "บทที่ 3: การควบคุมทิศทางของโปรแกรม",
             id: "m3",
             pages: [
-                { name: "3.0 Practice Problems", nameTh: "3.0 โจทย์ฝึกปฏิบัติ", path: "modules/m3/problems.html" },
-                { name: "3.1 Conditionals & Branching", nameTh: "3.1 การตัดสินใจเงื่อนไข", path: "modules/m3/conditionals.html" },
-                { name: "3.2 Loop Constructs & Tracing", nameTh: "3.2 โครงสร้างลูปและการทำซ้ำ", path: "modules/m3/loops.html" },
-                { name: "3.3 Jump Statements", nameTh: "3.3 คำสั่งข้ามและคำสั่งย้อนกลับ", path: "modules/m3/jumps.html" }
+                { name: "3.1 Practice: Conditionals (if)", nameTh: "3.1 โจทย์ฝึกปฏิบัติ: เงื่อนไข (if)", path: "modules/m3/problems-3-1.html" },
+                { name: "3.2 Practice: Loops (for/while)", nameTh: "3.2 โจทย์ฝึกปฏิบัติ: การทำซ้ำ (for/while)", path: "modules/m3/problems-3-2.html" },
+                { name: "3.3 Conditionals & Branching", nameTh: "3.3 การตัดสินใจเงื่อนไข", path: "modules/m3/conditionals.html" },
+                { name: "3.4 Loop Constructs & Tracing", nameTh: "3.4 โครงสร้างลูปและการทำซ้ำ", path: "modules/m3/loops.html" },
+                { name: "3.5 Jump Statements", nameTh: "3.5 คำสั่งข้ามและคำสั่งย้อนกลับ", path: "modules/m3/jumps.html" }
             ]
         },
         {
@@ -373,17 +374,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const practiceSection = document.getElementById('practice-section');
         if (!practiceSection) return;
 
-        // Determine current module ID from path
+        // Determine current module ID from attribute or path
         let moduleId = 'm1';
-        const match = pathname.toLowerCase().match(/[/\\]m([1-7])[/\\]/);
-        if (match) {
-            moduleId = 'm' + match[1];
+        if (practiceSection.getAttribute('data-problem-key')) {
+            moduleId = practiceSection.getAttribute('data-problem-key');
+        } else if (pathname.toLowerCase().includes('problems-3-1') || pathname.toLowerCase().includes('problems-if')) {
+            moduleId = 'm3_1';
+        } else if (pathname.toLowerCase().includes('problems-3-2') || pathname.toLowerCase().includes('problems-for') || pathname.toLowerCase().includes('problems-loop')) {
+            moduleId = 'm3_2';
+        } else {
+            const match = pathname.toLowerCase().match(/[/\\]m([1-7])[/\\]/);
+            if (match) {
+                moduleId = 'm' + match[1];
+            }
         }
 
         const problems = (window.cProblems ? window.cProblems[moduleId] : []) || [];
         const lang = UI_LANG[currentLang] || UI_LANG.EN;
 
-        // Build HTML for the practice tab (Cleaned: No duplicate in-page language button)
+        // Build HTML for the practice tab (Coding box removed as requested)
         practiceSection.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                 <div>
@@ -407,11 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="random-picker-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px); z-index: 1000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
                 <div class="card" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; background: var(--bg-secondary); border: 2px solid var(--accent-blue); padding: 32px; border-radius: 24px; position: relative; box-shadow: 0 0 50px rgba(59, 130, 246, 0.4); text-align: left; transform: scale(0.9); transition: transform 0.3s ease;">
                     <div style="font-size: 0.9rem; font-weight: bold; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px;" id="modal-problem-id">PROBLEM</div>
-                    <div style="font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; line-height: 1.4;" id="modal-problem-text"></div>
-                    <pre style="text-align: left; margin-bottom: 16px; display: none;" id="modal-problem-code"><code></code></pre>
-
-                    <!-- Embedded Interactive C Simulator Container -->
-                    <div id="modal-sim-box" style="margin-top: 16px;"></div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; line-height: 1.5;" id="modal-problem-text"></div>
+                    <pre style="text-align: left; margin-bottom: 20px; display: none; background: rgba(0,0,0,0.35); border: 1px solid var(--glass-border); padding: 16px; border-radius: 10px; font-size: 0.95rem; line-height: 1.5; overflow-x: auto;" id="modal-problem-code"><code></code></pre>
                     
                     <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
                         <button class="btn btn-primary" id="modal-btn-redraw" style="padding: 10px 20px; border-radius: 8px;">${lang.drawAnother}</button>
@@ -453,26 +459,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 itemDiv.style.padding = '16px';
                 itemDiv.style.borderBottom = '1px solid var(--glass-border)';
                 itemDiv.style.borderRadius = '8px';
+                itemDiv.style.cursor = 'pointer';
                 itemDiv.className = 'practice-problem-item';
                 
                 const qText = currentLang === 'TH' ? (p.questionTh || p.question) : p.question;
-                const simId = 'card_sim_' + p.id.replace(/[^a-zA-Z0-9]/g, '_');
 
                 itemDiv.innerHTML = `
-                    <div style="display: flex; gap: 12px; align-items: flex-start; cursor: pointer;">
-                        <span style="font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace; color: var(--accent-blue); font-weight: 600; min-width: 90px; flex-shrink: 0;">[${p.id.toUpperCase()}]</span>
+                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span style="font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, monospace; color: var(--accent-blue); font-weight: 600; min-width: 90px; flex-shrink: 0; padding-top: 2px;">[${p.id.toUpperCase()}]</span>
                         <div style="flex-grow: 1;">
-                            <div style="font-weight: 500; line-height: 1.5; color: var(--text-primary); margin-bottom: 8px;">${qText}</div>
-                            ${p.code ? `<pre style="font-size: 0.825rem; margin-top: 6px; padding: 10px; border-radius: 6px; max-height: 120px; overflow-y: auto;"><code>${escapeHtml(p.code)}</code></pre>` : ''}
+                            <div style="font-weight: 500; line-height: 1.5; color: var(--text-primary); margin-bottom: ${p.code ? '8px' : '0'};">${escapeHtml(qText)}</div>
+                            ${p.code ? `<pre style="font-size: 0.85rem; margin-top: 6px; padding: 10px 14px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); max-height: 140px; overflow-y: auto;"><code>${escapeHtml(p.code)}</code></pre>` : ''}
                         </div>
-                        <button class="btn btn-secondary btn-try-sim" data-prob-id="${p.id}" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; flex-shrink: 0;">
-                            ⚡ Try Code
-                        </button>
                     </div>
                 `;
                 listContainer.appendChild(itemDiv);
 
-                // Clicking anywhere on the item or the Try Code button opens the problem modal
+                // Clicking the item card opens the modal dialog
                 itemDiv.addEventListener('click', () => {
                     openProblemModal(p);
                 });
@@ -501,15 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalCode.style.display = 'none';
             }
 
-            // Embed Interactive Simulator inside Modal
-            const modalSimBox = document.getElementById('modal-sim-box');
-            modalSimBox.innerHTML = '';
-            if (window.CSimulatorUI && typeof window.CSimulatorUI.init === 'function') {
-                window.CSimulatorUI.init('modal-sim-box', p.code || 'int main() {\n    // Write code here\n    return 0;\n}');
-            } else if (window.CSimulatorUI && typeof window.CSimulatorUI.render === 'function') {
-                window.CSimulatorUI.render('modal-sim-box', { initialCode: p.code || 'int main() {\n    // Write code here\n    return 0;\n}' });
-            }
-
             // Show Modal
             modal.style.display = 'flex';
             setTimeout(() => {
@@ -530,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.querySelector('.card').style.transform = 'scale(0.9)';
             setTimeout(() => {
                 modal.style.display = 'none';
-                document.getElementById('modal-sim-box').innerHTML = '';
             }, 300);
         }
 

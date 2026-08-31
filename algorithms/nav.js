@@ -143,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: "Module 3: Sorting Algorithms",
             id: "m3",
             pages: [
+                { name: "3.0 Sorting Showdown (3x3)", path: "modules/m3/practice.html" },
                 { name: "3.1 Quadratic Sorting", path: "modules/m3/quadratic.html" },
                 { name: "3.2 Divide & Conquer", path: "modules/m3/divide-conquer.html" },
                 { name: "3.3 Counting Sort", path: "modules/m3/counting.html" }

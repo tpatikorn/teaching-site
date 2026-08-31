@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en" class="light-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3x3 Parallel Sorting Visualizer | DSA Academy</title>
+    <link rel="stylesheet" href="../../global.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --glass-bg: rgba(255, 255, 255, 0.92);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent-blue: #2563eb;
+            --accent-purple: #7c3aed;
+            --accent-emerald: #059669;
+            --accent-amber: #d97706;
+            --accent-rose: #e11d48;
+        }
+
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            max-height: 100vh;
+            overflow: hidden !important;
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Override global.css main margins/paddings completely */
+        main, .sorting-grid {
+            margin: 0 !important;
+            margin-left: 0 !important;
+            padding: 6px 8px !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+            min-height: 0 !important;
+        }
+
+        .screen-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+
+        /* Top Control Bar - Ultra Compact Light Mode */
+        .top-bar {
+            height: 42px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            z-index: 50;
+            gap: 10px;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .back-link:hover {
+            color: #1d4ed8;
+            transform: translateX(-2px);
+        }
+
+        .page-heading {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .control-pill {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 2px 6px;
+            gap: 4px;
+            font-size: 0.76rem;
+            height: 28px;
+        }
+
+        .control-pill label {
+            color: #64748b;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-left: 2px;
+        }
+
+        .segmented-btn {
+            background: transparent;
+            border: none;
+            color: #475569;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1.2;
+        }
+        .segmented-btn:hover {
+            color: #0f172a;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .segmented-btn.active {
+            color: #ffffff;
+            background: var(--accent-blue);
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.35);
+        }
+
+        .speed-slider {
+            width: 70px;
+            height: 4px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            height: 28px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-play-toggle {
+            background: #059669;
+            color: #ffffff;
+        }
+        .btn-play-toggle:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 1px 6px rgba(5, 150, 105, 0.3);
+        }
+        .btn-play-toggle.paused {
+            background: #d97706;
+            color: #ffffff;
+        }
+
+        .btn-reshuffle {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-reshuffle:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* 3x3 Grid Layout - Zero Scroll Light Mode */
+        .sorting-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-rows: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            padding: 6px 8px;
+            overflow: hidden;
+            height: calc(100vh - 42px);
+            max-height: calc(100vh - 42px);
+            width: 100vw;
+        }
+
+        .sorter-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 4px 8px 4px 8px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sorter-card:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+            transform: translateY(-1px);
+        }
+
+        /* Centered Header: Just Letter A-I */
+        .sorter-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 3px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .sorter-letter {
+            font-family: Monaco, Menlo, Consolas, monospace;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #1d4ed8;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 1px 12px;
+            border-radius: 4px;
+            line-height: 1.2;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        .sorter-card:hover .sorter-letter {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Bars Container - Clean Slate Background */
+        .bars-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px 6px 2px 6px;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .array-bar {
+            background: #3b82f6;
+            border-radius: 3px 3px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 2px;
+            transition: height 0.05s ease, background-color 0.05s ease;
+            position: relative;
+            flex: 1;
+            max-width: 38px;
+            min-width: 4px;
+        }
+
+        .bar-val {
+            font-family: Monaco, Menlo, Consolas, monospace;
+            font-size: 0.62rem;
+            color: #ffffff;
+            font-weight: 700;
+            line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Bar Highlight Classes (High contrast light mode) */
+        .array-bar.compare {
+            background: #f59e0b !important; /* Amber */
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+        }
+        .array-bar.swap {
+            background: #f43f5e !important; /* Rose */
+            box-shadow: 0 0 6px rgba(244, 63, 94, 0.5);
+        }
+        .array-bar.pivot {
+            background: #8b5cf6 !important; /* Purple */
+            box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+        }
+        .array-bar.sorted {
+            background: #10b981 !important; /* Emerald */
+        }
+
+        /* ========================================================= */
+        /* Pop-in Modal (80% Screen) */
+        /* ========================================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-dialog {
+            width: 90vw;
+            height: 90vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+            border: 1px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: scale(0.92);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal-dialog {
+            transform: scale(1);
+        }
+
+        /* Modal Top Bar: Controls */
+        .modal-top-bar {
+            height: 52px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            gap: 12px;
+        }
+
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-letter-badge {
+            font-family: Monaco, Menlo, Consolas, monospace;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1d4ed8;
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+            padding: 2px 14px;
+            border-radius: 6px;
+            line-height: 1.2;
+        }
+
+        .modal-algo-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .modal-bars-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 24px 28px 20px 28px;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modal-bars-wrapper .array-bar {
+            max-width: 68px;
+            min-width: 12px;
+            border-radius: 6px 6px 0 0;
+            padding-bottom: 6px;
+        }
+
+        .modal-bars-wrapper .bar-val {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .btn-close-modal {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .btn-close-modal:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5;
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <div class="screen-wrapper">
+        <!-- Top Controls Header -->
+        <header class="top-bar">
+            <div class="brand-section">
+                <a href="../../index.html" class="back-link">
+                    ← DSA Academy
+                </a>
+                <div class="page-heading">
+                    <span>3x3 Sorting Visualizer</span>
+                </div>
+            </div>
+
+            <div class="controls-section">
+                <!-- Auto-rerun timer countdown (1 Minute) -->
+                <div class="control-pill" title="Automatically reruns every 1 minute">
+                    <label>Auto-Rerun:</label>
+                    <span id="auto-rerun-label" style="font-family: monospace; font-size: 0.75rem; min-width: 24px; color: #059669; font-weight: bold;">60s</span>
+                </div>
+
+                <!-- Bar Count Option -->
+                <div class="control-pill">
+                    <label>Bars:</label>
+                    <button class="segmented-btn" data-bars="8" onclick="setBarCount(8)">8</button>
+                    <button class="segmented-btn active" data-bars="12" onclick="setBarCount(12)">12</button>
+                    <button class="segmented-btn" data-bars="16" onclick="setBarCount(16)">16</button>
+                    <button class="segmented-btn" data-bars="20" onclick="setBarCount(20)">20</button>
+                </div>
+
+                <!-- Speed Option -->
+                <div class="control-pill">
+                    <label>Speed:</label>
+                    <input type="range" id="speed-slider" class="speed-slider" min="5" max="500" value="180" step="5" oninput="updateSpeed(this.value)" title="Adjust sorting step delay">
+                    <span id="speed-label" style="font-family: monospace; font-size: 0.72rem; min-width: 38px; color: #475569;">180ms</span>
+                </div>
+
+                <!-- Actions -->
+                <button class="action-btn btn-play-toggle" id="btn-play-pause" onclick="togglePlay()">
+                    <span id="play-icon">⏸</span>
+                    <span id="play-text">Pause</span>
+                </button>
+                <button class="action-btn btn-reshuffle" onclick="manualReshuffle()" title="Generate new random array for all algorithms">
+                    <span>🎲</span>
+                    <span>Reshuffle</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 3x3 Sorting Grid -->
+        <div class="sorting-grid" id="sorting-grid">
+            <!-- 9 cards dynamically initialized -->
+        </div>
+    </div>
+
+    <!-- Pop-in 90% Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="handleBackdropClick(event)">
+        <div class="modal-dialog" id="modal-dialog">
+            <div class="modal-top-bar">
+                <div class="modal-title-group">
+                    <span class="modal-letter-badge" id="modal-letter">A</span>
+                </div>
+
+                <!-- Modal Control Bar: Same controls on top -->
+                <div class="controls-section">
+                    <!-- Bar Count Option in Modal -->
+                    <div class="control-pill">
+                        <label>Bars:</label>
+                        <button class="segmented-btn modal-bar-btn" data-bars="8" onclick="setBarCount(8)">8</button>
+                        <button class="segmented-btn modal-bar-btn active" data-bars="12" onclick="setBarCount(12)">12</button>
+                        <button class="segmented-btn modal-bar-btn" data-bars="16" onclick="setBarCount(16)">16</button>
+                        <button class="segmented-btn modal-bar-btn" data-bars="20" onclick="setBarCount(20)">20</button>
+                    </div>
+
+                    <!-- Speed Option in Modal -->
+                    <div class="control-pill">
+                        <label>Speed:</label>
+                        <input type="range" id="modal-speed-slider" class="speed-slider" min="5" max="500" value="180" step="5" oninput="updateSpeed(this.value)" title="Adjust sorting step delay">
+                        <span id="modal-speed-label" style="font-family: monospace; font-size: 0.72rem; min-width: 38px; color: #475569;">180ms</span>
+                    </div>
+
+                    <!-- Actions in Modal -->
+                    <button class="action-btn btn-play-toggle" id="modal-btn-play-pause" onclick="togglePlay()">
+                        <span id="modal-play-icon">⏸</span>
+                        <span id="modal-play-text">Pause</span>
+                    </button>
+                    <button class="action-btn btn-reshuffle" onclick="manualReshuffle()" title="Generate new random array">
+                        <span>🎲</span>
+                        <span>Reshuffle</span>
+                    </button>
+
+                    <!-- Close Button -->
+                    <button class="btn-close-modal" onclick="closeModal()" title="Close (Esc)">✕</button>
+                </div>
+            </div>
+
+            <!-- Modal Large Bars Container (~80% Screen) -->
+            <div class="modal-bars-wrapper" id="modal-bars-container">
+                <!-- Large bars injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------------------------------------------
+        // Algorithm Configurations (Centered letters A to I)
+        // -------------------------------------------------------------
+        const ALGORITHMS = [
+            { code: 'A', fullName: 'Selection Sort', gen: selectionSortGen },
+            { code: 'B', fullName: 'Bubble Sort', gen: bubbleSortGen },
+            { code: 'C', fullName: 'Quick Sort', gen: quickSortGen },
+            { code: 'D', fullName: 'Stalin Sort (Left to Right)', gen: stalinSortLRGen },
+            { code: 'E', fullName: 'Insertion Sort', gen: insertionSortGen },
+            { code: 'F', fullName: 'Slowsort', gen: slowsortGen },
+            { code: 'G', fullName: 'Merge Sort', gen: mergeSortGen },
+            { code: 'H', fullName: 'Modified Selection Sort (Randomized)', gen: modifiedSelectionSortGen },
+            { code: 'I', fullName: 'Bogosort*', gen: bogoSortGen }
+        ];
+
+        let barCount = 12;
+        let stepDelay = 180; // ms
+        let isPlaying = true;
+        let playInterval = null;
+
+        let sharedInitialArray = [];
+        let engineStates = [];
+
+        // 1 Minute Auto-Rerun Timer (60 Seconds)
+        const AUTO_RERUN_SECS = 60;
+        let autoRerunRemaining = AUTO_RERUN_SECS;
+        let autoRerunInterval = null;
+
+        // Currently Focused Modal Algorithm (null when modal closed)
+        let currentModalAlgoIndex = null;
+
+        // -------------------------------------------------------------
+        // Array Initialization & Reshuffle
+        // -------------------------------------------------------------
+        function generateRandomArray(count) {
+            const arr = [];
+            for (let i = 0; i < count; i++) {
+                // Values between 15 and 95
+                arr.push(Math.floor(Math.random() * 81) + 15);
+            }
+            return arr;
+        }
+
+        function initEngines() {
+            engineStates = ALGORITHMS.map((algo, index) => {
+                const arrCopy = [...sharedInitialArray];
+                const generator = algo.gen([...arrCopy]);
+                return {
+                    algo,
+                    index,
+                    currentArray: [...arrCopy],
+                    generator,
+                    isDone: false,
+                    lastYield: {
+                        type: 'init',
+                        compare: [],
+                        swap: [],
+                        pivot: -1,
+                        sorted: []
+                    }
+                };
+            });
+        }
+
+        function createGridCards() {
+            const gridEl = document.getElementById('sorting-grid');
+            gridEl.innerHTML = '';
+
+            ALGORITHMS.forEach((algo, i) => {
+                const card = document.createElement('div');
+                card.className = 'sorter-card';
+                card.id = `sorter-card-${i}`;
+                card.onclick = () => openModal(i);
+
+                card.innerHTML = `
+                    <div class="sorter-header">
+                        <span class="sorter-letter" title="${algo.code}: ${algo.fullName} (Click to expand)">${algo.code}</span>
+                    </div>
+                    <div class="bars-container" id="bars-${i}"></div>
+                `;
+
+                gridEl.appendChild(card);
+            });
+        }
+
+        // -------------------------------------------------------------
+        // Render Functions (Grid and Modal)
+        // -------------------------------------------------------------
+        function renderEngine(state) {
+            const barsContainer = document.getElementById(`bars-${state.index}`);
+            if (!barsContainer) return;
+
+            const yieldState = state.lastYield || {};
+            const arr = state.currentArray;
+            const maxVal = 100;
+
+            let html = '';
+            for (let j = 0; j < arr.length; j++) {
+                const val = arr[j];
+                const heightPercent = Math.max(12, Math.round((val / maxVal) * 94));
+
+                let extraClass = '';
+                if (yieldState.compare && yieldState.compare.includes(j)) {
+                    extraClass = 'compare';
+                } else if (yieldState.swap && yieldState.swap.includes(j)) {
+                    extraClass = 'swap';
+                } else if (yieldState.pivot === j) {
+                    extraClass = 'pivot';
+                } else if (yieldState.sorted && yieldState.sorted.includes(j)) {
+                    extraClass = 'sorted';
+                }
+
+                html += `
+                    <div class="array-bar ${extraClass}" style="height: ${heightPercent}%;">
+                        <span class="bar-val">${barCount <= 16 ? val : ''}</span>
+                    </div>
+                `;
+            }
+            barsContainer.innerHTML = html;
+        }
+
+        function renderModalEngine(state) {
+            if (currentModalAlgoIndex === null || !state) return;
+            const modalBars = document.getElementById('modal-bars-container');
+            if (!modalBars) return;
+
+            const yieldState = state.lastYield || {};
+            const arr = state.currentArray;
+            const maxVal = 100;
+
+            let html = '';
+            for (let j = 0; j < arr.length; j++) {
+                const val = arr[j];
+                const heightPercent = Math.max(12, Math.round((val / maxVal) * 94));
+
+                let extraClass = '';
+                if (yieldState.compare && yieldState.compare.includes(j)) {
+                    extraClass = 'compare';
+                } else if (yieldState.swap && yieldState.swap.includes(j)) {
+                    extraClass = 'swap';
+                } else if (yieldState.pivot === j) {
+                    extraClass = 'pivot';
+                } else if (yieldState.sorted && yieldState.sorted.includes(j)) {
+                    extraClass = 'sorted';
+                }
+
+                html += `
+                    <div class="array-bar ${extraClass}" style="height: ${heightPercent}%;">
+                        <span class="bar-val">${val}</span>
+                    </div>
+                `;
+            }
+            modalBars.innerHTML = html;
+        }
+
+        function renderAll() {
+            engineStates.forEach(state => renderEngine(state));
+            if (currentModalAlgoIndex !== null && engineStates[currentModalAlgoIndex]) {
+                renderModalEngine(engineStates[currentModalAlgoIndex]);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Step Tick Loop
+        // -------------------------------------------------------------
+        function stepAll() {
+            let anyActive = false;
+
+            engineStates.forEach(state => {
+                if (state.isDone) return;
+
+                const res = state.generator.next();
+                if (res.done) {
+                    state.isDone = true;
+                    const allIndices = Array.from({ length: state.currentArray.length }, (_, k) => k);
+                    state.lastYield = {
+                        type: 'done',
+                        compare: [],
+                        swap: [],
+                        pivot: -1,
+                        sorted: allIndices
+                    };
+                } else {
+                    anyActive = true;
+                    const val = res.value;
+                    state.lastYield = val;
+
+                    if (val.array) {
+                        state.currentArray = [...val.array];
+                    }
+                }
+
+                renderEngine(state);
+            });
+
+            if (currentModalAlgoIndex !== null && engineStates[currentModalAlgoIndex]) {
+                renderModalEngine(engineStates[currentModalAlgoIndex]);
+            }
+
+            if (!anyActive) {
+                pauseAnimation();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Play / Pause / Reshuffle Controls
+        // -------------------------------------------------------------
+        function startAnimation() {
+            if (playInterval) clearInterval(playInterval);
+            isPlaying = true;
+            updatePlayBtnUI();
+            playInterval = setInterval(stepAll, stepDelay);
+        }
+
+        function pauseAnimation() {
+            if (playInterval) clearInterval(playInterval);
+            playInterval = null;
+            isPlaying = false;
+            updatePlayBtnUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pauseAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+
+        function updatePlayBtnUI() {
+            // Main Top Bar
+            const btn = document.getElementById('btn-play-pause');
+            const icon = document.getElementById('play-icon');
+            const text = document.getElementById('play-text');
+            // Modal Bar
+            const mBtn = document.getElementById('modal-btn-play-pause');
+            const mIcon = document.getElementById('modal-play-icon');
+            const mText = document.getElementById('modal-play-text');
+
+            if (isPlaying) {
+                btn.className = 'action-btn btn-play-toggle';
+                icon.innerText = '⏸';
+                text.innerText = 'Pause';
+                if (mBtn) {
+                    mBtn.className = 'action-btn btn-play-toggle';
+                    mIcon.innerText = '⏸';
+                    mText.innerText = 'Pause';
+                }
+            } else {
+                btn.className = 'action-btn btn-play-toggle paused';
+                icon.innerText = '▶';
+                text.innerText = 'Play';
+                if (mBtn) {
+                    mBtn.className = 'action-btn btn-play-toggle paused';
+                    mIcon.innerText = '▶';
+                    mText.innerText = 'Play';
+                }
+            }
+        }
+
+        function reshuffleAll() {
+            sharedInitialArray = generateRandomArray(barCount);
+            initEngines();
+            renderAll();
+            startAnimation();
+            resetAutoRerunTimer();
+        }
+
+        function manualReshuffle() {
+            reshuffleAll();
+        }
+
+        function setBarCount(count) {
+            barCount = count;
+            document.querySelectorAll('.segmented-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-bars')) === count);
+            });
+            reshuffleAll();
+        }
+
+        function updateSpeed(val) {
+            stepDelay = parseInt(val);
+            document.getElementById('speed-slider').value = stepDelay;
+            document.getElementById('speed-label').innerText = `${stepDelay}ms`;
+            const mSlider = document.getElementById('modal-speed-slider');
+            const mLabel = document.getElementById('modal-speed-label');
+            if (mSlider) mSlider.value = stepDelay;
+            if (mLabel) mLabel.innerText = `${stepDelay}ms`;
+
+            if (isPlaying) {
+                startAnimation();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Auto-Rerun Timer (Every 1 Minute / 60 Seconds)
+        // -------------------------------------------------------------
+        function resetAutoRerunTimer() {
+            if (autoRerunInterval) clearInterval(autoRerunInterval);
+            autoRerunRemaining = AUTO_RERUN_SECS;
+            updateAutoRerunDisplay();
+            autoRerunInterval = setInterval(() => {
+                autoRerunRemaining--;
+                if (autoRerunRemaining <= 0) {
+                    reshuffleAll();
+                } else {
+                    updateAutoRerunDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateAutoRerunDisplay() {
+            const label = document.getElementById('auto-rerun-label');
+            if (label) {
+                label.innerText = `${autoRerunRemaining}s`;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Modal Pop-in (~90% Screen) Handlers
+        // -------------------------------------------------------------
+        function openModal(algoIndex) {
+            currentModalAlgoIndex = algoIndex;
+            const algo = ALGORITHMS[algoIndex];
+
+            document.getElementById('modal-letter').innerText = algo.code;
+
+            // Sync controls inside modal
+            document.querySelectorAll('.modal-bar-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-bars')) === barCount);
+            });
+            document.getElementById('modal-speed-slider').value = stepDelay;
+            document.getElementById('modal-speed-label').innerText = `${stepDelay}ms`;
+            updatePlayBtnUI();
+
+            const modalOverlay = document.getElementById('modal-overlay');
+            modalOverlay.style.display = 'flex';
+            setTimeout(() => {
+                modalOverlay.classList.add('active');
+            }, 10);
+
+            renderModalEngine(engineStates[algoIndex]);
+        }
+
+        function closeModal() {
+            const modalOverlay = document.getElementById('modal-overlay');
+            modalOverlay.classList.remove('active');
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+                currentModalAlgoIndex = null;
+            }, 250);
+        }
+
+        function handleBackdropClick(event) {
+            if (event.target.id === 'modal-overlay') {
+                closeModal();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentModalAlgoIndex !== null) {
+                closeModal();
+            }
+        });
+
+        // -------------------------------------------------------------
+        // 9 Algorithm Generator Implementations
+        // -------------------------------------------------------------
+
+        // 1. Selection Sort (A)
+        function* selectionSortGen(arr) {
+            let n = arr.length;
+            let sorted = [];
+            for (let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                for (let j = i + 1; j < n; j++) {
+                    yield { type: 'compare', compare: [j, minIdx], swap: [], sorted: [...sorted], array: [...arr] };
+                    if (arr[j] < arr[minIdx]) {
+                        minIdx = j;
+                    }
+                }
+                if (minIdx !== i) {
+                    let temp = arr[i]; arr[i] = arr[minIdx]; arr[minIdx] = temp;
+                    yield { type: 'swap', compare: [], swap: [i, minIdx], sorted: [...sorted], array: [...arr] };
+                }
+                sorted.push(i);
+                yield { type: 'checkpoint', compare: [], swap: [], sorted: [...sorted], array: [...arr] };
+            }
+            sorted.push(n - 1);
+            yield { type: 'done', compare: [], swap: [], sorted: [...sorted], array: [...arr] };
+        }
+
+        // 2. Bubble Sort (B)
+        function* bubbleSortGen(arr) {
+            let n = arr.length;
+            let sorted = [];
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    yield { type: 'compare', compare: [j, j + 1], swap: [], sorted: [...sorted], array: [...arr] };
+                    if (arr[j] > arr[j + 1]) {
+                        let temp = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = temp;
+                        yield { type: 'swap', compare: [], swap: [j, j + 1], sorted: [...sorted], array: [...arr] };
+                    }
+                }
+                sorted.push(n - i - 1);
+                yield { type: 'checkpoint', compare: [], swap: [], sorted: [...sorted], array: [...arr] };
+            }
+            sorted.push(0);
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: n }, (_, k) => k), array: [...arr] };
+        }
+
+        // 3. Quick Sort (C)
+        function* quickSortGen(arr) {
+            let sorted = [];
+            function* qs(low, high) {
+                if (low < high) {
+                    let pivot = arr[high];
+                    let i = low - 1;
+                    for (let j = low; j < high; j++) {
+                        yield { type: 'compare', compare: [j, high], swap: [], pivot: high, sorted: [...sorted], array: [...arr] };
+                        if (arr[j] < pivot) {
+                            i++;
+                            let temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+                            yield { type: 'swap', compare: [], swap: [i, j], pivot: high, sorted: [...sorted], array: [...arr] };
+                        }
+                    }
+                    let temp2 = arr[i + 1]; arr[i + 1] = arr[high]; arr[high] = temp2;
+                    let pi = i + 1;
+                    sorted.push(pi);
+                    yield { type: 'swap', compare: [], swap: [pi, high], pivot: pi, sorted: [...sorted], array: [...arr] };
+
+                    yield* qs(low, pi - 1);
+                    yield* qs(pi + 1, high);
+                } else if (low === high) {
+                    sorted.push(low);
+                    yield { type: 'checkpoint', compare: [], swap: [], sorted: [...sorted], array: [...arr] };
+                }
+            }
+            yield* qs(0, arr.length - 1);
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: arr.length }, (_, k) => k), array: [...arr] };
+        }
+
+        // 4. Stalin / Purge Sort - Left to Right (D)
+        // Completely removes the purged elements so kept numbers sit together seamlessly!
+        function* stalinSortLRGen(initialArr) {
+            let arr = [...initialArr];
+            if (arr.length === 0) return;
+
+            let maxVal = arr[0];
+            let i = 1;
+            yield { type: 'checkpoint', compare: [0], swap: [], sorted: [0], array: [...arr] };
+
+            while (i < arr.length) {
+                yield { type: 'compare', compare: [i - 1, i], swap: [], sorted: Array.from({ length: i }, (_, k) => k), array: [...arr] };
+                if (arr[i] < maxVal) {
+                    // Element is out of monotonic order: flash and remove from array!
+                    yield { type: 'swap', compare: [], swap: [i], sorted: Array.from({ length: i }, (_, k) => k), array: [...arr] };
+                    arr.splice(i, 1);
+                    // Remaining kept numbers close together
+                    yield { type: 'checkpoint', compare: [], swap: [], sorted: Array.from({ length: i }, (_, k) => k), array: [...arr] };
+                } else {
+                    maxVal = arr[i];
+                    i++;
+                    yield { type: 'checkpoint', compare: [], swap: [], sorted: Array.from({ length: i }, (_, k) => k), array: [...arr] };
+                }
+            }
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: arr.length }, (_, k) => k), array: [...arr] };
+        }
+
+        // 5. Insertion Sort (E)
+        function* insertionSortGen(arr) {
+            let n = arr.length;
+            let sorted = [0];
+            for (let i = 1; i < n; i++) {
+                let key = arr[i];
+                let j = i - 1;
+                yield { type: 'compare', compare: [j, i], swap: [], sorted: [...sorted], array: [...arr] };
+
+                while (j >= 0 && arr[j] > key) {
+                    yield { type: 'compare', compare: [j, j + 1], swap: [], sorted: [...sorted], array: [...arr] };
+                    arr[j + 1] = arr[j];
+                    yield { type: 'swap', compare: [], swap: [j, j + 1], sorted: [...sorted], array: [...arr] };
+                    j--;
+                }
+                arr[j + 1] = key;
+                sorted = Array.from({ length: i + 1 }, (_, k) => k);
+                yield { type: 'checkpoint', compare: [], swap: [j + 1], sorted: [...sorted], array: [...arr] };
+            }
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: n }, (_, k) => k), array: [...arr] };
+        }
+
+        // 6. Slowsort (F)
+        function* slowsortGen(arr) {
+            let sorted = [];
+            function* ss(i, j) {
+                if (i >= j) return;
+                let m = Math.floor((i + j) / 2);
+                yield* ss(i, m);
+                yield* ss(m + 1, j);
+                yield { type: 'compare', compare: [m, j], swap: [], sorted: [...sorted], array: [...arr] };
+                if (arr[j] < arr[m]) {
+                    let temp = arr[j]; arr[j] = arr[m]; arr[m] = temp;
+                    yield { type: 'swap', compare: [], swap: [m, j], sorted: [...sorted], array: [...arr] };
+                }
+                sorted.push(j);
+                yield* ss(i, j - 1);
+            }
+            yield* ss(0, arr.length - 1);
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: arr.length }, (_, k) => k), array: [...arr] };
+        }
+
+        // 7. Merge Sort (G)
+        function* mergeSortGen(arr) {
+            let n = arr.length;
+            let sorted = [];
+
+            function* merge(l, m, r) {
+                let n1 = m - l + 1;
+                let n2 = r - m;
+                let L = arr.slice(l, m + 1);
+                let R = arr.slice(m + 1, r + 1);
+
+                let i = 0, j = 0, k = l;
+                while (i < n1 && j < n2) {
+                    yield { type: 'compare', compare: [l + i, m + 1 + j], swap: [], sorted: [...sorted], array: [...arr] };
+                    if (L[i] <= R[j]) {
+                        arr[k] = L[i];
+                        yield { type: 'swap', compare: [], swap: [k], sorted: [...sorted], array: [...arr] };
+                        i++;
+                    } else {
+                        arr[k] = R[j];
+                        yield { type: 'swap', compare: [], swap: [k], sorted: [...sorted], array: [...arr] };
+                        j++;
+                    }
+                    k++;
+                }
+
+                while (i < n1) {
+                    arr[k] = L[i];
+                    yield { type: 'swap', compare: [], swap: [k], sorted: [...sorted], array: [...arr] };
+                    i++; k++;
+                }
+                while (j < n2) {
+                    arr[k] = R[j];
+                    yield { type: 'swap', compare: [], swap: [k], sorted: [...sorted], array: [...arr] };
+                    j++; k++;
+                }
+            }
+
+            function* ms(l, r) {
+                if (l < r) {
+                    let m = Math.floor((l + r) / 2);
+                    yield* ms(l, m);
+                    yield* ms(m + 1, r);
+                    yield* merge(l, m, r);
+                }
+            }
+
+            yield* ms(0, n - 1);
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: n }, (_, k) => k), array: [...arr] };
+        }
+
+        // 8. Modified Selection Sort (Randomized) (H)
+        // Randomly select an element of the unsorted part.
+        // If it's the min of unsorted part, swap it with the leftmost of unsorted, then lock it as sorted. Repeat.
+        function* modifiedSelectionSortGen(arr) {
+            let n = arr.length;
+            let sorted = [];
+            let i = 0; // Leftmost of unsorted part
+
+            while (i < n - 1) {
+                // Find minimum value in unsorted part arr[i ... n - 1]
+                let minVal = arr[i];
+                for (let k = i + 1; k < n; k++) {
+                    if (arr[k] < minVal) {
+                        minVal = arr[k];
+                    }
+                }
+
+                // Randomly select an element of the unsorted part
+                let randIdx = i + Math.floor(Math.random() * (n - i));
+
+                // Compare: check if the randomly selected element is the minimum
+                yield { 
+                    type: 'compare', 
+                    compare: [randIdx, i], 
+                    swap: [], 
+                    sorted: [...sorted], 
+                    array: [...arr] 
+                };
+
+                if (arr[randIdx] === minVal) {
+                    // It's the min of unsorted part! Swap with leftmost of unsorted (index i)
+                    if (randIdx !== i) {
+                        let temp = arr[i];
+                        arr[i] = arr[randIdx];
+                        arr[randIdx] = temp;
+
+                        yield { 
+                            type: 'swap', 
+                            compare: [], 
+                            swap: [i, randIdx], 
+                            sorted: [...sorted], 
+                            array: [...arr] 
+                        };
+                    }
+
+                    // Lock it as sorted
+                    sorted.push(i);
+                    i++;
+
+                    yield { 
+                        type: 'checkpoint', 
+                        compare: [], 
+                        swap: [], 
+                        sorted: [...sorted], 
+                        array: [...arr] 
+                    };
+                } else {
+                    // Not the minimum; repeat
+                    yield { 
+                        type: 'checkpoint', 
+                        compare: [], 
+                        swap: [], 
+                        sorted: [...sorted], 
+                        array: [...arr] 
+                    };
+                }
+            }
+
+            // Final element is locked as sorted
+            sorted.push(n - 1);
+            yield { 
+                type: 'done', 
+                compare: [], 
+                swap: [], 
+                sorted: Array.from({ length: n }, (_, k) => k), 
+                array: [...arr] 
+            };
+        }
+
+        // 9. Bogosort* (I)
+        function* bogoSortGen(arr) {
+            let n = arr.length;
+            let attempts = 0;
+
+            function isSorted() {
+                for (let i = 0; i < n - 1; i++) {
+                    if (arr[i] > arr[i + 1]) return false;
+                }
+                return true;
+            }
+
+            while (!isSorted()) {
+                attempts++;
+                let chkIdx = attempts % (n - 1);
+                yield { type: 'compare', compare: [chkIdx, chkIdx + 1], swap: [], sorted: [], array: [...arr] };
+
+                // Random pair mutation / swap for visible progress without blocking thread
+                let i = Math.floor(Math.random() * n);
+                let j = Math.floor(Math.random() * n);
+                let temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+                yield { type: 'swap', compare: [], swap: [i, j], sorted: [], array: [...arr] };
+
+                // Safety guard against infinite loops
+                if (attempts >= 2000) break;
+            }
+
+            yield { type: 'done', compare: [], swap: [], sorted: Array.from({ length: n }, (_, k) => k), array: [...arr] };
+        }
+
+        // -------------------------------------------------------------
+        // Initialization
+        // -------------------------------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            createGridCards();
+            reshuffleAll();
+        });
+    </script>
+</body>
+</html>

@@ -3,25 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C Fundamentals - Module 3 Practice Problems</title>
+    <title>C Fundamentals - Module 3 Practice Sets</title>
     <link rel="stylesheet" href="../../global.css">
-    <script src="../../problems.js?v=1.0.2"></script>
+    <script src="../../problems.js?v=1.0.3"></script>
     <script src="../../nav.js"></script>
 </head>
 <body>
     <main>
         <div class="page-header">
             <h1 class="page-title">
-                <span class="lang-en">3.0 Practice Problems</span>
-                <span class="lang-th">3.0 โจทย์ฝึกปฏิบัติ</span>
+                <span class="lang-en">Module 3 Practice Sets</span>
+                <span class="lang-th">ชุดโจทย์ฝึกปฏิบัติ บทที่ 3</span>
             </h1>
             <p class="page-subtitle">
-                <span class="lang-en">Structured practice problem set for Module 3 (100 Problems). Select a problem or pick randomly for classroom practice.</span>
-                <span class="lang-th">ชุดโจทย์ฝึกปฏิบัติสำหรับบทที่ 3 (100 ข้อ) เลือกโจทย์สุ่มเพื่อฝึกหัดและอภิปรายในชั้นเรียน</span>
+                <span class="lang-en">Select a practice problem set below: Conditionals (if) or Loops (for/while).</span>
+                <span class="lang-th">เลือกชุดโจทย์ฝึกปฏิบัติด้านล่าง: คำสั่งเงื่อนไข (if) หรือการทำซ้ำ/ลูป (for/while)</span>
             </p>
         </div>
 
-        <div id="practice-section"></div>
+        <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 36px;">
+            <div class="card" style="border-left: 4px solid var(--accent-blue); padding: 24px;">
+                <h3 style="font-size: 1.3rem; margin-bottom: 8px;">
+                    <span class="lang-en">3.1 Practice: Conditionals (if)</span>
+                    <span class="lang-th">3.1 โจทย์ฝึกปฏิบัติ: คำสั่งเงื่อนไข (if)</span>
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">
+                    <span class="lang-en">100 structured practice problems covering month/time validity, decision logic, and array filters.</span>
+                    <span class="lang-th">ชุดโจทย์ 100 ข้อ ครอบคลุมการตรวจสอบเงื่อนไขเวลา ตรรกะการตัดสินใจ และเงื่อนไขอาร์เรย์</span>
+                </p>
+                <a href="problems-3-1.html" class="btn btn-primary" style="display: inline-flex; padding: 10px 20px; text-decoration: none;">
+                    <span class="lang-en">Open 3.1 Practice →</span>
+                    <span class="lang-th">เปิดโจทย์ 3.1 →</span>
+                </a>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--accent-purple); padding: 24px;">
+                <h3 style="font-size: 1.3rem; margin-bottom: 8px;">
+                    <span class="lang-en">3.2 Practice: Loops (for/while)</span>
+                    <span class="lang-th">3.2 โจทย์ฝึกปฏิบัติ: การทำซ้ำและลูป (for/while)</span>
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">
+                    <span class="lang-en">100 structured practice problems covering summation loops, array traversal, min/sum, and clock steps.</span>
+                    <span class="lang-th">ชุดโจทย์ 100 ข้อ ครอบคลุมการคำนวณผลรวมลูป การท่องอาร์เรย์ และการวนรอบเวลา</span>
+                </p>
+                <a href="problems-3-2.html" class="btn btn-primary" style="display: inline-flex; padding: 10px 20px; text-decoration: none;">
+                    <span class="lang-en">Open 3.2 Practice →</span>
+                    <span class="lang-th">เปิดโจทย์ 3.2 →</span>
+                </a>
+            </div>
+        </div>
+
+        <div id="practice-section" data-problem-key="m3_1"></div>
     </main>
 </body>
 </html>
